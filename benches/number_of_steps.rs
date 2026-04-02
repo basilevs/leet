@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use leet::{number_of_steps, number_of_steps_naive};
+use leet::{number_of_steps, number_of_steps_naive, number_of_steps2};
 
 const INPUTS: &[i32] = &[0, 1, 14, 1234, 65_535, 1_000_000, i32::MAX];
 
@@ -21,11 +21,21 @@ fn bench_single_value(c: &mut Criterion) {
 
 fn bench_batch(c: &mut Criterion) {
     let mut group = c.benchmark_group("batch");
-    group.bench_function("optimized", |b| {
+    group.bench_function("optimized_table", |b| {
         b.iter(|| {
             let mut total = 0;
             for &n in INPUTS {
                 total += number_of_steps(black_box(n));
+            }
+            black_box(total)
+        });
+    });
+
+    group.bench_function("optimized_table_decl", |b| {
+        b.iter(|| {
+            let mut total = 0;
+            for &n in INPUTS {
+                total += number_of_steps2(black_box(n));
             }
             black_box(total)
         });

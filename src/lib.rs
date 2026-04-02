@@ -21,6 +21,9 @@ const fn compute_bit(mut idx: usize) -> Bits {
         result.has_any = 1;
         idx >>= 1;
     }
+    if result.most_significant > 0 {
+        result.most_significant -= 1;
+    }
     result.has_none = (result.has_any == 0) as u8;
     result
 }
@@ -46,7 +49,7 @@ pub fn number_of_steps(num: i32) -> i32 {
     let b3 = &LOOKUP_TABLE[(num >> 16) & 0xFF];
     let b4 = &LOOKUP_TABLE[(num >> 24) & 0xFF];
 
-    let mut acc = 0;
+    let mut acc: u8 = 0;
     acc += b1.count + b1.most_significant * b2.has_none * b3.has_none * b4.has_none;
     acc += b2.count + (b2.most_significant + 8 * b2.has_any) * b3.has_none * b4.has_none;
     acc += b3.count + (b3.most_significant + 16 * b3.has_any) * b4.has_none;
@@ -55,14 +58,44 @@ pub fn number_of_steps(num: i32) -> i32 {
     acc as i32
 }
 
-pub fn number_of_steps_naive(num: i32) -> i32 {
-    let bits = compute_bit(num.try_into().expect("Non-negative number expected"));
-    (bits.count + bits.most_significant) as i32
+pub fn number_of_steps2(num: i32) -> i32 {
+    let num: usize = num.try_into().expect("Non-negative number expected");
+    let b1 = &LOOKUP_TABLE[num & 0xFF];
+    let b2 = &LOOKUP_TABLE[(num >> 8) & 0xFF];
+    let b3 = &LOOKUP_TABLE[(num >> 16) & 0xFF];
+    let b4 = &LOOKUP_TABLE[(num >> 24) & 0xFF];
+
+    let acc: u8 = 
+        b1.count + b1.most_significant * b2.has_none * b3.has_none * b4.has_none
+        + b2.count + (b2.most_significant + 8 * b2.has_any) * b3.has_none * b4.has_none
+        + b3.count + (b3.most_significant + 16 * b3.has_any) * b4.has_none
+        + b4.count + (b4.most_significant + 24 * b4.has_any);
+
+    acc as i32
+}
+
+pub fn number_of_steps_naive(mut num: i32) -> i32 {
+    let mut result: i32 = 0;
+    while num > 0 {
+        result += (num % 2) as i32;
+        if num > 1 {
+            result += 1;
+        }
+        num >>= 1;
+    }
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::{number_of_steps, number_of_steps_naive};
+
+    #[test]
+    fn matches_official_table() {
+        for (input, expected) in [(0, 0), (8, 4), (14, 6), (123, 12), (83962, 27)] {
+            assert_eq!(expected, number_of_steps_naive(input),  "testing {}", input);
+        }
+    }
 
     #[test]
     fn matches_reference_on_sample_range() {
@@ -73,7 +106,7 @@ mod tests {
 
     #[test]
     fn handles_edges() {
-        for i in [0, 1, 2, 3, 257, 65_535, i32::MAX] {
+        for i in [0, 1, 2, 3, 257, 65_535, i32::MAX-6, i32::MAX] {
             assert_eq!(number_of_steps_naive(i), number_of_steps(i), "testing {i}");
         }
     }
