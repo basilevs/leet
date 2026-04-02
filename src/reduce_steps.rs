@@ -1,25 +1,25 @@
 #[derive(Clone, Copy)]
-struct Bits {
+struct ByteStats {
     most_significant: u8,
     count: u8,
     has_any: u8,
     has_none: u8,
 }
 
-const DEFAULT_BITS: Bits = Bits {
+const DEFAULT_BITS: ByteStats = ByteStats {
     most_significant: 0,
     count: 0,
     has_any: 0,
     has_none: 1,
 };
 
-const fn compute_bit(mut idx: usize) -> Bits {
-    let mut result: Bits = DEFAULT_BITS;
-    while idx > 0 {
-        result.count += (idx % 2) as u8;
+const fn compute_stats(mut input: usize) -> ByteStats {
+    let mut result: ByteStats = DEFAULT_BITS;
+    while input > 0 {
+        result.count += (input % 2) as u8;
         result.most_significant += 1;
         result.has_any = 1;
-        idx >>= 1;
+        input >>= 1;
     }
     if result.most_significant > 0 {
         result.most_significant -= 1;
@@ -28,19 +28,19 @@ const fn compute_bit(mut idx: usize) -> Bits {
     result
 }
 
-const fn generate_table() -> [Bits; 256] {
+const fn generate_table() -> [ByteStats; 256] {
     let mut table = [DEFAULT_BITS; 256];
     let mut i = 0;
 
     while i < 256 {
-        table[i] = compute_bit(i);
+        table[i] = compute_stats(i);
         i += 1;
     }
 
     table
 }
 
-const LOOKUP_TABLE: [Bits; 256] = generate_table();
+const LOOKUP_TABLE: [ByteStats; 256] = generate_table();
 
 pub fn number_of_steps(num: i32) -> i32 {
     let num: usize = num.try_into().expect("Non-negative number expected");
