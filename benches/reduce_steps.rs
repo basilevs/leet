@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use leet::reduce_steps::{number_of_steps, number_of_steps_naive, number_of_steps_declarative, number_of_steps_imperative};
+use leet::reduce_steps::{number_of_steps, number_of_steps_declarative, number_of_steps_from_leet, number_of_steps_imperative, number_of_steps_naive};
 
 const INPUTS: &[i32] = &[0, 1, 14, 1234, 65_535, 1_000_000, i32::MAX];
 
@@ -31,11 +31,21 @@ fn bench_batch(c: &mut Criterion) {
         });
     });
 
-    group.bench_function("optimized_table_decl", |b| {
+    group.bench_function("number_of_steps_declarative", |b| {
         b.iter(|| {
             let mut total = 0;
             for &n in INPUTS {
                 total += number_of_steps_declarative(black_box(n));
+            }
+            black_box(total)
+        });
+    });
+
+    group.bench_function("number_of_steps_from_leet", |b| {
+        b.iter(|| {
+            let mut total = 0;
+            for &n in INPUTS {
+                total += number_of_steps_from_leet(black_box(n));
             }
             black_box(total)
         });

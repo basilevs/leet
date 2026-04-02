@@ -67,6 +67,13 @@ pub fn number_of_steps_declarative(num: i32) -> i32 {
     (num.count_ones() + (u32::BITS - 1 - num.leading_zeros())) as i32
 }
 
+pub fn number_of_steps_from_leet(num: i32) -> i32 {
+    ( 
+        (u32::BITS as u32 - 1).saturating_sub(num.leading_zeros()) + num.count_ones()
+    ) as i32
+}
+
+
 pub fn number_of_steps_imperative(num: i32) -> i32 {
     let num: usize = num.try_into().expect("Non-negative number expected");
     let b1 = &LOOKUP_TABLE[num & 0xFF];
@@ -115,6 +122,7 @@ mod tests {
         number_of_steps_declarative,
         number_of_steps_imperative,
         number_of_steps_naive,
+        number_of_steps_from_leet,
     };
     const SAMPLES:[i32;12] = [0, 1, 2, 3, 8, 14, 123, 257, 65_535, 83962, i32::MAX-6, i32::MAX];
 
@@ -122,6 +130,13 @@ mod tests {
     fn naive_matches_official_table() {
         for (input, expected) in [(0, 0), (8, 4), (14, 6), (123, 12), (83962, 27)] {
             assert_eq!(expected, number_of_steps_naive(input),  "testing {}", input);
+        }
+    }
+
+    #[test]
+    fn number_of_steps_from_leet_matches_naive() {
+        for i in SAMPLES {
+            assert_eq!(number_of_steps_naive(i), number_of_steps_from_leet(i), "testing {i}");
         }
     }
 
