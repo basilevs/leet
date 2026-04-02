@@ -9,5 +9,5 @@ edition = "2024"
 criterion = "0.5"
 
 [[bench]]
-name = "number_of_steps"
+name = "reduce_steps"
 harness = false

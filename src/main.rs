@@ -1,4 +1,4 @@
 fn main() {
-    let steps = leet::number_of_steps(257);
+    let steps = leet::reduce_steps::number_of_steps(257);
     println!("{steps}");
 }
