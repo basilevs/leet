@@ -3,6 +3,14 @@ name = "leet"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+bench = false
+
+[[bin]]
+name = "leet"
+path = "src/main.rs"
+bench = false
+
 [dependencies]
 
 [dev-dependencies]
