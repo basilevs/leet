@@ -3,21 +3,16 @@ use std::collections::HashMap;
 pub fn can_construct(ransom_note: String, magazine: String) -> bool {
     let ransom_note_letters = count_letters(&ransom_note);
     let magazine_letters = count_letters(&magazine);
-    dbg!(&ransom_note_letters);
-    dbg!(&magazine_letters);
 
-    return ransom_note_letters.iter().all(|(k, v)| {
-        magazine_letters.get(k).map_or(false, |m| {
-            dbg!(m, v);
-            m >= v
-        })
-    });
+    ransom_note_letters
+        .iter()
+        .all(|(ch, needed)| magazine_letters.get(ch).is_some_and(|available| available >= needed))
 }
 
 fn count_letters(text: &str) -> HashMap<char, usize> {
-    let mut result = HashMap::new();
-    for i in text.chars() {
-        result.entry(i).and_modify(|e| *e += 1).or_insert(1usize);
+    let mut result = HashMap::with_capacity(text.len());
+    for ch in text.chars() {
+        *result.entry(ch).or_default() += 1;
     }
     result
 }
