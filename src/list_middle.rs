@@ -17,7 +17,7 @@ impl ListNode {
   }
 }
 
-pub fn middle_node_cloning(mut head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+pub fn middle_node_cloning(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
         let mut slow = &head;
         let mut fast = &head;
         
@@ -44,28 +44,28 @@ pub fn middle_node_counting(mut head: Option<Box<ListNode>>) -> Option<Box<ListN
     head
 }
 
-  #[cfg(test)]
-  fn collect_tail_ptrs(mut node: Option<&ListNode>) -> Vec<*const ListNode> {
-    let mut ptrs = Vec::new();
-    while let Some(current) = node {
-      ptrs.push(current as *const ListNode);
-      node = current.next.as_deref();
-    }
-    ptrs
-  }
+#[cfg(test)]
+fn collect_tail_ptrs(mut node: Option<&ListNode>) -> Vec<*const ListNode> {
+let mut ptrs = Vec::new();
+while let Some(current) = node {
+    ptrs.push(current as *const ListNode);
+    node = current.next.as_deref();
+}
+ptrs
+}
 
-  #[cfg(test)]
-  fn skip_nodes(mut node: Option<&ListNode>, mut skip: usize) -> Option<&ListNode> {
-    while skip > 0 {
-      node = node.and_then(|current| current.next.as_deref());
-      skip -= 1;
-    }
-    node
-  }
+#[cfg(test)]
+fn skip_nodes(mut node: Option<&ListNode>, mut skip: usize) -> Option<&ListNode> {
+while skip > 0 {
+    node = node.and_then(|current| current.next.as_deref());
+    skip -= 1;
+}
+node
+}
 
 #[test]
 fn odd() {
-    let mut head = Box::new(ListNode{ val: 0, next: None });
+    let mut head = Box::new(ListNode::new(0));
     head = Box::new(ListNode{ val: 1, next: Some(head) });
     head = Box::new(ListNode{ val: 2, next: Some(head) });
 
