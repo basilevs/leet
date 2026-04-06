@@ -41,11 +41,11 @@ where
             units => {
                 assert!((1..=9).contains(&units));
                 let units = i8::try_from(units).expect("units are in [1, 9]");
-                let x_change = vx.strict_mul(units);
-                let y_change = vy.strict_mul(units);
+                let x_change = vx * units;
+                let y_change = vy * units;
                 let length = unobstructed_length(x, y, x_change, y_change);
-                x += vx.strict_mul(length as i8) as i32;
-                y += vy.strict_mul(length as i8) as i32;
+                x += (vx * length as i8) as i32;
+                y += (vy * length as i8) as i32;
                 max = max.max(x * x + y * y);
             }
         }
