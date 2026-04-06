@@ -1,5 +1,8 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use leet::reduce_steps::{number_of_steps, number_of_steps_declarative, number_of_steps_from_leet, number_of_steps_imperative, number_of_steps_naive};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use leet::reduce_steps::{
+    number_of_steps, number_of_steps_declarative, number_of_steps_from_leet,
+    number_of_steps_imperative, number_of_steps_naive,
+};
 
 const INPUTS: &[i32] = &[0, 1, 14, 1234, 65_535, 1_000_000, i32::MAX];
 

@@ -4,9 +4,11 @@ pub fn can_construct(ransom_note: String, magazine: String) -> bool {
     let ransom_note_letters = count_letters(&ransom_note);
     let magazine_letters = count_letters(&magazine);
 
-    ransom_note_letters
-        .iter()
-        .all(|(ch, needed)| magazine_letters.get(ch).is_some_and(|available| available >= needed))
+    ransom_note_letters.iter().all(|(ch, needed)| {
+        magazine_letters
+            .get(ch)
+            .is_some_and(|available| available >= needed)
+    })
 }
 
 fn count_letters(text: &str) -> HashMap<char, usize> {

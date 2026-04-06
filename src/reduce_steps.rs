@@ -68,11 +68,8 @@ pub fn number_of_steps_declarative(num: i32) -> i32 {
 }
 
 pub fn number_of_steps_from_leet(num: i32) -> i32 {
-    ( 
-        (u32::BITS as u32 - 1).saturating_sub(num.leading_zeros()) + num.count_ones()
-    ) as i32
+    ((u32::BITS as u32 - 1).saturating_sub(num.leading_zeros()) + num.count_ones()) as i32
 }
-
 
 pub fn number_of_steps_imperative(num: i32) -> i32 {
     let num: usize = num.try_into().expect("Non-negative number expected");
@@ -91,7 +88,7 @@ pub fn number_of_steps_imperative(num: i32) -> i32 {
         acc += b4.most_significant + 24
     } else if b3.has_any > 0 {
         acc += b3.most_significant + 16
-    } else if b2.has_any > 0  {
+    } else if b2.has_any > 0 {
         acc += b2.most_significant + 8
     } else if b1.has_any > 0 {
         acc += b1.most_significant
@@ -99,7 +96,7 @@ pub fn number_of_steps_imperative(num: i32) -> i32 {
     if acc > 0 {
         acc -= 1;
     }
-    
+
     acc as i32
 }
 
@@ -118,42 +115,63 @@ pub fn number_of_steps_naive(mut num: i32) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        number_of_steps,
-        number_of_steps_declarative,
-        number_of_steps_imperative,
-        number_of_steps_naive,
-        number_of_steps_from_leet,
+        number_of_steps, number_of_steps_declarative, number_of_steps_from_leet,
+        number_of_steps_imperative, number_of_steps_naive,
     };
-    const SAMPLES:[i32;12] = [0, 1, 2, 3, 8, 14, 123, 257, 65_535, 83962, i32::MAX-6, i32::MAX];
+    const SAMPLES: [i32; 12] = [
+        0,
+        1,
+        2,
+        3,
+        8,
+        14,
+        123,
+        257,
+        65_535,
+        83962,
+        i32::MAX - 6,
+        i32::MAX,
+    ];
 
     #[test]
     fn naive_matches_official_table() {
         for (input, expected) in [(0, 0), (8, 4), (14, 6), (123, 12), (83962, 27)] {
-            assert_eq!(expected, number_of_steps_naive(input),  "testing {}", input);
+            assert_eq!(expected, number_of_steps_naive(input), "testing {}", input);
         }
     }
 
     #[test]
     fn number_of_steps_from_leet_matches_naive() {
         for i in SAMPLES {
-            assert_eq!(number_of_steps_naive(i), number_of_steps_from_leet(i), "testing {i}");
+            assert_eq!(
+                number_of_steps_naive(i),
+                number_of_steps_from_leet(i),
+                "testing {i}"
+            );
         }
     }
 
     #[test]
     fn number_of_steps3_matches_naive() {
         for i in SAMPLES {
-            assert_eq!(number_of_steps_naive(i), number_of_steps_imperative(i), "testing {i}");
+            assert_eq!(
+                number_of_steps_naive(i),
+                number_of_steps_imperative(i),
+                "testing {i}"
+            );
         }
     }
 
     #[test]
     fn number_of_steps_declarative_matches_naive() {
         for i in SAMPLES {
-            assert_eq!(number_of_steps_naive(i), number_of_steps_declarative(i), "testing {i}");
+            assert_eq!(
+                number_of_steps_naive(i),
+                number_of_steps_declarative(i),
+                "testing {i}"
+            );
         }
     }
-    
 
     #[test]
     fn matches_reference_on_sample_range() {
