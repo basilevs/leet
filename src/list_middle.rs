@@ -7,12 +7,7 @@ pub struct ListNode {
     pub next: Option<Box<ListNode>>,
 }
 
-impl ListNode {
-    #[inline]
-    fn new(val: i32) -> Self {
-        ListNode { next: None, val }
-    }
-}
+impl ListNode {}
 
 pub fn middle_node_cloning(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
     let mut slow = &head;
@@ -22,14 +17,14 @@ pub fn middle_node_cloning(head: Option<Box<ListNode>>) -> Option<Box<ListNode>>
         slow = &slow.as_ref().unwrap().next;
         fast = &fast.as_ref().unwrap().next.as_ref().unwrap().next;
     }
-    return slow.clone();
+    slow.clone()
 }
 
 pub fn middle_node_counting(mut head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
     let mut length = 0usize;
     let mut tail = head.as_ref();
     while tail.is_some() {
-        tail = tail.map(|n| n.next.as_ref()).flatten();
+        tail = tail.and_then(|n| n.next.as_ref());
         length += 1;
     }
     let mut middle_index: usize = length / 2;
@@ -61,7 +56,7 @@ fn skip_nodes(mut node: Option<&ListNode>, mut skip: usize) -> Option<&ListNode>
 
 #[test]
 fn odd() {
-    let mut head = Box::new(ListNode::new(0));
+    let mut head = Box::new(ListNode { val: 0, next: None });
     head = Box::new(ListNode {
         val: 1,
         next: Some(head),

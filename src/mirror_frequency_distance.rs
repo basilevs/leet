@@ -6,12 +6,9 @@ pub fn mirror_frequency(s: String) -> i32 {
     for ch in s.chars() {
         let ch = ch as usize;
         if ch >= letter_start {
-            update(
-                &mut letter_frequencies,
-                ch.strict_sub(letter_start) as usize,
-            );
+            update(&mut letter_frequencies, ch.strict_sub(letter_start));
         } else if ch >= digit_start {
-            update(&mut digit_frequencies, ch.strict_sub(digit_start) as usize);
+            update(&mut digit_frequencies, ch.strict_sub(digit_start));
         }
     }
 
@@ -29,6 +26,7 @@ fn update(frequencies: &mut [i32], index: usize) {
     }
 }
 
+#[cfg(test)]
 fn mirror_frequency_ref(s: &str) -> i32 {
     mirror_frequency(String::from(s))
 }

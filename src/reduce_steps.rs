@@ -51,9 +51,7 @@ pub fn number_of_steps(num: i32) -> i32 {
     acc += b2.count + (b2.most_significant + 8 * b2.has_any) * b3.has_none * b4.has_none;
     acc += b3.count + (b3.most_significant + 16 * b3.has_any) * b4.has_none;
     acc += b4.count + (b4.most_significant + 24 * b4.has_any);
-    if acc > 0 {
-        acc -= 1;
-    }
+    acc = acc.saturating_sub(1);
 
     acc as i32
 }
@@ -68,7 +66,7 @@ pub fn number_of_steps_declarative(num: i32) -> i32 {
 }
 
 pub fn number_of_steps_from_leet(num: i32) -> i32 {
-    ((u32::BITS as u32 - 1).saturating_sub(num.leading_zeros()) + num.count_ones()) as i32
+    ((u32::BITS - 1).saturating_sub(num.leading_zeros()) + num.count_ones()) as i32
 }
 
 pub fn number_of_steps_imperative(num: i32) -> i32 {
@@ -93,9 +91,7 @@ pub fn number_of_steps_imperative(num: i32) -> i32 {
     } else if b1.has_any > 0 {
         acc += b1.most_significant
     }
-    if acc > 0 {
-        acc -= 1;
-    }
+    acc = acc.saturating_sub(1);
 
     acc as i32
 }
@@ -103,7 +99,7 @@ pub fn number_of_steps_imperative(num: i32) -> i32 {
 pub fn number_of_steps_naive(mut num: i32) -> i32 {
     let mut result: i32 = 0;
     while num > 0 {
-        result += (num % 2) as i32;
+        result += num % 2;
         if num > 1 {
             result += 1;
         }

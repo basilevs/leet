@@ -23,3 +23,6 @@ harness = false
 [[bench]]
 name = "robot_sim_874"
 harness = false
+
+[lints.rust]
+warnings = "deny"
