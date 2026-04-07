@@ -55,7 +55,7 @@ pub fn number_of_steps(num: i32) -> i32 {
     acc += b4.count + (b4.most_significant + 24 * b4.has_any);
     acc = acc.saturating_sub(1);
 
-    acc as i32
+    i32::from(acc)
 }
 
 pub fn number_of_steps_declarative(num: i32) -> i32 {
@@ -95,7 +95,7 @@ pub fn number_of_steps_imperative(num: i32) -> i32 {
     }
     acc = acc.saturating_sub(1);
 
-    acc as i32
+    i32::from(acc)
 }
 
 pub fn number_of_steps_naive(mut num: i32) -> i32 {

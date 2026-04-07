@@ -75,8 +75,8 @@ where
                 let x_change = vx * units;
                 let y_change = vy * units;
                 let length = unobstructed_length(x, y, x_change, y_change);
-                x += (vx * length as i8) as i32;
-                y += (vy * length as i8) as i32;
+                x += i32::from(vx * length as i8);
+                y += i32::from(vy * length as i8);
                 max = max.max(x * x + y * y);
             }
         }
@@ -131,8 +131,8 @@ fn naive_unobstructed_length(obstacles: &[Vec<i32>]) -> impl Fn(i32, i32, i8, i8
         let units = (x_change + y_change).abs();
         let mut length = 0u8;
         for _ in 0..units {
-            let next_x = x + vx as i32;
-            let next_y = y + vy as i32;
+            let next_x = x + i32::from(vx);
+            let next_y = y + i32::from(vy);
             if obstacles.iter().any(|o| o[0] == next_x && o[1] == next_y) {
                 break;
             }
