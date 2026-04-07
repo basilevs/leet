@@ -16,7 +16,9 @@ const DEFAULT_BITS: ByteStats = ByteStats {
 const fn compute_stats(mut input: usize) -> ByteStats {
     let mut result: ByteStats = DEFAULT_BITS;
     while input > 0 {
-        result.count += (input % 2) as u8;
+        if input % 2 == 1 {
+            result.count += 1;
+        }
         result.most_significant += 1;
         result.has_any = 1;
         input >>= 1;

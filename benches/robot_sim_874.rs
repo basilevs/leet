@@ -51,7 +51,7 @@ fn bench_path(c: &mut Criterion) {
     c.bench_function("naive", |b| {
         b.iter_batched(
             || (commands.clone(), obstacles.clone()),
-            |d| naive(d.0, d.1),
+            |d| naive(&d.0, &d.1),
             BatchSize::SmallInput,
         );
     });
