@@ -20,10 +20,7 @@ pub fn winner(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     let mut x = 0;
     let mut y = 0;
     let mut max = 0;
-    let obstacles_set: HashSet<(i32, i32)> = obstacles
-        .into_iter()
-        .map(|v| (v[0], v[1]))
-        .collect();
+    let obstacles_set: HashSet<(i32, i32)> = obstacles.into_iter().map(|v| (v[0], v[1])).collect();
 
     for &cmd in commands.iter() {
         if cmd == -2 {
@@ -46,7 +43,6 @@ pub fn winner(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     }
     max
 }
-
 
 /// * unobstructed_length(x, y, x_change, y_change) returns a length of unobstructed path
 fn execute<F>(commands: &Vec<i32>, unobstructed_length: &F) -> i32
@@ -213,8 +209,14 @@ fn free_length_in_sorted(obstacles: &[i32], start: i32, change: i8) -> u8 {
 
 #[cfg(test)]
 fn assert_all_algoritms_result(commands: &Vec<i32>, obstacles: &Vec<Vec<i32>>, result: i32) {
-    assert_eq!(result, execute(&commands, &naive_unobstructed_length(&obstacles)));
-    assert_eq!(result, execute(&commands, &hashed_unobstructed_length(&obstacles)));
+    assert_eq!(
+        result,
+        execute(&commands, &naive_unobstructed_length(&obstacles))
+    );
+    assert_eq!(
+        result,
+        execute(&commands, &hashed_unobstructed_length(&obstacles))
+    );
     assert_eq!(result, naive(&commands, &obstacles));
 }
 
@@ -225,8 +227,8 @@ fn internals() {
 
 #[test]
 fn no_obstacles() {
-    let commands = vec!(4, -1, 3);
-    let obstacles = vec!();
+    let commands = vec![4, -1, 3];
+    let obstacles = vec![];
     assert_all_algoritms_result(&commands, &obstacles, 25);
 }
 
