@@ -6,11 +6,11 @@ pub fn robot_sim(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
 }
 
 pub fn naive_factored(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
-    execute(commands, naive_unobstructed_length(obstacles))
+    execute(&commands, &naive_unobstructed_length(&obstacles))
 }
 
 pub fn hashed(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
-    execute(commands, hashed_unobstructed_length(obstacles))
+    execute(&commands, &hashed_unobstructed_length(&obstacles))
 }
 
 // Fastest solution from LettCode
@@ -49,7 +49,7 @@ pub fn winner(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
 
 
 /// * unobstructed_length(x, y, x_change, y_change) returns a length of unobstructed path
-fn execute<F>(commands: Vec<i32>, unobstructed_length: F) -> i32
+fn execute<F>(commands: &Vec<i32>, unobstructed_length: &F) -> i32
 where
     F: Fn(i32, i32, i8, i8) -> u8,
 {
@@ -74,8 +74,8 @@ where
             }
             // move in facing direction
             units => {
-                assert!((1..=9).contains(&units));
-                let units = i8::try_from(units).expect("units are in [1, 9]");
+                assert!((1..=9).contains(units));
+                let units = i8::try_from(*units).expect("units are in [1, 9]");
                 let x_change = vx * units;
                 let y_change = vy * units;
                 let length = unobstructed_length(x, y, x_change, y_change);
@@ -88,7 +88,7 @@ where
     max
 }
 
-pub fn naive(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
+pub fn naive(commands: &Vec<i32>, obstacles: &Vec<Vec<i32>>) -> i32 {
     // Current position
     let mut x = 0;
     let mut y = 0;
@@ -110,7 +110,7 @@ pub fn naive(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
             }
             // move in facing direction
             units => {
-                for _ in 0..units {
+                for _ in 0..*units {
                     let next_x = x + vx;
                     let next_y = y + vy;
                     if obstacles.iter().any(|o| o[0] == next_x && o[1] == next_y) {
@@ -125,7 +125,7 @@ pub fn naive(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     max
 }
 
-fn naive_unobstructed_length(obstacles: Vec<Vec<i32>>) -> impl Fn(i32, i32, i8, i8) -> u8 {
+fn naive_unobstructed_length(obstacles: &Vec<Vec<i32>>) -> impl Fn(i32, i32, i8, i8) -> u8 {
     move |mut x: i32, mut y: i32, x_change: i8, y_change: i8| {
         let vx = x_change.signum();
         let vy = y_change.signum();
@@ -147,7 +147,7 @@ fn naive_unobstructed_length(obstacles: Vec<Vec<i32>>) -> impl Fn(i32, i32, i8, 
     }
 }
 
-fn hashed_unobstructed_length(obstacles: Vec<Vec<i32>>) -> impl Fn(i32, i32, i8, i8) -> u8 {
+fn hashed_unobstructed_length(obstacles: &Vec<Vec<i32>>) -> impl Fn(i32, i32, i8, i8) -> u8 {
     let mut by_x: HashMap<i32, Vec<i32>> = HashMap::with_capacity(obstacles.len());
     let mut by_y: HashMap<i32, Vec<i32>> = HashMap::with_capacity(obstacles.len());
     for point in obstacles {
@@ -211,30 +211,31 @@ fn free_length_in_sorted(obstacles: &[i32], start: i32, change: i8) -> u8 {
         .unwrap_or(max_length)
 }
 
+#[cfg(test)]
+fn assert_all_algoritms_result(commands: &Vec<i32>, obstacles: &Vec<Vec<i32>>, result: i32) {
+    assert_eq!(result, execute(&commands, &naive_unobstructed_length(&obstacles)));
+    assert_eq!(result, execute(&commands, &hashed_unobstructed_length(&obstacles)));
+    assert_eq!(result, naive(&commands, &obstacles));
+}
+
 #[test]
 fn internals() {
     assert_eq!(1, free_length_in_sorted([2].as_slice(), 0, 4))
 }
+
 #[test]
 fn no_obstacles() {
-    assert_eq!(25, naive([4, -1, 3].into(), [].into()));
-    assert_eq!(25, naive_factored([4, -1, 3].into(), [].into()));
-    assert_eq!(25, hashed([4, -1, 3].into(), [].into()));
+    let commands = vec!(4, -1, 3);
+    let obstacles = vec!();
+    assert_all_algoritms_result(&commands, &obstacles, 25);
 }
 
 #[test]
 fn east_obstacle() {
-    assert_eq!(65, hashed([4, -1, 4, -2, 4].into(), [[2, 4].into()].into()));
-    assert_eq!(65, naive([4, -1, 4, -2, 4].into(), [[2, 4].into()].into()));
-    assert_eq!(
-        65,
-        naive_factored([4, -1, 4, -2, 4].into(), [[2, 4].into()].into())
-    );
+    assert_all_algoritms_result(&[4, -1, 4, -2, 4].into(), &[[2, 4].into()].into(), 65);
 }
 
 #[test]
 fn up_down() {
-    assert_eq!(16, naive([4, -1, -1, 4].into(), [].into()));
-    assert_eq!(16, naive_factored([4, -1, -1, 4].into(), [].into()));
-    assert_eq!(16, hashed([4, -1, -1, 4].into(), [].into()));
+    assert_all_algoritms_result(&[4, -1, -1, 4].into(), &[].into(), 16);
 }
