@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main, BatchSize};
-use leet::robot_sim_874::{hashed, naive, naive_factored};
+use leet::robot_sim_874::{hashed, naive, naive_factored, winner};
 const COMMANDS:[i32; 100] = [5, -1, 6, 8, 3, 2, 8, 8, 5, 4, 6, 2, -2, 4, 7, 7, 3, -1, 5, 9, -1, 8, 1, 7, 5, 6, 8, 5, 4, 4, 2, -2, 4, 6, 3, 2, 4, 4, 7, 9, -1, 9, -2, 7, 5, 2, 8, 5, 3, 5, 1, -1, 9, -1, 8, -1, 9, 1, -2, -1, 8, -1, 5, 8, 6, 7, 6, 3, -2, -2, 6, 7, -2, 5, 6, -2, -1, 7, 6, -1, 2, -1, 3, 4, 9, 5, 7, 7, 8, -1, 8, 2, -2, 3, 2, 1, -2, 4, 7, 3];
 
 
@@ -19,6 +19,10 @@ fn bench_path(c: &mut Criterion) {
 
     c.bench_function("hashed", |b| {
         b.iter_batched(|| (commands.clone(), obstacles.clone()), |d| hashed(d.0, d.1), BatchSize::SmallInput);
+    } );
+
+    c.bench_function("winner", |b| {
+        b.iter_batched(|| (commands.clone(), obstacles.clone()), |d| winner(d.0, d.1), BatchSize::SmallInput);
     } );
 }
 
