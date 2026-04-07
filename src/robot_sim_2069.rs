@@ -2,6 +2,7 @@
 #[allow(dead_code)]
 #[derive(Debug)]
 struct Robot {
+    moved: bool,
     position: i32,
     width: i32,
     height: i32,
@@ -22,10 +23,11 @@ enum Direction {
 impl Robot {
 
     fn new(width: i32, height: i32) -> Self {
-        Robot {position: 0, width: width, height: height}
+        Robot {moved: false, position: 0, width: width, height: height}
     }
     
     fn step(&mut self, num: i32) {
+        self.moved = true;
         let perimeter = 2 * (self.width + self.height - 2);
         self.position = (self.position + num) % perimeter;
         debug_assert!((0..self.width).contains(&self.get_pos()[0]), "position: {}", self.position);
@@ -40,13 +42,17 @@ impl Robot {
                 (self.position, 0)
             }
             Direction::North => {
-                (self.width - 1, self.position % self.bottom_right_index())
+                (self.width - 1, self.position - self.bottom_right_index())
             }
             Direction::West => {
-                (self.width - 1 - (self.position % self.top_right_index()), self.height - 1)
+                (self.width - 1 - (self.position - self.top_right_index()), self.height - 1)
             }
             Direction::South => {
-                (0, self.height - 1 - (self.position % self.top_left_index()))
+                if self.position == 0 {
+                    (0, 0)
+                } else {
+                    (0, self.height - 1 - (self.position - self.top_left_index()))
+                }
             }
         };
         vec!(x, y)
@@ -56,6 +62,13 @@ impl Robot {
         let half_perimeter = self.width + self.height - 2;
         assert!(self.position < 2 * half_perimeter);
         match self.position {
+            p if p == 0 => {
+                if self.moved {
+                    Direction::South    
+                } else {
+                    Direction::East    
+                }
+            }
             p if p <= self.bottom_right_index() => {
                 Direction::East
             }
@@ -172,4 +185,28 @@ fn error6() {
     robot.step(32);
     assert_eq!(vec!(0, 2), robot.get_pos());
     assert_eq!("South", robot.get_dir().as_str());
+}
+
+#[test]
+fn error7() {
+    let mut robot = Robot::new(8, 2); 
+    // Perimeter: 16
+    robot.step(14);
+    assert_eq!(vec!(1, 1), robot.get_pos());
+    assert_eq!("West", robot.get_dir().as_str());
+    robot.step(2);
+    assert_eq!(vec!(0, 0), robot.get_pos());
+    assert_eq!("South", robot.get_dir().as_str());
+}
+
+#[test]
+fn error8() {
+    let mut robot = Robot::new(2, 9); 
+    // Perimeter: 18
+    robot.step(12);
+    assert_eq!(vec!(0, 6), robot.get_pos());
+    assert_eq!("South", robot.get_dir().as_str());
+    robot.step(32);
+    assert_eq!(vec!(1, 7), robot.get_pos());
+    assert_eq!("North", robot.get_dir().as_str());
 }
