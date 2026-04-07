@@ -1,19 +1,23 @@
 use std::collections::{HashMap, HashSet};
 
 /// https://leetcode.com/problems/walking-robot-simulation
+#[must_use]
 pub fn robot_sim(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     hashed(commands, obstacles)
 }
 
+#[must_use]
 pub fn naive_factored(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     execute(&commands, &naive_unobstructed_length(&obstacles))
 }
 
+#[must_use]
 pub fn hashed(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     execute(&commands, &hashed_unobstructed_length(&obstacles))
 }
 
 // Fastest solution from LettCode
+#[must_use]
 pub fn winner(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     let dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)];
     let mut dir = 0;
@@ -84,6 +88,7 @@ where
     max
 }
 
+#[must_use]
 pub fn naive(commands: &[i32], obstacles: &[Vec<i32>]) -> i32 {
     // Current position
     let mut x = 0;

@@ -2,6 +2,7 @@
     "chat.tools.terminal.autoApprove": {
         "cargo build": true,
         "cargo fmt": true,
-        "true": true
+        "true": true,
+        "uniq": true
     }
 }

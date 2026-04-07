@@ -1,3 +1,4 @@
+#[must_use]
 pub fn mirror_frequency(s: String) -> i32 {
     let mut letter_frequencies = [0; 13];
     let mut digit_frequencies = [0; 5];

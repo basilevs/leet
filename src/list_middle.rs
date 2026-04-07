@@ -9,6 +9,7 @@ pub struct ListNode {
 
 impl ListNode {}
 
+#[must_use]
 pub fn middle_node_cloning(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
     let mut slow = &head;
     let mut fast = &head;
@@ -20,6 +21,7 @@ pub fn middle_node_cloning(head: Option<Box<ListNode>>) -> Option<Box<ListNode>>
     slow.clone()
 }
 
+#[must_use]
 pub fn middle_node_counting(mut head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
     let mut length = 0usize;
     let mut tail = head.as_ref();

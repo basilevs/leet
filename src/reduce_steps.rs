@@ -41,6 +41,7 @@ const fn generate_table() -> [ByteStats; 256] {
 
 const LOOKUP_TABLE: [ByteStats; 256] = generate_table();
 
+#[must_use]
 pub fn number_of_steps(num: i32) -> i32 {
     let num: usize = num.try_into().expect("Non-negative number expected");
     let b1 = &LOOKUP_TABLE[num & 0xFF];
@@ -58,6 +59,7 @@ pub fn number_of_steps(num: i32) -> i32 {
     i32::from(acc)
 }
 
+#[must_use]
 pub fn number_of_steps_declarative(num: i32) -> i32 {
     let num: u32 = num.try_into().expect("Non-negative number expected");
     if num == 0 {
@@ -67,10 +69,12 @@ pub fn number_of_steps_declarative(num: i32) -> i32 {
     (num.count_ones() + (u32::BITS - 1 - num.leading_zeros())) as i32
 }
 
+#[must_use]
 pub fn number_of_steps_from_leet(num: i32) -> i32 {
     ((u32::BITS - 1).saturating_sub(num.leading_zeros()) + num.count_ones()) as i32
 }
 
+#[must_use]
 pub fn number_of_steps_imperative(num: i32) -> i32 {
     let num: usize = num.try_into().expect("Non-negative number expected");
     let b1 = &LOOKUP_TABLE[num & 0xFF];
@@ -98,6 +102,7 @@ pub fn number_of_steps_imperative(num: i32) -> i32 {
     i32::from(acc)
 }
 
+#[must_use]
 pub fn number_of_steps_naive(mut num: i32) -> i32 {
     let mut result: i32 = 0;
     while num > 0 {
