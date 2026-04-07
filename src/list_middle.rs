@@ -10,6 +10,7 @@ pub struct ListNode {
 impl ListNode {}
 
 #[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn middle_node_cloning(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
     let mut slow = &head;
     let mut fast = &head;

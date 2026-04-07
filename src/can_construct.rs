@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 #[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn can_construct(ransom_note: String, magazine: String) -> bool {
     let ransom_note_letters = count_letters(&ransom_note);
     let magazine_letters = count_letters(&magazine);

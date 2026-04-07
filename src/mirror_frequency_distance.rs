@@ -1,4 +1,5 @@
 #[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn mirror_frequency(s: String) -> i32 {
     let mut letter_frequencies = [0; 13];
     let mut digit_frequencies = [0; 5];

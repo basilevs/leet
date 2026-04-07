@@ -7,11 +7,13 @@ pub fn robot_sim(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
 }
 
 #[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn naive_factored(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     execute(&commands, &naive_unobstructed_length(&obstacles))
 }
 
 #[must_use]
+#[allow(clippy::needless_pass_by_value)]
 pub fn hashed(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     execute(&commands, &hashed_unobstructed_length(&obstacles))
 }
@@ -26,7 +28,7 @@ pub fn winner(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     let mut max = 0;
     let obstacles_set: HashSet<(i32, i32)> = obstacles.into_iter().map(|v| (v[0], v[1])).collect();
 
-    for &cmd in commands.iter() {
+    for cmd in commands {
         if cmd == -2 {
             dir = (dir + 3) % 4;
         } else if cmd == -1 {
