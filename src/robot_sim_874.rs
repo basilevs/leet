@@ -187,23 +187,32 @@ fn unobstructed_length_along_axis(
 fn free_length_in_sorted(obstacles: &[i32], start: i32, change: i8) -> u8 {
     assert_ne!(0, change);
     assert!((-9..=9).contains(&change));
+    debug_assert!(i32::try_from(obstacles.len()).is_ok(), "obstacle slice length fits i32");
     let sign = change.signum();
     debug_assert!(obstacles.is_sorted());
     let max_length = change.unsigned_abs();
     let next_obstacle = match obstacles.binary_search(&start) {
-        Ok(exact_index) => obstacles.get((exact_index as i32 + sign as i32) as usize),
+        Ok(exact_index) => {
+            let neighbour =
+                i32::try_from(exact_index).expect("obstacle index fits i32") + i32::from(sign);
+            usize::try_from(neighbour)
+                .ok()
+                .and_then(|i| obstacles.get(i))
+        }
         Err(insertion_index) => {
             let shift: i32 = if sign > 0 { 0 } else { -1 };
-            let obstacle_index = insertion_index as i32 + shift;
-            if obstacle_index < 0 {
-                None
-            } else {
-                obstacles.get(obstacle_index as usize)
-            }
+            let obstacle_index =
+                i32::try_from(insertion_index).expect("insertion index fits i32") + shift;
+            usize::try_from(obstacle_index)
+                .ok()
+                .and_then(|i| obstacles.get(i))
         }
     };
     next_obstacle
-        .map(|o| ((o - start).abs() - 1).min(max_length as i32) as u8)
+        .map(|o| {
+            u8::try_from(((o - start).abs() - 1).min(i32::from(max_length)))
+                .expect("free length is bounded by max_length which is u8")
+        })
         .unwrap_or(max_length)
 }
 
