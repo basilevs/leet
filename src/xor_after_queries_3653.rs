@@ -1,23 +1,8 @@
-use std::{collections::{BTreeMap, HashMap}, ops::RangeInclusive, sync::Arc, thread::{self, JoinHandle}};
+use std::{collections::{HashMap}, ops::RangeInclusive, sync::Arc, thread::{self, JoinHandle}};
 
 const M: i64 = 10i64.pow(9) + 7;
 pub fn xor_after_queries(mut nums: Vec<i32>, queries: Vec<Vec<i32>>) -> i32 {
-    for query in queries.into_iter() {
-        let &[l, r, k, v] = query.as_slice() else {
-            panic!("All queries are expected to consist of 4 integers");
-        };
-        let l = usize::try_from(l).expect("expected 0 <= l <= r");
-        let r = usize::try_from(r).expect("expected 0 <= r < n");
-        let k = usize::try_from(k).expect("expected 1 <= k <= n");
-        let v = i64::from(v);
-        for idx in (l..=r).step_by(k) {
-            let num = &mut nums[idx];
-            let temp = (i64::from(*num) * v) % M;
-            // dbg!(&idx, &num, &v, &temp);
-            *num = temp.try_into().expect("Narrowing can not happen for a number that is a modulo of M");
-        }
-    }
-    nums.into_iter().reduce(|a, b| a ^ b).unwrap_or(0)
+    xor_after_queries_chunked(&mut nums, remove_overlaps(vector_to_query_vector(queries)))
 }
 
 pub fn xor_after_queries_unchecked(mut nums: Vec<i32>, queries: Vec<Vec<i32>>) -> i32 {
@@ -47,32 +32,42 @@ pub fn apply_query(nums: &mut [i32], l: usize, r: usize, k:usize, v: i32) {
     }
 }
 
-pub fn process_chunk(nums: &mut [i32], start: usize, queries: &[Vec<i32>]) -> i32 {
+fn process_chunk(nums: &mut [i32], start: usize, queries: &[Query]) -> i32 {
     for query in queries {
-        let (l, r, k, v) = {
-            (
-                query[0] as usize,
-                query[1] as usize,
-                query[2] as usize,
-                query[3],
-            )
-        };
-        let Some(r) = r.checked_sub(start) else {
+        let Some(r) = query.key.range.end().checked_sub(start) else {
             continue;
         };
-        if l >= start + nums.len() {
+        let l = query.key.range.start();
+        if *l >= start + nums.len() {
             continue;
         }
+        let k = query.key.step;
         let l = l.checked_sub(start).unwrap_or((k + l % k - start % k) % k);
-        apply_query(nums, l, r, k, v);
+        apply_query(nums, l, r, k, query.value);
     }
     nums.into_iter().fold(0, |a, b| a ^ *b)
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct Key {
     range: RangeInclusive<usize>,
     step: usize,
+}
+
+impl Key {
+    fn as_singleton(&self) -> Option<Key> {
+        if self.range.start() + self.step > *self.range.end() {
+            Some(Key {range: *self.range.start()..=*self.range.start(), step: 1})
+        } else {
+            None
+        }
+    }
+}
+impl From<&[i32]> for Key {
+    fn from(query: &[i32]) -> Key {
+        assert!(query[0] <= query[1]);
+        Key { range: query[0] as usize ..= query[1] as usize, step: query[2] as usize}
+    }
 }
 
 impl PartialOrd for Key {
@@ -91,106 +86,124 @@ impl Ord for Key {
     }
 }
 
+#[derive(Clone, Debug)]
 struct Query {
     key: Key,
     value: i32
 }
 
 impl Query {
-    fn move
+    fn from(input: &[i32]) -> Query {
+        Query {key: Key::from(input), value: input[3]}
+    }
+    fn update(&mut self, value: i32) {
+        self.value = ((self.value as i64 * value as i64) % M) as i32;
+    }
+    fn as_singleton(&self) -> Option<Query> {
+        self.key.as_singleton().map(|k| Query {key: k, value: self.value})
+    }
+    // Move compatible part of input parameter, updating self, leaving sleftovers.
+    fn steal(&mut self, that: &mut Query) -> bool {
+        if self.key.step != that.key.step {
+            return false;
+        }
+        if self.value == 1 {
+            return false;
+        }
+        if that.value == 1 {
+            return false;
+        }
+        if self.key.range.start() % self.key.step != that.key.range.start() % self.key.step {
+            return false;
+        }
+        if !self.key.range.contains(&that.key.range.start()) && !self.key.range.contains(&that.key.range.end()) {
+            return false;
+        }
+        if self.key.range == that.key.range {
+            self.update(that.value);
+            that.value = 1;
+            return true;
+        }
+        if that.key.range.start() < self.key.range.start() && that.key.range.end() == self.key.range.end() { 
+            self.update(that.value);
+            that.key.range = *that.key.range.start()..=(self.key.range.start()-1);
+            return true;
+        }
+
+        if that.key.range.end() > self.key.range.end() && that.key.range.start() == self.key.range.start() { 
+            self.update(that.value);
+            let range = next_mod_base(self.key.range.end() + 1, *self.key.range.start(), self.key.step)..=*that.key.range.end();
+            if range.end() < range.start() {
+                that.value = 1;
+            } else {
+                assert!(range.start() <= range.end());
+                that.key.range = range;
+            }
+            return true;
+        }
+        false
+    }
+
 }
 
+fn next_mod_base(after: usize, base: usize, modulo: usize) -> usize {
+    after + modulo - (after + base) % modulo
+}
 
 fn remove_overlaps(queries: Vec<Query>) -> Vec<Query> {
-    let mut by_step:HashMap<usize, Vec<Query>> = HashMap::with_capacity(queries.len());
+    let mut by_step:HashMap<usize, Vec<Query>> = HashMap::new();
     for i in queries {
         by_step.entry(i.key.step).or_insert_with(|| vec!()).push(i);
     }
+    let mut singletons = by_step.remove(&1).unwrap_or(vec!());
     for same_step_queries in by_step.values_mut() {
-        *same_step_queries = remove_overlaps(same_step_queries);
-    }
-    by_step.into_values().flatten().collect()
-}
-
-fn remove_overlaps(queries: Vec<Query>) -> Vec<Query> {
-    let mut result:BTreeMap<Key, Query> = BTreeMap::new();
-    for i in queries {
-        let neigbours: Vec<(&Key, &mut Query)> = result.range_mut(&i.key..&i.key.upper_bound()).collect();
-        assert!(neigbours.len() <= 2);
-        i.
-
-        // let previous = result.lower_bound(i.key);
-        // result.entry((i.key.l, i.key.r)).or_insert_with(default)
-    }
-    result.into_values().collect()
-}
-
-const NEIGHBOUR_LIST: [(i8, i8); 2] = [(1,0), (0, -1) ];
-
-impl Key {
-    fn from(query: &Vec<i32>) -> Key {
-        assert!(query[0] <= query[1]);
-        Key {l: query[0] as usize, r: query[1] as usize, k: query[2] as usize}
-    }
-
-    fn upper_bound(&self) -> Key {
-        Key {range: RangeInclusive::new(self.range.end()+1, self.range.end() + 1), step: self.step}
-    }
-
-    fn len(&self) -> usize {
-        (self.r - self.l) / self.k
-    }
-
-    fn decompose(&self) -> impl Iterator<'_, Item = (Key, Key)> {
-        if self.len() < 3 {
-            return [].iter();
+        while remove_overlaps_within_step(same_step_queries) {
+            singletons.append(&mut remove_singletons(same_step_queries));
         }
-        NEIGHBOUR_LIST.iter().flat_map(|n| self.neighbour(n).iter())
     }
-    
-    fn neighbour(&self, n: &(i8, i8)) -> Option<(Key, Key)> {
-            let Some(l_large) = self.l.checked_add_signed(isize::from(n.0) * self.k as isize) else {
-                return None;
-            };
-            let Some(r_large) = self.l.checked_add_signed(isize::from(n.1) * self.k as isize) else {
-                return None;
-            };
-            if l_large > r_large {
-                return None
-            }
-            let difference = if self.l != l_large { self.l } else {self.r};
-            let large = Key {l: l_large, r: r_large, k: self.k};
-            let small = Key {l: difference, r:difference, k : 1};
-            assert_eq!(self.len(), large.len() + small.len());
-            assert_eq!(1, small.len());
-            Some((large, small))
-    }
-
+    remove_overlaps_within_step(&mut singletons);
+    singletons.append(&mut by_step.into_values().flatten().collect());
+    singletons
 }
 
-
-
-pub fn optimize_queries(queries: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
-    let mut by_address:HashMap<Key, i64> = HashMap::with_capacity(queries.len());
-    'query_loop: for i in queries {
-        let key = Key::from(&i);
-        let value = i[3];
-
-        for candidate in key.decompose() {
-            if let Some(v) = by_address.get_mut(&candidate.0) {
-                *v = (*v as i64 * value as i64) % M;
-                let v = by_address.entry(candidate.1).or_insert(1);
-                *v = (*v as i64 * value as i64) % M;
-                continue 'query_loop;
-            }
+fn remove_singletons(queries: &mut Vec<Query>) -> Vec<Query> {
+    let mut result = vec!();
+    queries.retain(|i| {
+        if let Some(candidate) = i.as_singleton() {
+            result.push(candidate);
+            false
+        } else {
+            true
         }
-        let v = by_address.entry(key).or_insert(1);
-        *v = (*v as i64 * i[3] as i64) % M;
-    }
-    by_address.into_iter().map(|(k, v)| vec!(k.l as i32, k.r as i32, k.k as i32, v as i32)).collect()
+    });
+    result
 }
 
-pub fn xor_after_queries_chunked(nums: &mut [i32], queries: Vec<Vec<i32>>) -> i32 {
+fn remove_overlaps_within_step(queries: &mut Vec<Query>) -> bool {
+    let mut result = false;
+    queries.retain(|q| q.value != 1);
+    queries.sort_by(|q1, q2| q1.key.range.end().cmp(&q2.key.range.end()));
+    result |= steal_in_order(queries);
+    queries.sort_by(|q1, q2| q1.key.range.start().cmp(&q2.key.range.start()));
+    result |= steal_in_order(queries);
+    result
+}
+
+fn steal_in_order(queries: &mut Vec<Query>) -> bool {
+    if queries.len() <= 1 {
+        return false;
+    }
+    let mut result = false;
+    for i in 0..(queries.len()-1) {
+        let mut next = queries.get(i+1).expect("unexpected OOB").clone();
+        result |= queries.get_mut(i).expect("unexpected OOB") .steal(&mut next);
+        queries[i+1] = next;
+    }
+    queries.retain(|q| q.value != 1);
+    result
+}
+
+fn xor_after_queries_chunked(nums: &mut [i32], queries: Vec<Query>) -> i32 {
     let mut start_index = 0;
     let mut result = 0;
     let queries = Arc::new(queries);
@@ -239,44 +252,58 @@ pub fn xor_after_queries_sliced(nums: &mut [i32], queries: &[Vec<i32>]) -> i32 {
 fn official1() {
     let input = [1, 1, 1];
     let queries = [[0, 2, 1, 4]];
-
-    assert_eq!(4, xor_after_queries(Vec::from(input), to_vector(&queries)));
-    assert_eq!(4, xor_after_queries_unchecked(Vec::from(input), to_vector(&queries)));
-    assert_eq!(4, xor_after_queries_chunked(Vec::from(input).as_mut_slice(), to_vector(&queries)));
+    run_all_algorithms(&input, &queries, 4);
 }
 #[test]
 fn official2() {
     let input = [2, 3, 1, 5, 4];
     let queries = [[1, 4, 2, 3], [0, 2, 1, 2]];
-    assert_eq!(31, xor_after_queries_chunked(&mut input.clone(), to_vector(&queries)));
-    assert_eq!(
-        31,
-        xor_after_queries(
-            Vec::from(input),
-            to_vector(&queries)
-        )
-    );
-    assert_eq!(
-        31,
-        xor_after_queries_unchecked(
-            Vec::from(input),
-            to_vector(&queries)
-        )
-    );
-    assert_eq!(31, xor_after_queries_sliced(&mut input.clone(), to_vector(&queries).as_slice()));
+    run_all_algorithms(&input, &queries, 31);
 }
 
 #[test]
 fn error1() {
     let queries = [[0,0,1,13],[0,0,1,17],[0,0,1,9],[0,0,1,18],[0,0,1,16],[0,0,1,6],[0,0,1,4],[0,0,1,11],[0,0,1,7],[0,0,1,18],[0,0,1,8],[0,0,1,15],[0,0,1,12]];
-    assert_eq!(523618060, xor_after_queries(vec!(780), to_vector(&queries)));
-    assert_eq!(523618060, xor_after_queries_unchecked(vec!(780), to_vector(&queries)));
-    assert_eq!(523618060, xor_after_queries_sliced(&mut [780], to_vector(&queries).as_slice()));
-    assert_eq!(523618060, xor_after_queries_chunked(&mut [780], to_vector(&queries)));
-    assert_eq!(523618060, xor_after_queries_chunked(&mut [780], optimize_queries(to_vector(&queries))));
+    run_all_algorithms(&[780], &queries, 523618060);
+}
+
+#[test]
+fn error2() {
+    let queries = [[0,1,2,7],[1,1,2,11],[0,1,2,2],[1,1,1,11],[1,1,2,1],[0,0,1,9],[0,1,2,4],[1,1,1,6],[0,0,2,17]];
+    run_all_algorithms(&[562,62], &queries, 4839076);
+}
+
+#[test]
+fn optimize_error1() {
+    let queries = [[0,1,2,7],[1,1,2,11],[0,1,2,2],[1,1,1,11],[1,1,2,1],[0,0,1,9],[0,1,2,4],[1,1,1,6],[0,0,2,17]];
+    let nums = [562,62];
+    let queries = to_query_vector(&queries);
+    let optimized = remove_overlaps(queries.clone());
+    dbg!(&queries, &optimized, process_chunk(&mut vec!(0, 1), 0, &queries), process_chunk(&mut vec!(0, 1), 0, &optimized));
+    let actual = process_chunk(&mut Vec::from(nums), 0, &optimized);
+    let expected = process_chunk(&mut Vec::from(nums), 0, &queries);
+    assert_eq!(expected, actual);
 }
 
 #[cfg(test)]
-fn to_vector<const SIZE: usize>(input: &[[i32; 4]; SIZE]) -> Vec<Vec<i32>> {
+fn run_all_algorithms(nums: &[i32], queries: &[[i32; 4]], expected: i32) {
+    assert_eq!(expected, xor_after_queries_unchecked(Vec::from(nums), to_vector(&queries)));
+    assert_eq!(expected, xor_after_queries_sliced(&mut Vec::from(nums), to_vector(&queries).as_slice()));
+    assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), to_query_vector(&queries)));
+    assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), remove_overlaps(to_query_vector(&queries))));
+    assert_eq!(expected, xor_after_queries(Vec::from(nums), to_vector(queries)));
+}
+
+#[cfg(test)]
+fn to_vector(input: &[[i32; 4]]) -> Vec<Vec<i32>> {
     input.iter().map(Vec::from).collect()
+}
+
+#[cfg(test)]
+fn to_query_vector(input: &[[i32; 4]]) -> Vec<Query> {
+    input.iter().map(|v| Query::from(v)).collect()
+}
+
+fn vector_to_query_vector(input: Vec<Vec<i32>>) -> Vec<Query> {
+    input.iter().map(|v| Query::from(v)).collect()
 }
