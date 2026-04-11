@@ -45,7 +45,7 @@ fn process_chunk(nums: &mut [i32], start: usize, queries: &[Query]) -> i32 {
         let l = l.checked_sub(start).unwrap_or((k + l % k - start % k) % k);
         apply_query(nums, l, r, k, query.value);
     }
-    nums.into_iter().fold(0, |a, b| a ^ *b)
+    nums.iter_mut().fold(0, |a, b| a ^ *b)
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]

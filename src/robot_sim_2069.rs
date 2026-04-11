@@ -23,7 +23,7 @@ enum Direction {
 impl Robot {
 
     fn new(width: i32, height: i32) -> Self {
-        Robot {moved: false, position: 0, width: width, height: height}
+        Robot {moved: false, position: 0, width, height}
     }
     
     fn step(&mut self, num: i32) {
@@ -62,7 +62,7 @@ impl Robot {
         let half_perimeter = self.width + self.height - 2;
         assert!(self.position < 2 * half_perimeter);
         match self.position {
-            p if p == 0 => {
+            0 => {
                 if self.moved {
                     Direction::South    
                 } else {
