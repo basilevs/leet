@@ -1,20 +1,36 @@
-use std::array;
+use std::{iter::repeat_with};
+
+struct Queue {
+    elements: [u32; 2],
+    len: u8,
+}
+
+impl Queue {
+    fn new() -> Queue {
+        Queue { elements: [0,0], len: 0 }
+    }
+    fn push_and_compute_distance(&mut self, candidate: u32) -> Option<i32>{
+        if self.len < 2 {
+            self.elements[self.len as usize] = candidate;
+            self.len += 1;
+            None
+        } else {
+            let i = self.elements[0];
+            let j = self.elements[1];
+            let k = candidate;
+            self.elements[0] = j;
+            self.elements[1] = k;
+            Some((i.abs_diff(j) + j.abs_diff(k) + k.abs_diff(i)).try_into().expect("Distance is too large"))
+        }
+    }
+}
 
 pub fn minimum_distance(nums: Vec<i32>) -> i32 {
-    let mut last: [Vec<usize>; 100] = array::from_fn(|_| Vec::with_capacity(2));
-    (0..nums.len()).map(|k| {
-        let value = nums[k];
-        let indices = last.get_mut((value-1) as usize).expect("value is greater than 100");
-        if indices.len() < 2 {
-            indices.push(k);
-            return None
-        }
-        let i = indices[0];
-        let j = indices[1];
-        let d = (i.abs_diff(j) + j.abs_diff(k) + k.abs_diff(i)).try_into().expect("Distance is too large");
-        indices.remove(0);
-        indices.push(k);
-        Some(d)
+    let mut last: Vec<Queue> = repeat_with(&Queue::new).take(nums.len()).collect();
+    nums.into_iter().enumerate().map(|(i, value)| {
+        let i = i as u32; // less than 10^5
+        let indices = last.get_mut((value-1) as usize).expect("value is greater than input length");
+        indices.push_and_compute_distance(i)
     }).flatten().min().unwrap_or(-1)
 }
 
