@@ -27,11 +27,11 @@ impl Queue {
 
 pub fn minimum_distance(nums: Vec<i32>) -> i32 {
     let mut last: Vec<Queue> = repeat_with(&Queue::new).take(nums.len()).collect();
-    nums.into_iter().enumerate().map(|(i, value)| {
+    nums.into_iter().enumerate().filter_map(|(i, value)| {
         let i = i as u32; // less than 10^5
         let indices = last.get_mut((value-1) as usize).expect("value is greater than input length");
         indices.push_and_compute_distance(i)
-    }).flatten().min().unwrap_or(-1)
+    }).min().unwrap_or(-1)
 }
 
 #[test]

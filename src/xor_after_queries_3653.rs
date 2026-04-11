@@ -71,22 +71,6 @@ impl From<&[i32]> for Key {
     }
 }
 
-impl PartialOrd for Key {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        if self.step != other.step {
-            return None
-        }
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Key {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        assert_eq!(self.step, other.step);
-        self.range.start().cmp(other.range.start()).then(self.range.end().cmp(other.range.end()))
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 struct Query {
     key: Key,
@@ -117,7 +101,7 @@ impl Query {
         if self.key.range.start() % self.key.step != that.key.range.start() % self.key.step {
             return false;
         }
-        if !self.key.range.contains(&that.key.range.start()) && !self.key.range.contains(&that.key.range.end()) {
+        if !self.key.range.contains(that.key.range.start()) && !self.key.range.contains(that.key.range.end()) {
             return false;
         }
         if self.key.range == that.key.range {
@@ -170,7 +154,7 @@ fn next_mod_base(after_excluding: usize, base: usize, modulo: usize) -> usize {
 fn remove_overlaps(queries: Vec<Query>) -> Vec<Query> {
     let mut by_step:HashMap<usize, Vec<Query>> = HashMap::new();
     for i in queries {
-        by_step.entry(i.key.step).or_insert_with(|| vec!()).push(i);
+        by_step.entry(i.key.step).or_default().push(i);
     }
     let mut singletons = by_step.remove(&1).unwrap_or(vec!());
     for same_step_queries in by_step.values_mut() {
@@ -201,9 +185,9 @@ where
 fn remove_overlaps_within_step(queries: &mut Vec<Query>) -> bool {
     let mut result = false;
     queries.retain(|q| q.value != 1);
-    queries.sort_by(|q1, q2| q1.key.range.end().cmp(&q2.key.range.end()));
+    queries.sort_by(|q1, q2| q1.key.range.end().cmp(q2.key.range.end()));
     result |= steal_in_order(queries);
-    queries.sort_by(|q1, q2| q1.key.range.start().cmp(&q2.key.range.start()));
+    queries.sort_by(|q1, q2| q1.key.range.start().cmp(q2.key.range.start()));
     result |= steal_in_order(queries);
     result
 }
@@ -273,7 +257,7 @@ pub fn xor_after_queries_sliced(nums: &mut [i32], queries: &[Vec<i32>]) -> i32 {
         };
         apply_query(nums, l, r, k, v);
     }
-    nums.into_iter().fold(0, |a, b| a ^ *b)
+    nums.iter().fold(0, |a, b| a ^ *b)
 }
 
 
