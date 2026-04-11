@@ -160,7 +160,11 @@ impl From<[i32; 4]> for Query {
 
 
 fn next_mod_base(after_excluding: usize, base: usize, modulo: usize) -> usize {
-    after_excluding + modulo - (after_excluding + base) % modulo
+    let result = after_excluding + modulo - (after_excluding - base) % modulo;
+    dbg!(after_excluding, base, modulo, result);
+    assert_eq!(base % modulo, result % modulo);
+    assert!(result > after_excluding);
+    result
 }
 
 fn remove_overlaps(queries: Vec<Query>) -> Vec<Query> {
