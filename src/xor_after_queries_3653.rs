@@ -161,7 +161,7 @@ impl From<[i32; 4]> for Query {
 
 fn next_mod_base(after_excluding: usize, base: usize, modulo: usize) -> usize {
     let result = after_excluding + modulo - (after_excluding - base) % modulo;
-    dbg!(after_excluding, base, modulo, result);
+    // dbg!(after_excluding, base, modulo, result);
     assert_eq!(base % modulo, result % modulo);
     assert!(result > after_excluding);
     result
@@ -179,7 +179,7 @@ fn remove_overlaps(queries: Vec<Query>) -> Vec<Query> {
             remove_singletons_into(same_step_queries, &mut singletons);
         }
     }
-    remove_overlaps_within_step(&mut singletons);
+    while remove_overlaps_within_step(&mut singletons) {}
     singletons.extend(by_step.into_values().flatten());
     singletons
 }
@@ -213,13 +213,20 @@ fn steal_in_order(queries: &mut Vec<Query>) -> bool {
         return false;
     }
     let mut result = false;
-    for i in 0..(queries.len()-1) {
-        // for j in (i+1)..(queries.len()-1) {
-
-        // }
-        let mut next = queries.get(i+1).expect("unexpected OOB").clone();
-        result |= queries.get_mut(i).expect("unexpected OOB") .steal(&mut next);
-        queries[i+1] = next;
+    let mut receiver_index = 0;
+    while receiver_index < queries.len()-1 {
+        let mut receiver = queries.get(receiver_index).expect("unexpected OOB").clone();
+        let mut donor_index = receiver_index + 1;
+        while donor_index < queries.len()-1 {
+            let donor = queries.get_mut(donor_index).expect("unexpected OOB");
+            if !receiver.steal(donor) {
+                break;
+            }
+            result = true;
+            donor_index += 1;
+        }
+        queries[receiver_index] = receiver;
+        receiver_index = donor_index;
     }
     queries.retain(|q| q.value != 1);
     result
@@ -330,27 +337,11 @@ fn optimize_error4() {
     assert_optimization_correct(&queries);
 }
 
-#[test]
-fn overlaps_error3_2() {
-    let queries = [[0,0,2,14],[0,0,2,4],[1,1,2,2],[0,0,2,4]];
-    let mut queries = to_query_vector(&queries);
-    remove_overlaps_within_step(&mut queries);
-    assert_eq!([Query::from(&[0,0,2,224]), Query::from(&[1,1,2,2])].as_slice() as &[Query], queries.as_slice());
-}
-
-#[test]
-fn overlaps_error3_1() {
-    let queries = [[0,1,1,6],[0,0,1,3],[1,1,1,3],[1,1,1,3],[1,1,1,2]];
-    let mut queries = to_query_vector(&queries);
-    remove_overlaps_within_step(&mut queries);
-    assert_eq!(([[0,0,1,18], [1,1,1,108]]).map(&Into::into).as_slice() as &[Query], queries.as_slice());
-}
-
-
 #[cfg(test)]
 fn assert_optimization_correct(queries: &[[i32; 4]]) {
     let queries = to_query_vector(queries);
     let optimized = remove_overlaps(queries.clone());
+    assert!(optimized.len() <= queries.len());
     dbg!(&queries, &optimized, process_chunk(&mut vec!(0, 1), 0, &queries), process_chunk(&mut vec!(0, 1), 0, &optimized));
     let actual = process_chunk(&mut vec!(1, 1, 1), 0, &optimized);
     let expected = process_chunk(&mut vec!(1, 1, 1), 0, &queries);
@@ -362,6 +353,7 @@ fn assert_optimization_correct(queries: &[[i32; 4]]) {
 
 #[cfg(test)]
 fn run_all_algorithms(nums: &[i32], queries: &[[i32; 4]], expected: i32) {
+    assert_optimization_correct(queries);
     assert_eq!(expected, xor_after_queries_unchecked(Vec::from(nums), to_vector(&queries)));
     assert_eq!(expected, xor_after_queries_sliced(&mut Vec::from(nums), to_vector(&queries).as_slice()));
     assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), to_query_vector(&queries)));
