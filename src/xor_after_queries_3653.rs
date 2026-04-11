@@ -297,6 +297,11 @@ fn error3() {
     run_all_algorithms(&[931,613], &queries, 3883640);
 }
 
+#[test]
+fn error4() {
+    let queries = [[2,2,2,20],[0,2,1,19],[0,2,3,9],[1,2,1,11],[2,2,1,11],[0,2,2,11],[1,1,2,2],[0,1,1,14],[1,2,3,8],[2,2,1,14],[2,2,3,10],[2,2,3,1],[1,1,2,12],[0,2,1,15],[0,2,1,3],[1,1,3,15],[1,1,2,2]];
+    run_all_algorithms(&[329,112,80], &queries, 426005772);
+}
 
 #[test]
 fn optimize_error2() {
@@ -315,6 +320,12 @@ fn optimize_error3() {
     let queries = [[0,0,2,14],[0,1,1,6],[0,0,1,3],[0,0,2,4],[1,1,2,2],[0,0,2,4],[1,1,1,3],[1,1,1,3],[1,1,1,2]];
     assert_optimization_correct(&queries);
 }
+#[test]
+fn optimize_error4() {
+    let queries = [[0,1,2,7],[1,1,2,11],[0,1,2,2],[1,1,1,11],[1,1,2,1],[0,0,1,9],[0,1,2,4],[1,1,1,6],[0,0,2,17]];
+    assert_optimization_correct(&queries);
+}
+
 #[test]
 fn overlaps_error3_2() {
     let queries = [[0,0,2,14],[0,0,2,4],[1,1,2,2],[0,0,2,4]];
@@ -340,6 +351,9 @@ fn assert_optimization_correct(queries: &[[i32; 4]]) {
     let actual = process_chunk(&mut vec!(1, 1, 1), 0, &optimized);
     let expected = process_chunk(&mut vec!(1, 1, 1), 0, &queries);
     assert_eq!(expected, actual);
+    let actual = process_chunk(&mut vec!(10000, 10000, 10000), 0, &optimized);
+    let expected = process_chunk(&mut vec!(10000, 10000, 10000), 0, &queries);
+    assert_eq!(expected, actual);
 }
 
 #[cfg(test)]
@@ -347,7 +361,9 @@ fn run_all_algorithms(nums: &[i32], queries: &[[i32; 4]], expected: i32) {
     assert_eq!(expected, xor_after_queries_unchecked(Vec::from(nums), to_vector(&queries)));
     assert_eq!(expected, xor_after_queries_sliced(&mut Vec::from(nums), to_vector(&queries).as_slice()));
     assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), to_query_vector(&queries)));
-    assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), remove_overlaps(to_query_vector(&queries))));
+    let optmiized = remove_overlaps(to_query_vector(&queries));
+    dbg!(queries, &optmiized);
+    assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), optmiized));
     assert_eq!(expected, xor_after_queries(Vec::from(nums), to_vector(queries)));
 }
 
