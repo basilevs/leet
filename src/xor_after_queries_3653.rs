@@ -1,4 +1,4 @@
-use std::{collections::{HashMap}, ops::RangeInclusive, sync::Arc, thread::{self, JoinHandle}};
+use std::{collections::HashMap, iter::once, ops::RangeInclusive, sync::Arc, thread::{self, JoinHandle}};
 
 const M: i64 = 10i64.pow(9) + 7;
 pub fn xor_after_queries(mut nums: Vec<i32>, queries: Vec<Vec<i32>>) -> i32 {
@@ -63,6 +63,7 @@ impl Key {
         }
     }
 }
+
 impl From<&[i32]> for Key {
     fn from(query: &[i32]) -> Key {
         assert!(query[0] <= query[1]);
@@ -86,7 +87,7 @@ impl Ord for Key {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 struct Query {
     key: Key,
     value: i32
@@ -132,7 +133,7 @@ impl Query {
 
         if that.key.range.end() > self.key.range.end() && that.key.range.start() == self.key.range.start() { 
             self.update(that.value);
-            let range = next_mod_base(self.key.range.end() + 1, *self.key.range.start(), self.key.step)..=*that.key.range.end();
+            let range = next_mod_base(*self.key.range.end(), *self.key.range.start(), self.key.step)..=*that.key.range.end();
             if range.end() < range.start() {
                 that.value = 1;
             } else {
@@ -143,11 +144,23 @@ impl Query {
         }
         false
     }
-
 }
 
-fn next_mod_base(after: usize, base: usize, modulo: usize) -> usize {
-    after + modulo - (after + base) % modulo
+impl From<&[i32]> for Query {
+    fn from(query: &[i32]) -> Query {
+        Query { key: Key::from(query), value: query[3] }
+    }
+}
+
+impl From<[i32; 4]> for Query {
+    fn from(query: [i32; 4]) -> Query {
+        Query { key: Key::from(query.as_slice()), value: query[3] }
+    }
+}
+
+
+fn next_mod_base(after_excluding: usize, base: usize, modulo: usize) -> usize {
+    after_excluding + modulo - (after_excluding + base) % modulo
 }
 
 fn remove_overlaps(queries: Vec<Query>) -> Vec<Query> {
@@ -157,26 +170,28 @@ fn remove_overlaps(queries: Vec<Query>) -> Vec<Query> {
     }
     let mut singletons = by_step.remove(&1).unwrap_or(vec!());
     for same_step_queries in by_step.values_mut() {
+        // remove_singletons_into(same_step_queries, &mut singletons);
         while remove_overlaps_within_step(same_step_queries) {
-            singletons.append(&mut remove_singletons(same_step_queries));
+            remove_singletons_into(same_step_queries, &mut singletons);
         }
     }
     remove_overlaps_within_step(&mut singletons);
-    singletons.append(&mut by_step.into_values().flatten().collect());
+    singletons.extend(by_step.into_values().flatten());
     singletons
 }
 
-fn remove_singletons(queries: &mut Vec<Query>) -> Vec<Query> {
-    let mut result = vec!();
+fn remove_singletons_into<S>(queries: &mut Vec<Query>, sink: &mut S)
+where
+    S: Extend<Query>,
+{
     queries.retain(|i| {
         if let Some(candidate) = i.as_singleton() {
-            result.push(candidate);
+            sink.extend(once(candidate));
             false
         } else {
             true
         }
     });
-    result
 }
 
 fn remove_overlaps_within_step(queries: &mut Vec<Query>) -> bool {
@@ -195,6 +210,9 @@ fn steal_in_order(queries: &mut Vec<Query>) -> bool {
     }
     let mut result = false;
     for i in 0..(queries.len()-1) {
+        // for j in (i+1)..(queries.len()-1) {
+
+        // }
         let mut next = queries.get(i+1).expect("unexpected OOB").clone();
         result |= queries.get_mut(i).expect("unexpected OOB") .steal(&mut next);
         queries[i+1] = next;
@@ -274,14 +292,53 @@ fn error2() {
 }
 
 #[test]
-fn optimize_error1() {
+fn error3() {
+    let queries = [[0,0,2,14],[0,1,1,6],[0,0,1,3],[0,0,2,4],[1,1,2,2],[0,0,2,4],[1,1,1,3],[1,1,1,3],[1,1,1,2]];
+    run_all_algorithms(&[931,613], &queries, 3883640);
+}
+
+
+#[test]
+fn optimize_error2() {
     let queries = [[0,1,2,7],[1,1,2,11],[0,1,2,2],[1,1,1,11],[1,1,2,1],[0,0,1,9],[0,1,2,4],[1,1,1,6],[0,0,2,17]];
-    let nums = [562,62];
-    let queries = to_query_vector(&queries);
+    // let nums = [562,62];
+    assert_optimization_correct(&queries);
+    // let queries = to_query_vector(&queries);
+    // let optimized = remove_overlaps(queries.clone());
+    // // dbg!(&queries, &optimized, process_chunk(&mut vec!(0, 1), 0, &queries), process_chunk(&mut vec!(0, 1), 0, &optimized));
+    // let actual = process_chunk(&mut Vec::from(nums), 0, &optimized);
+    // let expected = process_chunk(&mut Vec::from(nums), 0, &queries);
+    // assert_eq!(expected, actual);
+}
+#[test]
+fn optimize_error3() {
+    let queries = [[0,0,2,14],[0,1,1,6],[0,0,1,3],[0,0,2,4],[1,1,2,2],[0,0,2,4],[1,1,1,3],[1,1,1,3],[1,1,1,2]];
+    assert_optimization_correct(&queries);
+}
+#[test]
+fn overlaps_error3_2() {
+    let queries = [[0,0,2,14],[0,0,2,4],[1,1,2,2],[0,0,2,4]];
+    let mut queries = to_query_vector(&queries);
+    remove_overlaps_within_step(&mut queries);
+    assert_eq!([Query::from(&[0,0,2,224]), Query::from(&[1,1,2,2])].as_slice() as &[Query], queries.as_slice());
+}
+
+#[test]
+fn overlaps_error3_1() {
+    let queries = [[0,1,1,6],[0,0,1,3],[1,1,1,3],[1,1,1,3],[1,1,1,2]];
+    let mut queries = to_query_vector(&queries);
+    remove_overlaps_within_step(&mut queries);
+    assert_eq!(([[0,0,1,18], [1,1,1,108]]).map(&Into::into).as_slice() as &[Query], queries.as_slice());
+}
+
+
+#[cfg(test)]
+fn assert_optimization_correct(queries: &[[i32; 4]]) {
+    let queries = to_query_vector(queries);
     let optimized = remove_overlaps(queries.clone());
     dbg!(&queries, &optimized, process_chunk(&mut vec!(0, 1), 0, &queries), process_chunk(&mut vec!(0, 1), 0, &optimized));
-    let actual = process_chunk(&mut Vec::from(nums), 0, &optimized);
-    let expected = process_chunk(&mut Vec::from(nums), 0, &queries);
+    let actual = process_chunk(&mut vec!(1, 1, 1), 0, &optimized);
+    let expected = process_chunk(&mut vec!(1, 1, 1), 0, &queries);
     assert_eq!(expected, actual);
 }
 
