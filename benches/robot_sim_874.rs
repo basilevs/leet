@@ -1,3 +1,5 @@
+#![allow(clippy::missing_panics_doc)]
+
 use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use leet::robot_sim_874::{hashed, naive, naive_factored, winner};
 const COMMANDS: [i32; 100] = [
