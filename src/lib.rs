@@ -6,3 +6,4 @@ pub mod robot_sim_874;
 pub mod robot_sim_2069;
 pub mod xor_after_queries_3653;
 pub mod distance_between_equal_3740;
+pub mod min_distance_target_1848;
