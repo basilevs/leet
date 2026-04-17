@@ -8,3 +8,4 @@ pub mod xor_after_queries_3653;
 pub mod distance_between_equal_3740;
 pub mod min_distance_target_1848;
 pub mod closest_equal_3488;
+pub mod minimum_distance_mirror_3761;
