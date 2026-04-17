@@ -5,7 +5,7 @@ pub fn solve_queries(nums: Vec<i32>, mut queries: Vec<i32>) -> Vec<i32> {
     
     for query in queries.iter() {
         let query = *query as usize;
-        indices_by_values.entry(*nums.get(query).unwrap()).or_insert_with(|| vec![]);
+        indices_by_values.entry(*nums.get(query).unwrap()).or_default();
     }
     for (i, v) in nums.iter().enumerate() {
         let Some(indices) = indices_by_values.get_mut(v) else {
@@ -13,7 +13,7 @@ pub fn solve_queries(nums: Vec<i32>, mut queries: Vec<i32>) -> Vec<i32> {
         };
         indices.push(i);
     }
-    dbg!(&indices_by_values);
+    // dbg!(&indices_by_values);
     for output in queries.iter_mut() {
         let query = *output as usize;
         let value = nums[query];
@@ -21,12 +21,13 @@ pub fn solve_queries(nums: Vec<i32>, mut queries: Vec<i32>) -> Vec<i32> {
             let indices = indices_by_values.get(&value).unwrap();
             let pos = indices.binary_search(&query).expect("Query should always be present in the index");
             let candidates = [pos.saturating_sub(1), (pos + 1) % indices.len(), 0, indices.len() - 1];
-            dbg!(&value, &candidates);
+            // dbg!(&value, &candidates);
             candidates
                 .into_iter()
                 .filter(|p| *p != pos)
                 .map(|p| {
-                    ((indices[p] + nums.len() - query) % nums.len()) as i32
+                    let d = ((indices[p] + nums.len() - query) % nums.len()) as i32;
+                    d.min(nums.len() as i32 - d)
                 })
                 .min()
                 .unwrap_or(-1)
@@ -45,6 +46,10 @@ fn official2() {
     assert_expected(&[-1,-1,-1,-1], &[1,2,3,4], &[0,1,2,3]);
 }
 
+#[test]
+fn ai_test() {
+    assert_expected(&[1], &[0,1,0,3,0], &[0]);
+}
 
 
 #[cfg(test)]
