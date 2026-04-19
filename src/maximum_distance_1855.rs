@@ -1,23 +1,35 @@
     pub fn max_distance(nums1: Vec<i32>, nums2: Vec<i32>) -> i32 {
+        let len1 = nums1.len();
+        let len2 = nums2.len();
+        debug_assert!(nums1.windows(2).all(|w| w[0] >= w[1]), "nums1 must be non-increasing");
+        debug_assert!(nums2.windows(2).all(|w| w[0] >= w[1]), "nums2 must be non-increasing");
+
         let mut i = 0;
-        let mut max = 0;
-        let min_len = nums1.len().min(nums2.len());
+        let mut max_dist = 0;
+        let min_len = len1.min(len2);
         while i < min_len {
             let value = nums1[i];
-            let partition_point = nums2[i..].partition_point(|x| *x >= value);
-            max = max.max(partition_point.saturating_sub(1));
-            if i + partition_point >= nums2.len() {
+            let tail2 = &nums2[i..];
+            let partition_point = tail2.partition_point(|x| *x >= value);
+            max_dist = max_dist.max(partition_point.saturating_sub(1));
+            if i + partition_point >= len2 {
                 break;
             }
+            debug_assert!(partition_point < tail2.len());
             debug_assert!(partition_point == 0 || nums2[i + partition_point - 1] >= value);
             debug_assert!(nums2[i + partition_point] < value);
+
+            if i + 1 >= len1 {
+                break;
+            }
             let value2 = nums2[i];
-            let partition_point = nums1[i+1..].partition_point(|x| *x > value2);
+            let tail1 = &nums1[i + 1..];
+            let partition_point = tail1.partition_point(|x| *x > value2);
             i += partition_point + 1;
             debug_assert!(partition_point == 0 || nums1[i - 1] > value2);
-            debug_assert!( i >= nums1.len() || nums1[i] <= value2);
+            debug_assert!(i >= len1 || nums1[i] <= value2);
         }
-        max.try_into().expect("overflow")
+        max_dist.try_into().expect("overflow")
     }
 
 #[test]
