@@ -12,10 +12,10 @@
             debug_assert!(partition_point == 0 || nums2[i + partition_point - 1] >= value);
             debug_assert!(nums2[i + partition_point] < value);
             let value2 = nums2[i];
-            let partition_point = nums1[i+1..].partition_point(|x| *x >= value2);
+            let partition_point = nums1[i+1..].partition_point(|x| *x > value2);
             i += partition_point + 1;
-            debug_assert!(partition_point == 0 || nums1[i - 1] >= value2);
-            debug_assert!( i >= nums1.len() || nums1[i] < value2);
+            debug_assert!(partition_point == 0 || nums1[i - 1] > value2);
+            debug_assert!( i >= nums1.len() || nums1[i] <= value2);
         }
         max.try_into().expect("overflow")
     }
@@ -38,4 +38,9 @@ fn official3() {
 #[test]
 fn testcase10() {
     assert_eq!(10, max_distance([9820,8937,7936,4855,4830,4122,2327,1342,1167,815,414].to_vec(), [9889,9817,9800,9777,9670,9646,9304,8977,8974,8802,8626,8622,8456].to_vec()));
+}
+
+#[test]
+fn regression_skip_i_can_hide_optimum() {
+    assert_eq!(1, max_distance([4, 3].to_vec(), [3, 3, 3].to_vec()));
 }
