@@ -11,3 +11,4 @@ pub mod closest_equal_3488;
 pub mod minimum_distance_mirror_3761;
 pub mod maximum_distance_1855;
 pub mod maximum_distance_different_2078;
+pub mod minimize_hamming_swap_1722;
