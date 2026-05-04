@@ -1,0 +1,18 @@
+[package]
+name = "bench"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+leet = { path = ".." }
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "reduce_steps"
+harness = false
+
+[[bench]]
+name = "robot_sim_874"
+harness = false
