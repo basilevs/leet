@@ -13,3 +13,4 @@ pub mod maximum_distance_1855;
 pub mod maximum_distance_different_2078;
 pub mod minimize_hamming_swap_1722;
 pub mod rotate_list_right_61;
+pub mod rotate_the_box_1861;
