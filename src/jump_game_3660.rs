@@ -48,3 +48,13 @@ fn official2() {
 fn official962() {
     assert_eq!(vec![11,18,18], max_value(vec![11,18,11]));
 }
+
+#[test]
+fn t1() {
+    assert_eq!(vec![1, 2, 3], max_value(vec![1,2,3]));
+}
+
+#[test]
+fn t2() {
+    assert_eq!(vec![ 3,3,3], max_value(vec![3,2,1]));
+}
