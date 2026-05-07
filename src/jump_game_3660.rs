@@ -1,11 +1,10 @@
-use std::convert::identity;
 
     pub fn max_value(mut nums: Vec<i32>) -> Vec<i32> {
         // disjoint sets sorted by their maximums
         let mut components: Vec<Set> = Vec::with_capacity(nums.len());
         for (i, &value) in nums.iter().enumerate() {
             let j = components.binary_search(&Set { max: value, last: usize::MAX })
-                .expect_err("duplicate max in components");
+                .expect_err("duplicate index in components");
             let max = if j >= components.len() {
                 value
             } else {
@@ -16,10 +15,12 @@ use std::convert::identity;
             components.push(Set { max, last: i });
         }
 
-        for (i, value) in nums.iter_mut().enumerate() {
-            let j = components.binary_search(&Set{max:*value, last: i}).unwrap_or_else(identity);
-            *value = components[j].max;
+        let mut cursor = 0;
+        for Set{max, last} in components {
+            nums[cursor..=last].fill(max);
+            cursor = last + 1;
         }
+
         nums
     }
 #[derive(PartialOrd, Ord, Eq, PartialEq, Debug)]
