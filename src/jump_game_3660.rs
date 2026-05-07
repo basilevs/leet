@@ -2,7 +2,7 @@
         // disjoint sets sorted by their maximums
         let mut components: Vec<Set> = vec![]; 
         for (i, &value) in nums.iter().enumerate() {
-            match components.binary_search(&Set {max: value, last: usize::MIN}) {
+            match components.binary_search(&Set {max: value, last: usize::MAX}) {
                 Ok(_) => {
                     unreachable!();
                 },
@@ -16,7 +16,7 @@
                     }
                 },
             };
-            dbg!(i, &value, &components);
+            // dbg!(i, &value, &components);
         }
 
         for (i, value) in nums.iter_mut().enumerate() {
@@ -48,7 +48,3 @@ fn official2() {
 fn official962() {
     assert_eq!(vec![11,18,18], max_value(vec![11,18,11]));
 }
-
-
-
-
