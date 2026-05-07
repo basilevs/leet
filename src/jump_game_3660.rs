@@ -1,35 +1,38 @@
     pub fn max_value(mut nums: Vec<i32>) -> Vec<i32> {
-        // disjoint components identified by their maximums
-        let mut components = vec![]; 
-        for &value in nums.iter() {
-            match components.binary_search(&value) {
-                Ok(i) => {
-                    let &max = components.last().unwrap();
-                    components.drain((i+1)..);
-                    components.push(max);
+        // disjoint sets sorted by their maximums
+        let mut components: Vec<Set> = vec![]; 
+        for (i, &value) in nums.iter().enumerate() {
+            match components.binary_search(&Set {max: value, last: usize::MIN}) {
+                Ok(_) => {
+                    unreachable!();
                 },
-                Err(i) => {
-                    if i >= components.len() {
-                        components.push(value);
+                Err(j) => {
+                    if j >= components.len() {
+                        components.push(Set{max: value, last: i});
                     } else {
-                        let &max = components.last().unwrap();
-                        components.drain(i..);
-                        components.push(max);
+                        let &max = &components.last().unwrap().max;
+                        components.drain(j..);
+                        components.push(Set{max: max, last: i});
                     }
                 },
             };
-            dbg!(&value, &components);
+            dbg!(i, &value, &components);
         }
 
-        for value in nums.iter_mut() {
-            let upper_bound = match components.binary_search(value) {
-                Ok(i) => components[i],
-                Err(i) => components[i],
+        for (i, value) in nums.iter_mut().enumerate() {
+            let upper_bound = match components.binary_search(&Set{max:*value, last: i}) {
+                Ok(j) => &components[j],
+                Err(j) => &components[j],
             };
-            *value = upper_bound;
+            *value = upper_bound.max;
         }
         nums
     }
+#[derive(PartialOrd, Ord, Eq, PartialEq, Debug)]
+struct Set {
+    max: i32,
+    last: usize,
+}
 
 #[test]
 fn official1() {
