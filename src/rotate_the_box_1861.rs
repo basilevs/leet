@@ -1,3 +1,4 @@
+use itertools::Itertools;
 
     pub fn rotate_the_box(mut box_grid: Vec<Vec<char>>) -> Vec<Vec<char>> {
         if box_grid.is_empty() {
@@ -24,8 +25,8 @@
         }
         // dbg!(&box_grid);
         (0..n).map(|i| {
-            (0..m).map(|j| box_grid[m-j-1][i]).collect()
-        }).collect()
+            (0..m).map(|j| box_grid[m-j-1][i]).collect_vec()
+        }).collect_vec()
     }
 
 
