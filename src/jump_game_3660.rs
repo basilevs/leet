@@ -2,25 +2,23 @@ use std::convert::identity;
 
     pub fn max_value(mut nums: Vec<i32>) -> Vec<i32> {
         // disjoint sets sorted by their maximums
-        let mut components: Vec<Set> = vec![]; 
-        components.reserve(nums.len()); // worst case
+        let mut components: Vec<Set> = Vec::with_capacity(nums.len());
         for (i, &value) in nums.iter().enumerate() {
             let j = components.binary_search(&Set { max: value, last: usize::MAX })
                 .expect_err("duplicate max in components");
             let max = if j >= components.len() {
                 value
             } else {
-                let max = components.last().unwrap().max;
+                let prev_max = components.last().unwrap().max;
                 components.truncate(j);
-                max
+                prev_max
             };
             components.push(Set { max, last: i });
-            // dbg!(i, &value, &components);
         }
 
         for (i, value) in nums.iter_mut().enumerate() {
-            let upper_bound = components.binary_search(&Set{max:*value, last: i}).unwrap_or_else(identity);
-            *value = components[upper_bound].max;
+            let j = components.binary_search(&Set{max:*value, last: i}).unwrap_or_else(identity);
+            *value = components[j].max;
         }
         nums
     }
