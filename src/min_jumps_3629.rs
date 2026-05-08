@@ -7,6 +7,9 @@ use std::collections::{HashMap, HashSet, VecDeque};
             let mut primes = HashSet::new();
             let mut factors = vec![];
             for (i, &value) in nums.iter().enumerate() {
+                if value == 1 {
+                    continue;
+                }
                 factors.clear();
                 factorize(value, &mut factors);
                 if factors.len() == 1 && factors[0] == value{
@@ -26,8 +29,8 @@ use std::collections::{HashMap, HashSet, VecDeque};
         let mut update_neighbor = |current, neighbor, queue: &mut VecDeque<usize>| {
             debug_assert!(distances[current] != i32::MAX);
             let distance: i32 = distances[neighbor];
-            distances[neighbor] = distance.min(distances[current] + 1);
             if distance == i32::MAX {
+                distances[neighbor] = distances[current] + 1;
                 queue.push_back(neighbor);
             }
             neighbor == end
@@ -81,7 +84,7 @@ fn factorize(mut n: i32, factors_output: &mut Vec<i32> ) {
             }
         }
     }
-    if factors_output.is_empty() {
+    if factors_output.is_empty() || n > 1 {
         factors_output.push(n);
     }
 }
