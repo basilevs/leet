@@ -16,3 +16,4 @@ pub mod rotate_list_right_61;
 pub mod rotate_the_box_1861;
 pub mod jump_game_3660;
 pub mod min_jumps_3629;
+pub mod rotate_grid_1914;
