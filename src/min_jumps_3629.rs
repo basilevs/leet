@@ -38,6 +38,10 @@ use std::collections::{HashMap, HashSet, VecDeque};
         loop {
             let current = q.pop_front().expect("can't find the path");
 
+            if current == end {
+                return distances[end];
+            }
+
             if current > 0 && update_neighbor(current, current-1, &mut q) {
                 return distances[end];
             }
@@ -46,7 +50,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
                 return distances[end];
             }
 
-            for &n in indices_by_factor.get(&nums[current]).unwrap_or(&Vec::new()) {
+            for n in indices_by_factor.remove(&nums[current]).unwrap_or(Vec::new()) {
                 if update_neighbor(current, n, &mut q) {
                     return distances[end];
                 }
@@ -105,6 +109,12 @@ fn official3() {
 }
 
 #[test]
+fn official4() {
+    assert_eq!(0, min_jumps(vec![1]));
+}
+
+
+#[test]
 fn t1() {
     assert_eq!(1, min_jumps(vec![2,6,5,8]));
 }
@@ -112,5 +122,10 @@ fn t1() {
 #[test]
 fn t2() {
     assert_eq!(1, min_jumps(vec![2,2,6,5,8]));
+}
+
+#[test]
+fn t3() {
+    assert_eq!(1, min_jumps(vec![1, 1]));
 }
 
