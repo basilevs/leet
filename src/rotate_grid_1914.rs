@@ -1,3 +1,4 @@
+
     pub fn rotate_grid(mut grid: Vec<Vec<i32>>, k: i32) -> Vec<Vec<i32>> {
         if grid.is_empty() {
             return grid;
@@ -6,25 +7,33 @@
         let grid_width = grid[0].len();
 
         let layer_count = grid_height.min(grid_width) / 2;
-        let max_layer_length = 2 * (grid_height + grid_width) - 4;
 
-        // It is possible to avoid additional memory allocation
-        // But that requires two additional nested loops to prevent overwrites
-        let mut layer_buffer = vec![0; max_layer_length];
-
+        
+        
         for layer in 0..layer_count {
             let layer_height = grid_height - 2 * layer;
             let layer_width  = grid_width - 2 * layer;
             let layer_length = 2 * (layer_width + layer_height) - 4;
-
-            for i in 0..layer_length {
-                let cell = layer_offset_to_cell(grid_height, grid_width, layer, i.try_into().unwrap());
-                layer_buffer[i] = grid[cell.0][cell.1];
-            }
+            let positive_step =  usize::try_from((k % layer_length as i32 + layer_length as i32) as usize % layer_length).unwrap();
             
-            for i in 0..layer_length {
-                let cell = layer_offset_to_cell(grid_height, grid_width, layer, i32::try_from(i).unwrap()-k);
-                grid[cell.0][cell.1] = layer_buffer[i];
+            // https://cplusplus.com/reference/algorithm/rotate/
+            let mut first = 0;
+            let mut middle = positive_step;
+            let mut next = middle;
+            while first != next {
+                let cell_i = layer_offset_to_cell(grid_height, grid_width, layer, first);
+                let cell_j = layer_offset_to_cell(grid_height, grid_width, layer, next);
+                let temp = grid[cell_j.0][cell_j.1];
+                grid[cell_j.0][cell_j.1] = grid[cell_i.0][cell_i.1];
+                grid[cell_i.0][cell_i.1] = temp;
+                dbg!(&layer, first, &cell_i, next, &cell_j);
+                first += 1;
+                next += 1;
+                if next == layer_length {
+                    next = middle;
+                } else if first == middle {
+                    middle = next;
+                }
             }
         }
         grid
@@ -33,7 +42,7 @@
 
 
 // returns y,x
-fn layer_offset_to_cell(grid_height: usize, grid_width: usize, layer: usize, clockwise_offset: i32) -> (usize, usize) {
+fn layer_offset_to_cell(grid_height: usize, grid_width: usize, layer: usize, mut clockwise_offset: usize) -> (usize, usize) {
     debug_assert!(2 * layer < grid_width);
     debug_assert!(2 * layer < grid_height);
 
@@ -41,8 +50,8 @@ fn layer_offset_to_cell(grid_height: usize, grid_width: usize, layer: usize, clo
     let layer_width  = grid_width - 2 * layer;
     debug_assert!(layer_width >= 2);
     debug_assert!(layer_height >= 2);
-    let layer_length: i32 = 2 * (layer_width + layer_height) as i32 - 4;
-    let positive_offset =  usize::try_from((clockwise_offset % layer_length + layer_length) % layer_length).unwrap();
+    let layer_length: usize = 2 * (layer_width + layer_height) - 4;
+    clockwise_offset = clockwise_offset % layer_length;
 
     //   Offsets map:
     //
@@ -56,14 +65,14 @@ fn layer_offset_to_cell(grid_height: usize, grid_width: usize, layer: usize, clo
     let right_column = grid_width - 1 - layer;
     let bottom_row = grid_height - 1 - layer;
     debug_assert!(corner3 < layer_length as _);
-    if positive_offset <= corner1 {
-        (layer, layer + positive_offset)
-    } else if positive_offset <= corner2 {
-        (layer + positive_offset - corner1, right_column)
-    } else if positive_offset <= corner3 {
-        (bottom_row, right_column - (positive_offset - corner2))
+    if clockwise_offset <= corner1 {
+        (layer, layer + clockwise_offset)
+    } else if clockwise_offset <= corner2 {
+        (layer + clockwise_offset - corner1, right_column)
+    } else if clockwise_offset <= corner3 {
+        (bottom_row, right_column - (clockwise_offset - corner2))
     } else {
-        (bottom_row - (positive_offset - corner3), layer)
+        (bottom_row - (clockwise_offset - corner3), layer)
     } 
 
 }
