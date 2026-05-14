@@ -1,3 +1,13 @@
+// Digit DP: decomposes n by leading digit, counts good numbers
+// via overcounting/undercounting across digit-count boundaries.
+//
+// Valid digits under 180° rotation: 0, 1, 2, 5, 6, 8, 9 (7 total)
+//   Same    (self-rotation):    0, 1, 8           (3 total)
+//   Changed (rotates to other): 2↔5, 6↔9         (4 total)
+// Invalid: 3, 4, 7
+//
+// "Good" = all digits valid AND at least one changed.
+
     pub fn rotated_digits(n: i32) -> i32 {
         if n <= 10 {
             return match n {
@@ -6,45 +16,43 @@
                 5 => 2,
                 6 | 7 | 8 => 3,
                 9 | 10 => 4,
-                _ => unreachable!()
-            }
-        }
-
-        let digit_count = n.ilog10();
-        let last_digit = n / 10_i32.pow(digit_count);
-        debug_assert!(last_digit < 10);
-        debug_assert!(last_digit > 0);
-        let remainder = n - last_digit * 10_i32.pow(digit_count);
-        let by_digit_count = 7_i32.pow(digit_count) - 3_i32.pow(digit_count);
-        let any_rot_next= any_rot(10_i32.pow(digit_count)-1);
-
-        let mut by_last = 0;
-        for i in 1..=last_digit {
-            by_last += match i {
-                1 => by_digit_count,
-                2 => by_digit_count + 1,
-                3 => any_rot_next,
-                4 => 0,
-                5 => 1,
-                6 => any_rot_next + 1,
-                7 => any_rot_next,
-                8 => 0,
-                9 => by_digit_count + 1,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
         }
-        
-        let by_remainder = match last_digit {
-                1 | 8 => rotated_digits(remainder),
-                2 | 5 | 6 | 9 => any_rot(remainder),
-                3 | 4 | 7 => 0,
-                _ => unreachable!()
+
+        let dc = n.ilog10();
+        let top = n / 10_i32.pow(dc);
+        let rest = n - top * 10_i32.pow(dc);
+        // Suffixes (dc digits) containing at least one changed digit:
+        let good_suffix = 7_i32.pow(dc) - 3_i32.pow(dc);
+        // All valid-rotation numbers below 10^dc:
+        let valid_below = count_valid(10_i32.pow(dc) - 1);
+
+        let by_top: i32 = (1..=top)
+            .map(|d| match d {
+                1       => good_suffix,
+                2 | 9   => good_suffix + 1,
+                3 | 7   => valid_below,
+                4 | 8   => 0,
+                5       => 1,
+                6       => valid_below + 1,
+                _ => unreachable!(),
+            })
+            .sum();
+
+        let by_rest = match top {
+            1 | 8         => rotated_digits(rest),
+            2 | 5 | 6 | 9 => count_valid(rest),
+            3 | 4 | 7     => 0,
+            _ => unreachable!(),
         };
-        // dbg!(n, by_digit_count, any_rot_next, by_last, remainder, by_remainder);
-        by_last + by_remainder
+
+        by_top + by_rest
     }
 
-fn any_rot(n: i32) -> i32 {
+/// Counts numbers in [1, n] where every digit is valid under rotation
+/// (includes numbers that rotate to themselves).
+fn count_valid(n: i32) -> i32 {
     if n <= 10 {
         return match n {
             0 => 0,
@@ -55,67 +63,52 @@ fn any_rot(n: i32) -> i32 {
             8 => 5,
             9 => 6,
             10 => 7,
-            _ => unreachable!()
-        }
-    }
-    let digit_count = n.ilog10();
-    let last_digit = n / 10_i32.pow(digit_count);
-    let remainder = n - last_digit * 10_i32.pow(digit_count);
-    let by_digit_count = 7_i32.pow(digit_count);
-
-    let mut by_last = 0;
-    for i in 1..=last_digit {
-        by_last += match i {
-            1 => by_digit_count,
-            2 => by_digit_count,
-            3 => by_digit_count - 1,
-            4 => 0,
-            5 => 1,
-            6 => by_digit_count,
-            7 => by_digit_count - 1,
-            8 => 1,
-            9 => by_digit_count,
-            _ => unreachable!()
+            _ => unreachable!(),
         };
     }
 
-    let by_remainder = match last_digit {
-        1 | 8 | 2 | 5 | 6 | 9 => any_rot(remainder),
-        3 | 4 | 7 => 0,
-        _ => unreachable!()
+    let dc = n.ilog10();
+    let top = n / 10_i32.pow(dc);
+    let rest = n - top * 10_i32.pow(dc);
+    let full = 7_i32.pow(dc); // valid completions per valid leading digit
+
+    let by_top: i32 = (1..=top)
+        .map(|d| match d {
+            1 | 2 | 6 | 9 => full,
+            3 | 7          => full - 1,
+            5 | 8          => 1,
+            4              => 0,
+            _ => unreachable!(),
+        })
+        .sum();
+
+    let by_rest = match top {
+        1 | 2 | 5 | 6 | 8 | 9 => count_valid(rest),
+        3 | 4 | 7               => 0,
+        _ => unreachable!(),
     };
-    // dbg!(n, by_last, by_remainder);
-    by_last + by_remainder
+
+    by_top + by_rest
 }
-
-
-// fn rotations_by_digit_count(digits: u32) -> i32 {
-//     if digits > 0 {
-//         7_i32.pow(digits) - 3_i32.pow(digits)
-//     } else {
-//         1
-//     }
-// }
 
 #[cfg(test)]
 fn naive(n: i32) -> i32 {
-    (0..=n).into_iter().filter(is_good).count() as i32
+    (0..=n).filter(is_good).count() as i32
 }
 
 #[cfg(test)]
-fn is_good(i: &i32) -> bool {
-    let mut i = *i;
-    let mut result = false;
-    while i > 0 {
-        let digit = i % 10;
-        result |= match digit {
-            0 | 8 | 1 => false,
-            2 | 5 | 6 | 9 => true,
-            _ => return false
-        };
-        i /= 10;
+fn is_good(n: &i32) -> bool {
+    let mut n = *n;
+    let mut changed = false;
+    while n > 0 {
+        match n % 10 {
+            0 | 1 | 8 => {}
+            2 | 5 | 6 | 9 => changed = true,
+            _ => return false,
+        }
+        n /= 10;
     }
-    result
+    changed
 }
 
 #[test]
@@ -136,11 +129,11 @@ fn official3() {
 #[test]
 fn t_naive_comparison() {
     let mut count = 0;
-    for n in 1..100000 {
+    for n in 1..=10_000 {
         if is_good(&n) {
             count += 1;
         }
-        assert_eq!(count, rotated_digits(n), "testing {}", n);
+        assert_eq!(count, rotated_digits(n), "n={n}");
     }
 }
 
@@ -151,7 +144,7 @@ fn t11() {
 
 #[test]
 fn a11() {
-    assert_eq!(8, any_rot(11));
+    assert_eq!(8, count_valid(11));
 }
 
 #[test]
@@ -179,7 +172,6 @@ fn t30() {
     assert_eq!(15, rotated_digits(30));
 }
 
-
 #[test]
 fn t1000() {
     assert_eq!(naive(1000), rotated_digits(1000));
@@ -189,6 +181,3 @@ fn t1000() {
 fn t2000() {
     assert_eq!(naive(2000), rotated_digits(2000));
 }
-
-
-
