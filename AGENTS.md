@@ -1,4 +1,5 @@
 Strange ineffective top-level inputs in Rust code come from https://leetcode.com/ challenges and can't be changed. Consider them an external unavoidable limitation.
+Public functions have an extra indent for easier pasing into https://leetcode.com/.
 Run tests after reformat and lint fixes.
 
 
