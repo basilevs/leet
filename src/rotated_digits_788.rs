@@ -1,5 +1,6 @@
-// Digit DP: decomposes n by leading digit, counts good numbers
-// via overcounting/undercounting across digit-count boundaries.
+// Digit decomposition: peels off the leading digit, uses closed-form
+// counts (7^k, 3^k) for free positions, recurses only along the
+// tight (bounded) path.
 //
 // Valid digits under 180° rotation: 0, 1, 2, 5, 6, 8, 9 (7 total)
 //   Same    (self-rotation):    0, 1, 8           (3 total)
