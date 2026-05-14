@@ -19,3 +19,4 @@ pub mod min_jumps_3629;
 pub mod rotate_grid_1914;
 pub mod maximum_jumps_2770;
 pub mod minimum_effort_1665;
+pub mod min_moves_1674;
