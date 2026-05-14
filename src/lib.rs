@@ -20,3 +20,5 @@ pub mod rotate_grid_1914;
 pub mod maximum_jumps_2770;
 pub mod minimum_effort_1665;
 pub mod min_moves_1674;
+pub mod is_good_2784;
+pub mod solution;
