@@ -24,6 +24,7 @@ fn max_last(tasks: &mut [Vec<i32>]) -> i32 {
     result
 }
 
+#[cfg(test)]
 fn naive(tasks: &[Vec<i32>]) -> i32 {
     if tasks.is_empty() {
         return 0;
@@ -93,13 +94,14 @@ fn error5() {
 
 #[test]
 fn brute_force() {
-    for (i, p) in (1..13).permutations(12).unique().enumerate() {
-        
+    let len = 5_usize;
+    for p in (1..(len as i32 *2+1)).permutations(12).unique() {
+
         let input: Vec<Vec<i32>> = p.windows(2).step_by(2).map(|t| t.to_vec()).collect();
         if input.iter().any(|t| t[0] > t[1]) {
             continue;
         }
-        debug_assert!(input.len() == 6);
+        debug_assert!(input.len() == len);
         let naive_result = naive(&input);
         let result = minimum_effort(input.clone());
         assert_eq!(naive_result, result, "{:?}", &input);
