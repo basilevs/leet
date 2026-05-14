@@ -1,29 +1,32 @@
 use crate::solution::Solution;
 
-use std::collections::HashSet;
-
 impl Solution {
     pub fn is_good(nums: Vec<i32>) -> bool {
        let mut max = i32::MIN;
        let mut max_count = 0;
-       let mut unique = HashSet::with_capacity(nums.len());
+       let mut seen = vec![false; nums.len() - 1];
        for v in nums {
+            let idx: usize = v as usize - 1;
+            if idx >= seen.len() {
+                return false;
+            }
             if v > max {
                 max = v;
                 max_count = 1;
-                unique.insert(v);
+                seen[idx] = true;
             } else if v == max {
                 max_count += 1;
                 if max_count > 2 {
                     return false;
                 }
             } else {
-                if !unique.insert(v) {
+                if seen[idx] {
                     return false;
                 }
+                seen[idx] = true;
             }
        }
-       max_count == 2 && unique.len() == max as usize
+       max_count == 2 && seen.iter().all(|&x| x)
     }
 }
 
