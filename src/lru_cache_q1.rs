@@ -44,12 +44,13 @@ impl LRUCache {
     fn put(&mut self, key: i32, value: i32) {
         if let Some(&n) = self.index.get(&key) {
            self.buffer[n].value = value;
+           self.move_to_head(n);
             self.assert_valid_node(n);
         } else {
             let n = self.evict_or_create();
             let node = &mut self.buffer[n];
             node.value = value;
-            node.key = value;
+            node.key = key;
             self.index.insert(key, n);
             self.assert_valid_node(n);
         }
@@ -144,4 +145,101 @@ impl LRUCache {
     assert_eq!(4, lru_cache.get(4));
     lru_cache.put(4, 5);
     assert_eq!(5, lru_cache.get(4));
+ }
+
+ #[test]
+ fn capacity_one() {
+    let mut c = LRUCache::new(1);
+    c.put(1, 10);
+    assert_eq!(10, c.get(1));
+    c.put(2, 20);
+    assert_eq!(-1, c.get(1)); // evicted
+    assert_eq!(20, c.get(2));
+    c.put(2, 30); // update existing
+    assert_eq!(30, c.get(2));
+ }
+
+ #[test]
+ fn update_does_not_evict() {
+    // Updating an existing key should NOT evict anything
+    let mut c = LRUCache::new(2);
+    c.put(1, 1);
+    c.put(2, 2);
+    c.put(1, 10); // update key 1, should not evict key 2
+    assert_eq!(10, c.get(1));
+    assert_eq!(2, c.get(2)); // key 2 must still be present
+ }
+
+ #[test]
+ fn eviction_order_after_get() {
+    // get() should make the accessed key most-recently-used
+    let mut c = LRUCache::new(2);
+    c.put(1, 1);
+    c.put(2, 2);
+    c.get(1);       // makes key 1 most recent; key 2 is now LRU
+    c.put(3, 3);    // should evict key 2
+    assert_eq!(-1, c.get(2));
+    assert_eq!(1, c.get(1));
+    assert_eq!(3, c.get(3));
+ }
+
+ #[test]
+ fn eviction_order_after_put_update() {
+    // put() with existing key should also refresh recency
+    let mut c = LRUCache::new(2);
+    c.put(1, 1);
+    c.put(2, 2);
+    c.put(1, 10);   // update key 1 → now most recent; key 2 is LRU
+    c.put(3, 3);    // should evict key 2
+    assert_eq!(-1, c.get(2));
+    assert_eq!(10, c.get(1));
+    assert_eq!(3, c.get(3));
+ }
+
+ #[test]
+ fn key_value_differ() {
+    // Key and value are independent; make sure they aren't mixed up
+    let mut c = LRUCache::new(2);
+    c.put(0, 100000);
+    c.put(100, 0);
+    assert_eq!(100000, c.get(0));
+    assert_eq!(0, c.get(100));
+ }
+
+ #[test]
+ fn reinsert_after_eviction() {
+    let mut c = LRUCache::new(2);
+    c.put(1, 1);
+    c.put(2, 2);
+    c.put(3, 3);  // evicts 1
+    assert_eq!(-1, c.get(1));
+    c.put(1, 99); // re-insert key 1 (evicts 2)
+    assert_eq!(99, c.get(1));
+    assert_eq!(-1, c.get(2));
+    assert_eq!(3, c.get(3));
+ }
+
+ #[test]
+ fn capacity_three_full_cycle() {
+    let mut c = LRUCache::new(3);
+    c.put(1, 1);
+    c.put(2, 2);
+    c.put(3, 3);
+    c.put(4, 4);  // evicts 1
+    assert_eq!(-1, c.get(1));
+    assert_eq!(2, c.get(2));
+    assert_eq!(3, c.get(3));
+    assert_eq!(4, c.get(4));
+    c.put(5, 5);  // evicts 2 (LRU after the gets above refreshed 2,3,4)
+    assert_eq!(-1, c.get(2));
+ }
+
+ #[test]
+ fn get_missing_key() {
+    let mut c = LRUCache::new(2);
+    assert_eq!(-1, c.get(0));
+    assert_eq!(-1, c.get(10000));
+    c.put(5, 5);
+    assert_eq!(-1, c.get(4));
+    assert_eq!(5, c.get(5));
  }
