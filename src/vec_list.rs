@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, mem::replace};
 
 struct VecListNode<T> {
     pub data: T,
@@ -6,9 +6,9 @@ struct VecListNode<T> {
     prev: Option<usize>,
 }
 
-impl <T> Debug for VecListNode<T> {
+impl <T: Debug> Debug for VecListNode<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("VecListNode").field(&self.next).field(&self.prev).finish()
+        f.debug_struct("VecListNode").field("next", &self.next).field("prev", &self.prev).field("data", &self.data).finish()
     }
 }
 
@@ -18,7 +18,7 @@ pub struct VecList<T> {
     tail: Option<usize>,
 }
 
-impl<T> Debug for VecList<T> {
+impl<T: Debug> Debug for VecList<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("VecList")
             .field("buffer", &self.buffer)
@@ -28,7 +28,7 @@ impl<T> Debug for VecList<T> {
     }
 }
 
-impl<T> VecList<T> {
+impl<T: Debug> VecList<T> {
     pub fn with_capacity(capacity: usize) -> Self {
         VecList {
             buffer: Vec::with_capacity(capacity),
@@ -76,44 +76,76 @@ impl<T> VecList<T> {
     pub fn swap_order(&mut self, a: usize, b: usize) {
         self.assert_valid_node(a);
         self.assert_valid_node(b);
-        // Yes, double reference is not stricly necessary, I'm just practicing.
-        let (a_node, b_node) = if a < b {
-            let (left, right) = self.buffer.split_at_mut(b);
-            (&mut left[a], &mut right[0])
-        } else if a > b {
-            let (left, right) = self.buffer.split_at_mut(a);
-            (&mut right[0], &mut left[b])
-        } else {
+        if a == b {
             return;
-        };
+        }
+        dbg!(a, b, &self);
+        if let Some(next) = self.buffer[a].next {
+            if next == b {
+                self.cut(b);
+                self.paste_before(b, a);
+            } else {
+                self.cut(a);
+                self.paste_after(a, b);
+                self.cut(b);
+                self.paste_before(b, next);
+            }
+        } else if let Some(prev) = self.buffer[a].prev {
+            if prev == b {
+                self.cut(b);
+                self.paste_after(b, a);
+            } else {
+                self.cut(a);
+                self.paste_after(a, b);
+                self.cut(b);
+                self.paste_after(b, prev);
+            }
+        } else {
+            unreachable!();
+        }
+        dbg!(a, b, &self);
 
-        let tmp = a_node.next;
-        a_node.next = if b_node.next == Some(a) {
-            Some(b)
-        } else {
-            b_node.next
-        };
-        b_node.next = if tmp == Some(b) {
-            Some(a)
-        } else {
-            tmp
-        };
-        let tmp = a_node.prev;
-        a_node.prev = if b_node.prev == Some(a) {
-            Some(b)
-        } else {
-            b_node.prev
-        };
-        b_node.prev = if tmp == Some(b) {
-            Some(a)
-        } else {
-            tmp
-        };
         self.update_ends(a);
         self.update_ends(b);
         self.assert_valid_node(a);
         self.assert_valid_node(b);
+
     }
+
+    fn cut(&mut self, n: usize) {
+        let node = self.buffer.get_mut(n).expect("Node should exist");
+        let prev =  replace(&mut node.prev, None);
+        let next =  replace(&mut node.next, None);
+        if let Some(next) = next {
+            self.buffer[next].prev = prev;
+            self.update_ends(next);
+        }
+        if let Some(prev) = prev {
+            self.buffer[prev].next = next;
+            self.update_ends(prev);
+        }
+    }
+
+    fn paste_before(&mut self, n: usize, before: usize) {
+        assert_ne!(n, before);
+        let prev =  replace(&mut self.buffer[before].prev, Some(n));
+        if let Some(prev) = prev {
+            self.buffer[prev].next = Some(n);
+        }
+        self.buffer[n].next = Some(before);
+        self.buffer[n].prev = prev;
+    }
+
+    fn paste_after(&mut self, n: usize, after: usize) {
+        assert_ne!(n, after);
+        let next =  replace(&mut self.buffer[after].next, Some(n));
+        if let Some(next) = next {
+            self.buffer[next].prev = Some(n);
+        }
+        self.buffer[n].prev = Some(after);
+        self.buffer[n].next = next;
+    }
+
 
     /// Push a new node at the head and return its index.
     /// If at capacity, also return evicted tail
@@ -144,8 +176,15 @@ impl<T> VecList<T> {
         let node = &self.buffer[n];
         assert_ne!(Some(n), node.next);
         assert_ne!(Some(n), node.prev);
+        if let Some(next) = node.next {
+            assert_ne!(node.next, node.prev, "index={}, {:?}", n, node);
+            assert_eq!(Some(n), self.buffer[next].prev, "next.prev does not match");
+        }
+        if let Some(prev) = node.prev {
+            assert_eq!(Some(n), self.buffer[prev].next, "prev.next does not match");
+        }
         if let Some(next) = self.buffer[n].next {
-            assert_eq!(Some(n), self.buffer[next].prev, "{:?}", &self);
+            assert_eq!(Some(n), self.buffer[next].prev, "index={}, {:?}", n, &self);
         }
         assert_eq!(self.head == Some(n), self.buffer[n].prev.is_none());
         assert_eq!(self.tail == Some(n), self.buffer[n].next.is_none());

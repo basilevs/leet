@@ -39,12 +39,16 @@ impl LFUCache {
     }
 
     fn access(&mut self, n: usize) {
+        self.assert_valid_node(n);
+        self.buffer.get_mut(n).cnt += 1;
         let current = self.buffer.get(n);
         if let Some(p) = self.buffer.previous(n) {
             let previous = self.buffer.get(p);
             if previous.cnt <= current.cnt {
                 self.buffer.swap_order(n, p);
             }
+            self.assert_valid_node(n);
+            self.assert_valid_node(p);
         }
     }
     
@@ -61,7 +65,7 @@ impl LFUCache {
             }
             self.index.insert(key, n);
             self.assert_valid_node(n);
-        }    
+        }
     }
     
     #[cfg(not(debug_assertions))]
@@ -69,13 +73,13 @@ impl LFUCache {
 
     #[cfg(debug_assertions)]
     fn assert_valid_node(&self, n: usize) {
-        let node = self.buffer.get(n);
-        assert_eq!(self.index.get(&node.key).copied(), Some(n));
+        self.buffer.assert_valid_node(n);
+        let Node {key, cnt, ..} = self.buffer.get(n);
+        assert_eq!(self.index.get(key).copied(), Some(n));
         if let Some(p) = self.buffer.previous(n) {
             let previous = self.buffer.get(p);
-            assert!(previous.cnt <= node.cnt);
+            assert!(previous.cnt >= *cnt, "n: {}, key: {}, cnt: {}", n, key, cnt);
         }
-        self.buffer.assert_valid_node(n);
     }
     
 }
@@ -143,6 +147,7 @@ fn tie_breaks_by_lru() {
     // cnt(1)=1, cnt(2)=1; key 1 was used least recently
     c.put(3, 30);    // evicts key 1
     assert_eq!(-1, c.get(1));
+    dbg!(&c);
     assert_eq!(20, c.get(2));
     assert_eq!(30, c.get(3));
 }
@@ -192,7 +197,9 @@ fn capacity_three_mixed_frequencies() {
     c.get(1);        // cnt(1)=2
     c.get(2);        // cnt(2)=2
     c.get(3);        // cnt(3)=2
+    dbg!(&c);
     c.get(1);        // cnt(1)=3
+    dbg!(&c);
     c.put(4, 4);     // all tied at cnt=2 except key 1(cnt=3); evict LRU among cnt=2 → key 2
     assert_eq!(1, c.get(1));
     assert_eq!(-1, c.get(2));
@@ -217,7 +224,9 @@ fn many_evictions_preserve_highest_freq() {
     c.get(1);        // cnt(1)=2
     c.get(1);        // cnt(1)=3
     c.put(2, 2);     // cnt(2)=1
+    dbg!(&c);
     c.put(3, 3);     // evicts 2 (cnt=1 < cnt(1)=3)
+    dbg!(&c);
     assert_eq!(1, c.get(1));
     assert_eq!(-1, c.get(2));
     assert_eq!(3, c.get(3));
