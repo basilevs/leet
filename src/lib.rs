@@ -24,4 +24,5 @@ pub mod minimum_effort_1665;
 pub mod min_moves_1674;
 pub mod is_good_2784;
 pub mod find_min_153;
+pub mod vec_list;
 pub mod lru_cache_q1;
