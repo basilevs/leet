@@ -39,16 +39,28 @@ impl LFUCache {
     }
 
     fn access(&mut self, n: usize) {
-        self.assert_valid_node(n);
         self.buffer.get_mut(n).cnt += 1;
-        let current = self.buffer.get(n);
-        if let Some(p) = self.buffer.previous(n) {
-            let previous = self.buffer.get(p);
-            if previous.cnt <= current.cnt {
-                self.buffer.swap_order(n, p);
+        dbg!(n, &self);
+        self.bubble(n);
+        dbg!(n, &self);
+        self.assert_valid_node(n);
+    }
+
+    fn bubble(&mut self, n: usize) {
+        dbg!(n, &self);
+        let mut i = n;
+        loop {
+            if let Some(j) = self.buffer.previous(i) {
+                if self.buffer.get(j).cnt > self.buffer.get(i).cnt {
+                    break;
+                }
+                i = j;
+            } else {
+                break;
             }
-            self.assert_valid_node(n);
-            self.assert_valid_node(p);
+        }
+        if i != n {
+            self.buffer.swap_order(i, n);
         }
     }
     
@@ -58,12 +70,13 @@ impl LFUCache {
            self.access(n);
             self.assert_valid_node(n);
         } else {
-            let (n, old) = self.buffer.push_head_evicting(Node { key, value, cnt: 0 });
+            let (n, old) = self.buffer.push_tail_evicting(Node { key, value, cnt: 0 });
             if let Some(old) = old {
                 let removed = self.index.remove(&old.key);
                 debug_assert_eq!(Some(n), removed);
             }
             self.index.insert(key, n);
+            self.bubble(n);
             self.assert_valid_node(n);
         }
     }
@@ -73,6 +86,7 @@ impl LFUCache {
 
     #[cfg(debug_assertions)]
     fn assert_valid_node(&self, n: usize) {
+        dbg!(&self);
         self.buffer.assert_valid_node(n);
         let Node {key, cnt, ..} = self.buffer.get(n);
         assert_eq!(self.index.get(key).copied(), Some(n));
@@ -80,6 +94,10 @@ impl LFUCache {
             let previous = self.buffer.get(p);
             assert!(previous.cnt >= *cnt, "n: {}, key: {}, cnt: {}", n, key, cnt);
         }
+        let head_cnt = self.buffer.get(self.buffer.head().unwrap()).cnt;
+        assert!( head_cnt >= *cnt, "n: {}, key: {}, cnt: {}, head_cnt: {}", n, key, cnt, head_cnt);
+        let tail_cnt = self.buffer.get(self.buffer.tail().unwrap()).cnt;
+        assert!(tail_cnt <= *cnt, "n: {}, key: {}, cnt: {}, tail_cnt: {}", n, key, cnt, tail_cnt);
     }
     
 }
@@ -99,9 +117,11 @@ fn official1() {
 // cache=[] will show the last used order for tiebreakers (leftmost element is  most recent)
     let mut lfu = LFUCache::new(2);
     lfu.put(1, 1);   // cache=[1,_], cnt(1)=1
+    dbg!(&lfu);
     lfu.put(2, 2);   // cache=[2,1], cnt(2)=1, cnt(1)=1
+    dbg!(&lfu);
     assert_eq!(1, lfu.get(1));  // cache=[1,2], cnt(2)=1, cnt(1)=2
-                                
+    dbg!(&lfu);                 
     lfu.put(3, 3);   // 2 is the LFU key because cnt(2)=1 is the smallest, invalidate 2.
                                 // cache=[3,1], cnt(3)=1, cnt(1)=2
     assert_eq!(-1, lfu.get(2));

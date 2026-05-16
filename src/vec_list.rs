@@ -37,6 +37,14 @@ impl<T: Debug> VecList<T> {
         }
     }
 
+    pub fn head(&self) -> Option<usize> {
+        self.head
+    }
+
+    pub fn tail(&self) -> Option<usize> {
+        self.tail
+    }
+
     pub fn get(&self, n: usize) -> &T {
         &self.buffer[n].data
     }
@@ -103,12 +111,12 @@ impl<T: Debug> VecList<T> {
         } else {
             unreachable!();
         }
-        dbg!(a, b, &self);
-
+        
         self.update_ends(a);
         self.update_ends(b);
         self.assert_valid_node(a);
         self.assert_valid_node(b);
+        dbg!("After swap", a, b, &self);
 
     }
 
@@ -138,12 +146,14 @@ impl<T: Debug> VecList<T> {
 
     fn paste_after(&mut self, n: usize, after: usize) {
         assert_ne!(n, after);
+        dbg!("paste_after enter", n, after, &self);
         let next =  replace(&mut self.buffer[after].next, Some(n));
         if let Some(next) = next {
             self.buffer[next].prev = Some(n);
         }
         self.buffer[n].prev = Some(after);
         self.buffer[n].next = next;
+        dbg!("paste_after exit", n, after, &self);
     }
 
 
@@ -167,6 +177,29 @@ impl<T: Debug> VecList<T> {
             let result = self.tail.unwrap();
             let old = std::mem::replace(&mut self.buffer[result].data, data);
             self.move_to_head(result);
+            (result, Some(old))
+        }
+    }
+
+    /// Push a new node at the tail and return its index.
+    /// If at capacity, also return evicted tail value
+    pub fn push_tail_evicting(&mut self, data: T) -> (usize, Option<T>) {
+        if self.buffer.capacity() > self.buffer.len() {
+            self.buffer.push(VecListNode {
+                data,
+                next: None,
+                prev: self.tail,
+            });
+            let result = self.buffer.len() - 1;
+            debug_assert_eq!(self.head.is_none(), self.tail.is_none());
+            if let Some(tail) = self.tail {
+                self.buffer[tail].next = Some(result);
+            }
+            self.update_ends(result);
+            (result, None)
+        } else {
+            let result = self.tail.unwrap();
+            let old = std::mem::replace(&mut self.buffer[result].data, data);
             (result, Some(old))
         }
     }
