@@ -9,7 +9,7 @@ struct Node {
 }
 
 #[derive(Debug)]
-struct LRUCache {
+pub struct LRUCache {
     buffer: VecList<Node>,
     index: HashMap<i32, usize>,
 }
@@ -22,12 +22,12 @@ struct LRUCache {
 impl LRUCache {
 
 
-    fn new(capacity: i32) -> Self {
+    pub fn new(capacity: i32) -> Self {
         let capacity = usize::try_from(capacity).expect("Can't be negative");
         LRUCache{ buffer: VecList::with_capacity(capacity), index: HashMap::with_capacity(capacity) }
     }
     
-    fn get(&mut self, key: i32) -> i32 {
+    pub fn get(&mut self, key: i32) -> i32 {
         if let Some(&n) = self.index.get(&key) {
             self.assert_valid_node(n);
             self.buffer.move_to_head(n);
@@ -38,7 +38,7 @@ impl LRUCache {
         }
     }
     
-    fn put(&mut self, key: i32, value: i32) {
+    pub fn put(&mut self, key: i32, value: i32) {
         if let Some(&n) = self.index.get(&key) {
            self.buffer.get_mut(n).value = value;
            self.buffer.move_to_head(n);

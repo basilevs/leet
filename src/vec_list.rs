@@ -20,11 +20,29 @@ pub struct VecList<T> {
 
 impl<T: Debug> Debug for VecList<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("VecList")
-            .field("buffer", &self.buffer)
-            .field("head", &self.head)
-            .field("tail", &self.tail)
-            .finish()
+        let mut f = f.debug_list();
+        for i in self.iter() {
+            f.entry(&i);
+        }
+        f.finish()
+    }
+}
+
+pub struct ListIter<'a, T> {
+    data: &'a VecList<T>,
+    index: Option<usize>,
+}
+
+impl<'a, T: Debug> Iterator for ListIter<'a, T> {
+    type Item = (usize, &'a T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let Some(index) = self.index else {
+            return None;
+        };
+        let node = &self.data.buffer[index];
+        self.index = node.next;
+        Some((index, &node.data))
     }
 }
 
@@ -45,6 +63,10 @@ impl<T: Debug> VecList<T> {
         self.tail
     }
 
+    pub fn iter(&self) -> ListIter<'_, T> {
+        ListIter { data: self, index: self.head }
+    }
+
     pub fn get(&self, n: usize) -> &T {
         &self.buffer[n].data
     }
@@ -55,6 +77,18 @@ impl<T: Debug> VecList<T> {
 
     pub fn previous(&self, n: usize) -> Option<usize> {
         self.buffer[n].prev
+    }
+
+    pub fn move_before(&mut self, n: usize, before: usize) {
+        self.assert_valid_node(n);
+        if n == before {
+            return;
+        }
+        self.cut(n);
+        self.paste_before(n, before);
+        self.update_ends(n);
+        self.assert_valid_node(n);
+        self.assert_valid_node(before);
     }
 
     /// Move node `n` to the head of the list.
@@ -81,45 +115,6 @@ impl<T: Debug> VecList<T> {
         }
     }
 
-    pub fn swap_order(&mut self, a: usize, b: usize) {
-        self.assert_valid_node(a);
-        self.assert_valid_node(b);
-        if a == b {
-            return;
-        }
-        dbg!(a, b, &self);
-        if let Some(next) = self.buffer[a].next {
-            if next == b {
-                self.cut(b);
-                self.paste_before(b, a);
-            } else {
-                self.cut(a);
-                self.paste_after(a, b);
-                self.cut(b);
-                self.paste_before(b, next);
-            }
-        } else if let Some(prev) = self.buffer[a].prev {
-            if prev == b {
-                self.cut(b);
-                self.paste_after(b, a);
-            } else {
-                self.cut(a);
-                self.paste_after(a, b);
-                self.cut(b);
-                self.paste_after(b, prev);
-            }
-        } else {
-            unreachable!();
-        }
-        
-        self.update_ends(a);
-        self.update_ends(b);
-        self.assert_valid_node(a);
-        self.assert_valid_node(b);
-        dbg!("After swap", a, b, &self);
-
-    }
-
     fn cut(&mut self, n: usize) {
         let node = self.buffer.get_mut(n).expect("Node should exist");
         let prev =  replace(&mut node.prev, None);
@@ -136,26 +131,15 @@ impl<T: Debug> VecList<T> {
 
     fn paste_before(&mut self, n: usize, before: usize) {
         assert_ne!(n, before);
+        dbg!(&self.buffer);
         let prev =  replace(&mut self.buffer[before].prev, Some(n));
         if let Some(prev) = prev {
             self.buffer[prev].next = Some(n);
         }
         self.buffer[n].next = Some(before);
         self.buffer[n].prev = prev;
+        dbg!(&self.buffer);
     }
-
-    fn paste_after(&mut self, n: usize, after: usize) {
-        assert_ne!(n, after);
-        dbg!("paste_after enter", n, after, &self);
-        let next =  replace(&mut self.buffer[after].next, Some(n));
-        if let Some(next) = next {
-            self.buffer[next].prev = Some(n);
-        }
-        self.buffer[n].prev = Some(after);
-        self.buffer[n].next = next;
-        dbg!("paste_after exit", n, after, &self);
-    }
-
 
     /// Push a new node at the head and return its index.
     /// If at capacity, also return evicted tail
@@ -236,4 +220,30 @@ impl<T: Debug> VecList<T> {
         }
 
     }
+}
+
+#[test]
+fn do_not_swap_unrelated_entries() {
+    let mut subject = VecList::with_capacity(4);
+    let (n1, _) = subject.push_tail_evicting(1);
+    subject.push_tail_evicting(2);
+    subject.push_tail_evicting(3);
+    let (n4, _) = subject.push_tail_evicting(4);
+    assert_eq!(vec![1,2,3,4], subject.iter().map(|x| *x.1).collect::<Vec<_>>());
+    subject.move_before(n4, n1);
+    assert_eq!(vec![4,1,2,3], subject.iter().map(|x| *x.1).collect::<Vec<_>>());
+}
+
+#[test]
+fn move_to_head() {
+    let mut subject = VecList::with_capacity(4);
+    subject.push_tail_evicting(1);
+    let (n2, _) = subject.push_tail_evicting(2);
+    subject.push_tail_evicting(3);
+    let (n4, _) = subject.push_tail_evicting(4);
+    assert_eq!(vec![1,2,3,4], subject.iter().map(|x| *x.1).collect::<Vec<_>>());
+    subject.move_to_head(n4);
+    assert_eq!(vec![4,1,2,3], subject.iter().map(|x| *x.1).collect::<Vec<_>>());
+    subject.move_to_head(n2);
+    assert_eq!(vec![2,4,1,3], subject.iter().map(|x| *x.1).collect::<Vec<_>>());
 }
