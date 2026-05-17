@@ -26,3 +26,4 @@ pub mod is_good_2784;
 pub mod find_min_153;
 pub mod vec_list;
 pub mod lru_cache_q1;
+pub mod can_reach_1306;
