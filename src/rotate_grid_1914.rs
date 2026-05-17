@@ -26,7 +26,7 @@
                 let temp = grid[cell_j.0][cell_j.1];
                 grid[cell_j.0][cell_j.1] = grid[cell_i.0][cell_i.1];
                 grid[cell_i.0][cell_i.1] = temp;
-                dbg!(&layer, first, &cell_i, next, &cell_j);
+                //dbg!(&layer, first, &cell_i, next, &cell_j);
                 first += 1;
                 next += 1;
                 if next == layer_length {

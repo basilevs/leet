@@ -326,7 +326,7 @@ fn assert_optimization_correct(queries: &[[i32; 4]]) {
     let queries = to_query_vector(queries);
     let optimized = remove_overlaps(queries.clone());
     assert!(optimized.len() <= queries.len());
-    dbg!(&queries, &optimized, process_chunk(&mut vec!(0, 1), 0, &queries), process_chunk(&mut vec!(0, 1), 0, &optimized));
+    //dbg!(&queries, &optimized, process_chunk(&mut vec!(0, 1), 0, &queries), process_chunk(&mut vec!(0, 1), 0, &optimized));
     let actual = process_chunk(&mut vec!(1, 1, 1), 0, &optimized);
     let expected = process_chunk(&mut vec!(1, 1, 1), 0, &queries);
     assert_eq!(expected, actual);
@@ -342,7 +342,7 @@ fn run_all_algorithms(nums: &[i32], queries: &[[i32; 4]], expected: i32) {
     assert_eq!(expected, xor_after_queries_sliced(&mut Vec::from(nums), to_vector(&queries).as_slice()));
     assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), to_query_vector(&queries)));
     let optmiized = remove_overlaps(to_query_vector(&queries));
-    dbg!(queries, &optmiized);
+    //dbg!(queries, &optmiized);
     assert_eq!(expected, xor_after_queries_chunked(&mut Vec::from(nums), optmiized));
     assert_eq!(expected, xor_after_queries(Vec::from(nums), to_vector(queries)));
 }
