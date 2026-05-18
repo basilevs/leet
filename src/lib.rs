@@ -29,3 +29,4 @@ pub mod find_min_153;
 pub mod lru_cache_q1;
 pub mod lfu_cache_q2;
 pub mod can_reach_1306;
+pub mod min_jumps_1345;
