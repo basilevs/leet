@@ -76,22 +76,16 @@ impl LFUCache {
 
 #[test]
 fn official1() {
-    println!("Env check: {:?}", std::env::var("MY_ENV_CHECK"));
     // cnt(x) = the use counter for key x
     // cache=[] will show the last used order for tiebreakers (leftmost element is  most recent)
     let mut lfu = LFUCache::new(2);
     lfu.put(1, 1); // cache=[1,_], cnt(1)=1
     assert_eq!(vec![1], to_keys_vec(&lfu));
-    dbg!(&lfu);
     lfu.put(2, 2); // cache=[2,1], cnt(2)=1, cnt(1)=1
-    dbg!(&lfu);
     assert_eq!(vec![2, 1], to_keys_vec(&lfu));
-    //dbg!(&lfu);
     assert_eq!(1, lfu.get(1)); // cache=[1,2], cnt(2)=1, cnt(1)=2
     assert_eq!(vec![1, 2], to_keys_vec(&lfu));
-    dbg!(&lfu);
     lfu.put(3, 3); // 2 is the LFU key because cnt(2)=1 is the smallest, invalidate 2.
-    dbg!(&lfu);
     // cache=[1,3], cnt(3)=1, cnt(1)=2
     assert_eq!(vec![1, 3], to_keys_vec(&lfu));
     assert_eq!(-1, lfu.get(2));
@@ -139,7 +133,6 @@ fn tie_breaks_by_lru() {
     // cnt(1)=1, cnt(2)=1; key 1 was used least recently
     c.put(3, 30); // evicts key 1
     assert_eq!(-1, c.get(1));
-    //dbg!(&c);
     assert_eq!(20, c.get(2));
     assert_eq!(30, c.get(3));
 }
@@ -200,21 +193,13 @@ fn capacity_three_mixed_frequencies() {
     assert_eq!(vec![3, 2, 1], to_keys_vec(&c));
     c.get(1); // cache=[1,3,2] cnt(1)=2 cnt(2)=1 cnt(3) = 1
     assert_eq!(vec![1, 3, 2], to_keys_vec(&c));
-    dbg!("cnt(1)=2", &c);
     c.get(2); // cache=[2,1,3] cnt(1)=2 cnt(2)=2 cnt(3) = 1
-    dbg!("cnt(2)=2", &c);
     assert_eq!(vec![2, 1, 3], to_keys_vec(&c));
-    c.get(3); // cache=[3,2,1] cnt(1)=2 cnt(2)=2 cnt(3)=2  
+    c.get(3); // cache=[3,2,1] cnt(1)=2 cnt(2)=2 cnt(3)=2
     assert_eq!(vec![3, 2, 1], to_keys_vec(&c));
-    dbg!("equal cnt", &c);
     c.get(1); // cache=[1,3,2] cnt(1)=3
-
-    // BUG ABOVE: the result is actually // cache[1,3,2] cnt(1)=3 cnt(2)=2 cnt(3)=3, i.e. key 2 and 3 are switched between each other
-
-    dbg!("key1 leading", &c);
     c.put(4, 4); // all tied at cnt=2 except key 1(cnt=3); evict LRU among cnt=2 → key 2
     // cache=[1,3,4]
-    dbg!(&c);
     assert_eq!(-1, c.get(2));
     assert_eq!(1, c.get(1)); // cache=[1,3,4] cnt(1)=4
     assert_eq!(-1, c.get(2));
@@ -239,9 +224,7 @@ fn many_evictions_preserve_highest_freq() {
     c.get(1); // cnt(1)=2
     c.get(1); // cnt(1)=3
     c.put(2, 2); // cnt(2)=1
-    //dbg!(&c);
     c.put(3, 3); // evicts 2 (cnt=1 < cnt(1)=3)
-    //dbg!(&c);
     assert_eq!(1, c.get(1));
     assert_eq!(-1, c.get(2));
     assert_eq!(3, c.get(3));
