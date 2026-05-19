@@ -28,3 +28,4 @@ pub mod vec_list;
 pub mod lru_cache_q1;
 pub mod can_reach_1306;
 pub mod min_jumps_1345;
+pub mod get_common_2540;
