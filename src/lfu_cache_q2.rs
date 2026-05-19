@@ -16,10 +16,13 @@ pub struct LFUCache {
 }
 
 impl LFUCache {
+    /// # Panics
+    /// Panics if `capacity` is not positive.
+    #[must_use]
     pub fn new(capacity: i32) -> Self {
         assert!(capacity > 0);
-        let capacity = capacity as usize;
-        LFUCache {
+        let capacity: usize = capacity.try_into().unwrap();
+        Self {
             capacity,
             access_id: 0,
             index: HashMap::with_capacity(capacity),
@@ -39,7 +42,7 @@ impl LFUCache {
 
     fn access(&mut self, key: i32) {
         let node = self.index.get_mut(&key).unwrap();
-        let removed = self.priority_queue.remove(&(node.cnt, node.access_id) );
+        let removed = self.priority_queue.remove(&(node.cnt, node.access_id));
         debug_assert_eq!(Some(key), removed);
         node.cnt += 1;
         node.access_id = self.access_id;
@@ -48,6 +51,8 @@ impl LFUCache {
         debug_assert_eq!(None, replaced);
     }
 
+    /// # Panics
+    /// Panics on internal invariant violation (should never occur in correct usage).
     pub fn put(&mut self, key: i32, value: i32) {
         if let Some(n) = self.index.get_mut(&key) {
             n.value = value;
@@ -67,12 +72,6 @@ impl LFUCache {
 
 }
 
-/**
- * Your LFUCache object will be instantiated and called as such:
- * let obj = LFUCache::new(capacity);
- * let ret_1: i32 = obj.get(key);
- * obj.put(key, value);
- */
 
 #[test]
 fn official1() {
