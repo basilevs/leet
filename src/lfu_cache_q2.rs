@@ -1,15 +1,18 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Debug)]
 struct Node {
     value: i32,
     cnt: usize,
+    access_id: usize, // cheat to avoid use of linked lists to preserve insertion order
 }
 
 #[derive(Debug)]
 pub struct LFUCache {
+    access_id: usize,
+    capacity: usize,
     index: HashMap<i32, Node>,
-    by_frequency: BTreeMap<usize, HashSet<i32>>,
+    priority_queue: BTreeMap<(usize, usize), i32>,
 }
 
 /**
@@ -18,10 +21,13 @@ pub struct LFUCache {
  */
 impl LFUCache {
     pub fn new(capacity: i32) -> Self {
-        let capacity = usize::try_from(capacity).expect("capacity > 0");
+        assert!(capacity > 0);
+        let capacity = capacity as usize;
         LFUCache {
-            by_frequency: BTreeMap::new(),
-            index: HashMap::with_capacity(capacity),
+            capacity,
+            access_id: 0,
+            index: HashMap::with_capacity(capacity as usize),
+            priority_queue: BTreeMap::new(),
         }
     }
 
@@ -37,31 +43,30 @@ impl LFUCache {
 
     fn access(&mut self, key: i32) {
         let node = self.index.get_mut(&key).unwrap();
-        let old_cnt = node.cnt;
-        let new_cnt = old_cnt + 1;
-        node.cnt = new_cnt;
-        let removed = self.by_frequency.get_mut(&old_cnt).unwrap().remove(&key);
-        debug_assert!(removed);
-        let inserted = self.by_frequency.entry(new_cnt).or_default().insert(key);
-        debug_assert!(inserted);
+        let removed = self.priority_queue.remove(&(node.cnt, node.access_id) );
+        debug_assert_eq!(Some(key), removed);
+        node.cnt += 1;
+        node.access_id = self.access_id;
+        self.access_id += 1;
+        let replaced = self.priority_queue.insert((node.cnt, node.access_id), key);
+        debug_assert_eq!(None, replaced);
     }
 
     pub fn put(&mut self, key: i32, value: i32) {
         if let Some(n) = self.index.get_mut(&key) {
             n.value = value;
-            self.access(key);
         } else {
-            if self.index.capacity() <= self.index.len() {
-                // evict sorted[0]
-                self.by_frequency.
-                let evicted_key = self.sorted[0];
+            if self.capacity <= self.index.len() {
+                let evicted_key = self.priority_queue.first_entry().unwrap().remove();
                 self.index.remove(&evicted_key);
-            } else {
-                self.sorted.insert(0, key);
             }
-            self.index.insert(key, Node {value, cnt: 0});
-            self.access(key);
+            let node = Node {value, cnt: 0, access_id: self.access_id};
+            self.priority_queue.insert((node.cnt, node.access_id), key);
+            self.index.insert(key, node);
+            self.access_id += 1;
         }
+        self.access(key);
+        debug_assert!(self.capacity >= self.index.len(), "capacity: {} => len: {}", self.capacity, self.index.len());
     }
 
 }
@@ -186,7 +191,7 @@ fn reinsert_after_eviction() {
 
 #[cfg(test)]
 fn to_keys_vec(input: &LFUCache) -> Vec<i32> {
-    input.sorted.iter().rev().copied().collect()
+    input.priority_queue.values().rev().copied().collect()
 }
 
 #[test]
