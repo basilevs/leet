@@ -15,10 +15,6 @@ pub struct LFUCache {
     priority_queue: BTreeMap<(usize, usize), i32>,
 }
 
-/**
- * `&self` means the method takes an immutable reference.
- * If you need a mutable reference, change it to `&mut self` instead.
- */
 impl LFUCache {
     pub fn new(capacity: i32) -> Self {
         assert!(capacity > 0);
@@ -26,7 +22,7 @@ impl LFUCache {
         LFUCache {
             capacity,
             access_id: 0,
-            index: HashMap::with_capacity(capacity as usize),
+            index: HashMap::with_capacity(capacity),
             priority_queue: BTreeMap::new(),
         }
     }
