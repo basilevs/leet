@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 #[derive(Debug)]
 struct Node {
@@ -9,7 +9,7 @@ struct Node {
 #[derive(Debug)]
 pub struct LFUCache {
     index: HashMap<i32, Node>,
-    sorted: Vec<i32>,
+    by_frequency: BTreeMap<usize, HashSet<i32>>,
 }
 
 /**
@@ -20,7 +20,7 @@ impl LFUCache {
     pub fn new(capacity: i32) -> Self {
         let capacity = usize::try_from(capacity).expect("capacity > 0");
         LFUCache {
-            sorted: Vec::with_capacity(capacity),
+            by_frequency: BTreeMap::new(),
             index: HashMap::with_capacity(capacity),
         }
     }
@@ -40,24 +40,10 @@ impl LFUCache {
         let old_cnt = node.cnt;
         let new_cnt = old_cnt + 1;
         node.cnt = new_cnt;
-        let mut position = self
-            .sorted
-            .partition_point(|x| self.index.get(x).unwrap().cnt < old_cnt);
-        position = self
-            .sorted
-            .iter()
-            .enumerate()
-            .skip(position)
-            .find(|(_, k)| **k == key)
-            .unwrap()
-            .0;
-        let removed = self.sorted.remove(position);
-        debug_assert_eq!(key, removed);
-        let insert_position = self.sorted[position..]
-            .partition_point(|x| self.index.get(x).unwrap().cnt <= new_cnt)
-            + position;
-        self.sorted.insert(insert_position, key);
-        debug_assert!(self.sorted.is_sorted_by_key(|x| self.index.get(x).unwrap().cnt));
+        let removed = self.by_frequency.get_mut(&old_cnt).unwrap().remove(&key);
+        debug_assert!(removed);
+        let inserted = self.by_frequency.entry(new_cnt).or_default().insert(key);
+        debug_assert!(inserted);
     }
 
     pub fn put(&mut self, key: i32, value: i32) {
@@ -65,8 +51,9 @@ impl LFUCache {
             n.value = value;
             self.access(key);
         } else {
-            if self.sorted.capacity() <= self.sorted.len() {
+            if self.index.capacity() <= self.index.len() {
                 // evict sorted[0]
+                self.by_frequency.
                 let evicted_key = self.sorted[0];
                 self.index.remove(&evicted_key);
             } else {
