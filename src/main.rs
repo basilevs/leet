@@ -1,4 +1,4 @@
 fn main() {
-    let steps = leet::reduce_steps::number_of_steps(257);
-    println!("{steps}");
+    let a = (u64::MAX as f64).sqrt();
+    println!("Hello World! {} {}", a, a*a - u64::MAX as f64);
 }

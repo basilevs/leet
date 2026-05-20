@@ -33,3 +33,4 @@ pub mod min_jumps_1345;
 pub mod get_common_2540;
 pub mod kth_largest_q1;
 pub mod find_the_prefix_common_array_2657;
+pub mod stream_checker_q2;
