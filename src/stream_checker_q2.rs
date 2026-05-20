@@ -13,7 +13,7 @@ impl StreamChecker {
         }
         let hash_tail = VecDeque::with_capacity(words.iter().map(String::len).max().unwrap() + 1);
         let hash_length = words.iter().map(|w| (hash(&w), w.len())).collect();
-        dbg!(&hash_length);
+        // dbg!(&hash_length);
         Self { hash_length, hash_tail, }
     }
     
@@ -37,7 +37,7 @@ impl StreamChecker {
 
             // Rabin-Karp rolling hash
             let tail_hash = (hash + PRIME - (old_hash * POWERS[word_length]) % PRIME) % PRIME;
-            dbg!(hash, word_hash, word_length, self.hash_tail.len(), tail_hash, old_hash);
+            // dbg!(hash, word_hash, word_length, self.hash_tail.len(), tail_hash, old_hash);
             if word_hash == tail_hash {
                 return true;
             }
@@ -91,7 +91,7 @@ fn official17() {
     let input = [["a"],["a"],["b"],["b"],["b"],["a"],["a"],["b"],["b"],["a"],["a"],["a"],["a"],["b"],["a"],["b"],["b"],["b"],["a"],["b"],["b"],["b"],["a"],["a"],["a"],["a"],["a"],["b"],["a"],["b"],["b"],["b"],["a"],["a"],["b"],["b"],["b"],["a"],["b"],["a"]];
     let expected = [false,false,true,false,true,false,false,true,false,false,false,false,false,true,false,true,false,false,false,true,false,false,false,false,false,false,false,true,false,true,false,false,false,false,true,false,true,false,true,false];
     for (input, expected) in input.into_iter().zip(expected) {
-        dbg!(input, expected);
+        // dbg!(input, expected);
         assert_eq!(expected, stream_checker.query(input[0].chars().next().unwrap()));
     }
 
