@@ -96,3 +96,55 @@ fn official17() {
     }
 
 }
+
+#[test]
+fn single_letter_word_matches_immediately() {
+    let mut stream_checker = StreamChecker::new(vec!["a".to_string()]);
+    assert!(!stream_checker.query('b'));
+    assert!(stream_checker.query('a'));
+    assert!(stream_checker.query('a'));
+}
+
+#[test]
+fn overlapping_suffixes() {
+    let mut stream_checker = StreamChecker::new(vec![
+        "abc".to_string(),
+        "bc".to_string(),
+        "c".to_string(),
+    ]);
+    assert!(!stream_checker.query('a'));
+    assert!(!stream_checker.query('b'));
+    assert!(stream_checker.query('c'));
+}
+
+#[test]
+fn duplicate_words_do_not_change_behavior() {
+    let mut stream_checker = StreamChecker::new(vec![
+        "ab".to_string(),
+        "ab".to_string(),
+        "b".to_string(),
+    ]);
+    assert!(!stream_checker.query('a'));
+    assert!(stream_checker.query('b'));
+}
+
+#[test]
+fn respects_max_word_length_window() {
+    let mut stream_checker = StreamChecker::new(vec!["abc".to_string()]);
+    assert!(!stream_checker.query('a'));
+    assert!(!stream_checker.query('b'));
+    assert!(stream_checker.query('c'));
+    assert!(!stream_checker.query('d'));
+    assert!(!stream_checker.query('e'));
+    assert!(!stream_checker.query('f'));
+}
+
+#[test]
+fn supports_length_200_word() {
+    let long_word = "a".repeat(200);
+    let mut stream_checker = StreamChecker::new(vec![long_word]);
+    for _ in 0..199 {
+        assert!(!stream_checker.query('a'));
+    }
+    assert!(stream_checker.query('a'));
+}
