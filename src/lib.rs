@@ -31,3 +31,5 @@ pub mod lfu_cache_q2;
 pub mod can_reach_1306;
 pub mod min_jumps_1345;
 pub mod get_common_2540;
+pub mod kth_largest_q1;
+pub mod find_the_prefix_common_array_2657;
