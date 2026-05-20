@@ -1,84 +1,32 @@
 use std::collections::VecDeque;
 
+use crate::trie::Trie;
+
+#[derive(Debug)]
 pub struct StreamChecker {
-    queries: Vec<(u64, String)>,
-    hash_tail: VecDeque<u64>,
-    text_tail: VecDeque<char>,
-    
+    queries: Trie<char, bool>,
+    text_tail: VecDeque<char>,    
 }
 
 impl StreamChecker {
 
     pub fn new(words: Vec<String>) -> Self {
-        for i in words.iter() {
-            assert!(i.len() < POWERS.len());
-        }
         let max_len = words.iter().map(String::len).max().unwrap();
-        let hash_tail = VecDeque::with_capacity(max_len + 1);
         let text_tail = VecDeque::with_capacity(max_len);
-        let queries = words.into_iter().map(|w| (hash(&w), w)).collect();
-        // dbg!(&hash_length);
-        Self { queries, hash_tail, text_tail }
+        let mut queries = Trie::new();
+        for word in words {
+            queries.insert(word.chars(), true);
+        }
+        Self { queries, text_tail }
     }
 
-    fn suffix_matches(&self, word: &str) -> bool {
-        if word.len() > self.text_tail.len() {
-            return false;
-        }
-        word.chars().rev().zip(self.text_tail.iter()).all(|(a, b)| a == *b)
-    }
-    
     pub fn query(&mut self, letter: char) -> bool {
-        let mut hash = self.hash_tail.front().copied().unwrap_or(0);
-        hash = (hash * 31 + letter as u64) % PRIME;
-        if self.hash_tail.len() >= self.hash_tail.capacity() {
-            self.hash_tail.pop_back();
-        }
-        self.hash_tail.push_front(hash);
         if self.text_tail.len() >= self.text_tail.capacity() {
             self.text_tail.pop_back();
         }
         self.text_tail.push_front(letter);
-        for (word_hash, word) in &self.queries {
-            let old_hash = if word.len() == self.hash_tail.len() {
-                0
-            } else {
-                if let Some(&h) = self.hash_tail.get(word.len()) {
-                    h
-                } else {
-                    continue;
-                }
-            };
-
-            // Rabin-Karp rolling hash
-            let tail_hash = (hash + PRIME - (old_hash * POWERS[word.len()]) % PRIME) % PRIME;
-            // dbg!(hash, word_hash, word_length, self.hash_tail.len(), tail_hash, old_hash);
-            if *word_hash == tail_hash && self.suffix_matches(word) {
-                return true;
-            }
-        }
-        false
+        self.queries.get(self.text_tail.iter().copied()).copied().unwrap_or(false)
     }
-}
-
-const POWERS: [u64; 201] = {
-    let mut powers = [0; 201];
-    powers[0] = 1;
-    let mut i = 1;
-    while i < powers.len() {
-        powers[i] = (powers[i-1] * 31) % PRIME;
-        i += 1;
-    }
-    powers
-};
-
-const PRIME: u64 = 1000000009;
-fn hash(input: &str) -> u64 {
-    let mut result = 0;
-    for i in input.chars() {
-        result = (result * 31 + i as u64) % PRIME;
-    }
-    result
 }
 
 #[test]
@@ -129,6 +77,7 @@ fn overlapping_suffixes() {
     ]);
     assert!(!stream_checker.query('a'));
     assert!(!stream_checker.query('b'));
+    dbg!(&stream_checker);
     assert!(stream_checker.query('c'));
 }
 
