@@ -1,8 +1,10 @@
 use std::collections::VecDeque;
 
 pub struct StreamChecker {
-    hash_length: Vec<(u64, usize)>,
+    queries: Vec<(u64, String)>,
     hash_tail: VecDeque<u64>,
+    text_tail: VecDeque<char>,
+    
 }
 
 impl StreamChecker {
@@ -11,10 +13,19 @@ impl StreamChecker {
         for i in words.iter() {
             assert!(i.len() < POWERS.len());
         }
-        let hash_tail = VecDeque::with_capacity(words.iter().map(String::len).max().unwrap() + 1);
-        let hash_length = words.iter().map(|w| (hash(&w), w.len())).collect();
+        let max_len = words.iter().map(String::len).max().unwrap();
+        let hash_tail = VecDeque::with_capacity(max_len + 1);
+        let text_tail = VecDeque::with_capacity(max_len);
+        let queries = words.into_iter().map(|w| (hash(&w), w)).collect();
         // dbg!(&hash_length);
-        Self { hash_length, hash_tail, }
+        Self { queries, hash_tail, text_tail }
+    }
+
+    fn suffix_matches(&self, word: &str) -> bool {
+        if word.len() > self.text_tail.len() {
+            return false;
+        }
+        word.chars().rev().zip(self.text_tail.iter()).all(|(a, b)| a == *b)
     }
     
     pub fn query(&mut self, letter: char) -> bool {
@@ -24,11 +35,15 @@ impl StreamChecker {
             self.hash_tail.pop_back();
         }
         self.hash_tail.push_front(hash);
-        for &(word_hash, word_length) in &self.hash_length {
-            let old_hash = if word_length == self.hash_tail.len() {
+        if self.text_tail.len() >= self.text_tail.capacity() {
+            self.text_tail.pop_back();
+        }
+        self.text_tail.push_front(letter);
+        for (word_hash, word) in &self.queries {
+            let old_hash = if word.len() == self.hash_tail.len() {
                 0
             } else {
-                if let Some(&h) = self.hash_tail.get(word_length) {
+                if let Some(&h) = self.hash_tail.get(word.len()) {
                     h
                 } else {
                     continue;
@@ -36,9 +51,9 @@ impl StreamChecker {
             };
 
             // Rabin-Karp rolling hash
-            let tail_hash = (hash + PRIME - (old_hash * POWERS[word_length]) % PRIME) % PRIME;
+            let tail_hash = (hash + PRIME - (old_hash * POWERS[word.len()]) % PRIME) % PRIME;
             // dbg!(hash, word_hash, word_length, self.hash_tail.len(), tail_hash, old_hash);
-            if word_hash == tail_hash {
+            if *word_hash == tail_hash && self.suffix_matches(word) {
                 return true;
             }
         }

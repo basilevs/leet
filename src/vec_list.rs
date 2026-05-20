@@ -131,7 +131,7 @@ impl<T: Debug> VecList<T> {
 
     fn paste_before(&mut self, n: usize, before: usize) {
         assert_ne!(n, before);
-        dbg!(&self.buffer);
+        // dbg!(&self.buffer);
         let prev =  replace(&mut self.buffer[before].prev, Some(n));
         if let Some(prev) = prev {
             self.buffer[prev].next = Some(n);
