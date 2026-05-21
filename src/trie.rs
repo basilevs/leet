@@ -11,17 +11,20 @@ struct TrieNode<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> {
     children: HashMap<K, TrieNode<K, T>>,
 }
 
+impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Default for TrieNode<K, T> {
+    fn default() -> Self {
+        Self { value: None, children: HashMap::new() }
+    }
+}
+
 impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
     pub fn new() -> Self {
-        Self { root: TrieNode { value: None, children: HashMap::new() } }
+        Self { root: TrieNode::default() }
     }
 
     pub fn insert(&mut self, key: impl IntoIterator<Item = K>, value: T) {
         key.into_iter().fold(&mut self.root, |node, k| {
-            node.children.entry(k).or_insert_with(|| TrieNode {
-                value: None,
-                children: HashMap::new(),
-            })
+            node.children.entry(k).or_default()
         }).value = Some(value);
     }
 
