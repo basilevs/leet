@@ -38,6 +38,21 @@ impl<const N: usize, T: std::fmt::Debug> ArrayTrie<N, T> {
         self.nodes[idx as usize].value = Some(value);
     }
 
+    pub fn insert_prefixes(&mut self, key: impl IntoIterator<Item = u8>, value: impl Fn() -> T) {
+        key.into_iter().fold(0u32, |idx, k| {
+            let next = if let Some(i) = self.nodes[idx as usize].children[usize::from(k)] {
+                i.get()
+            } else {
+                self.nodes.push(ArrayTrieNode::default());
+                let new = (self.nodes.len() - 1) as u32;
+                self.nodes[idx as usize].children[usize::from(k)] = NonZeroU32::new(new);
+                new
+            };
+            self.nodes[next as usize].value = Some(value());
+            next
+        });
+    }
+ 
     pub fn walk(&self, key: impl IntoIterator<Item = u8>) -> impl Iterator<Item = &T> {
         key.into_iter().scan(Some(0u32), |idx, k| {
             let i = (*idx)?;
@@ -72,4 +87,13 @@ fn array_trie() {
     assert_eq!(Some(&20), walk.next());
     assert_eq!(None, walk.next());
     assert_eq!(None, walk.next());
+}
+
+#[test]
+fn array_trie_insert_prefixes() {
+    let mut trie: ArrayTrie<10, ()> = ArrayTrie::with_capacity(4);
+    trie.insert_prefixes([1, 0, 5], || ());
+    assert_eq!(3, trie.walk([1, 0, 5]).count());
+    assert_eq!(2, trie.walk([1, 0, 7]).count());
+    assert_eq!(1, trie.walk([1, 9]).count());
 }
