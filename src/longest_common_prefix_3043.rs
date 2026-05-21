@@ -1,32 +1,51 @@
-use std::collections::{HashSet};
+
+use itertools::Itertools;
+
+use crate::array_trie::ArrayTrie;
 
 pub fn longest_common_prefix(arr1: Vec<i32>, arr2: Vec<i32>) -> i32 {
-    let mut prefixes1 = HashSet::with_capacity(arr1.len()); // total count is larger, but at most 8 times as long
-    for mut i in arr1 {
-        while i > 0 {
-            prefixes1.insert(i);
-            i /= 10;
-        }
-    }
+let mut prefixes1: ArrayTrie<8, ()> = ArrayTrie::with_capacity(arr1.len()*8);
     
+    for i in arr1 {
+        prefixes1.insert(digits(i), ());
+    }
+    dbg!(&prefixes1);
     arr2
         .iter()
         .copied()
-        .map(|mut p| {
-            while p > 0 {
-                if prefixes1.contains(&p) {
-                    break;
-                }
-                p /= 10;
-            }
-            p
-        })
-        .filter(|p| *p > 0)
-        .map(|p| p.ilog10() + 1)
+        .map(|p| prefixes1.walk(digits(p)).count())
         .max()
         .unwrap_or(0) as i32
 }
 
+const DENOMINATORS: [i32; 8] = [
+    100_000_00,
+    100_000_0,
+    100_000,
+    100_00,
+    100_0,
+    100,
+    10,
+    1
+];
+
+fn digits(input: i32) -> impl Iterator<Item=u8> {
+    DENOMINATORS.iter().scan(input, |i, &d| {
+        let digit = *i / d;
+        *i -= digit * d;
+        Some(u8::try_from(digit).expect("Should be in 1..=9 by construction"))
+    }).skip_while(|&i| i ==0)
+}
+
+#[test]
+fn test_digits() {
+    assert_eq!(vec![1,2,3,4], digits(1234).collect_vec());
+    assert_eq!(vec![1], digits(1).collect_vec());
+    assert_eq!(vec![1,0,0], digits(100).collect_vec());
+    assert_eq!(vec![1,0], digits(10).collect_vec());
+    assert_eq!(vec![1,7], digits(17).collect_vec());
+    assert_eq!(vec![1,1], digits(11).collect_vec());
+}
 
 #[test]
 fn official1() {
@@ -36,4 +55,9 @@ fn official1() {
 #[test]
 fn official2() {
     assert_eq!(0, longest_common_prefix(vec![1,2,3], vec![4,4,4]));
+}
+
+#[test]
+fn official5() {
+    assert_eq!(1, longest_common_prefix(vec![10], vec![17, 11]));
 }
