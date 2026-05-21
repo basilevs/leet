@@ -30,22 +30,10 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
     pub fn walk(&self, key: impl IntoIterator<Item = K>) -> impl Iterator<Item = &T> {
         let mut node = Some(&self.root);
         let mut keys = key.into_iter();
-        std::iter::from_fn(move || loop {
-            let n = node?;
-            let k = keys.next()?;
-            match n.children.get(&k) {
-                Some(child) => {
-                    node = Some(child);
-                    if let Some(v) = child.value.as_ref() {
-                        return Some(v);
-                    }
-                }
-                None => {
-                    node = None;
-                    return None;
-                }
-            }
-        })
+        std::iter::from_fn(move || {
+            node = node?.children.get(&keys.next()?);
+            Some(node?.value.as_ref())
+        }).flatten()
     }
 }
 
