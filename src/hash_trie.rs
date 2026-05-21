@@ -1,7 +1,7 @@
 use std::{collections::HashMap, hash::Hash};
 
 #[derive(Debug)]
-pub struct Trie<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> {
+pub struct HashTrie<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> {
     root: TrieNode<K, T>,
 }
 
@@ -17,7 +17,7 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Default for TrieNode<K,
     }
 }
 
-impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
+impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> HashTrie<K, T> {
     pub fn new() -> Self {
         Self { root: TrieNode::default() }
     }
@@ -38,7 +38,7 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
 
 #[test]
 fn trie() {
-    let mut trie = Trie::new();
+    let mut trie = HashTrie::new();
     trie.insert("abc".chars(), 1);
     trie.insert("abd".chars(), 2);
     trie.insert("bcd".chars(), 3);

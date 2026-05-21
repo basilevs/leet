@@ -1,10 +1,10 @@
 use std::collections::VecDeque;
 
-use crate::trie::Trie;
+use crate::hash_trie::HashTrie;
 
 #[derive(Debug)]
 pub struct StreamChecker {
-    queries: Trie<char, bool>,
+    queries: HashTrie<char, bool>,
     text_tail: VecDeque<char>,    
 }
 
@@ -13,7 +13,7 @@ impl StreamChecker {
     pub fn new(words: Vec<String>) -> Self {
         let max_len = words.iter().map(String::len).max().unwrap();
         let text_tail = VecDeque::with_capacity(max_len);
-        let mut queries = Trie::new();
+        let mut queries = HashTrie::new();
         for word in words {
             queries.insert(word.chars().rev(), true);
         }
