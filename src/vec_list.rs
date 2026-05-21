@@ -138,7 +138,7 @@ impl<T: Debug> VecList<T> {
         }
         self.buffer[n].next = Some(before);
         self.buffer[n].prev = prev;
-        dbg!(&self.buffer);
+        // dbg!(&self.buffer);
     }
 
     /// Push a new node at the head and return its index.

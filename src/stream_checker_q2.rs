@@ -15,7 +15,7 @@ impl StreamChecker {
         let text_tail = VecDeque::with_capacity(max_len);
         let mut queries = Trie::new();
         for word in words {
-            queries.insert(word.chars(), true);
+            queries.insert(word.chars().rev(), true);
         }
         Self { queries, text_tail }
     }
@@ -25,18 +25,19 @@ impl StreamChecker {
             self.text_tail.pop_back();
         }
         self.text_tail.push_front(letter);
-        self.queries.get(self.text_tail.iter().copied()).copied().unwrap_or(false)
+        self.queries.get(self.text_tail.iter().copied(), |&v| if v { Some(v) } else { None }).unwrap_or(false)
     }
 }
 
 #[test]
-fn official1() {
+fn official1_() {
     let mut stream_checker = StreamChecker::new(vec!["cd".to_string(), "f".to_string(), "kl".to_string()]);
     assert_eq!(false, stream_checker.query('a'));
     assert_eq!(false, stream_checker.query('b'));
     assert_eq!(false, stream_checker.query('c'));
     assert_eq!(true, stream_checker.query('d'));
     assert_eq!(false, stream_checker.query('e'));
+    // dbg!(&stream_checker);
     assert_eq!(true, stream_checker.query('f'));
     assert_eq!(false, stream_checker.query('g'));
     assert_eq!(false, stream_checker.query('h'));
@@ -77,7 +78,7 @@ fn overlapping_suffixes() {
     ]);
     assert!(!stream_checker.query('a'));
     assert!(!stream_checker.query('b'));
-    dbg!(&stream_checker);
+    // dbg!(&stream_checker);
     assert!(stream_checker.query('c'));
 }
 
