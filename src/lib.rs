@@ -36,4 +36,4 @@ pub mod find_the_prefix_common_array_2657;
 pub mod stream_checker_q2;
 pub mod hash_trie;
 pub mod array_trie;
-pub mod longest_prefix_3043;
+pub mod longest_common_prefix_3043;
