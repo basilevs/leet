@@ -25,7 +25,7 @@ impl StreamChecker {
             self.text_tail.pop_back();
         }
         self.text_tail.push_front(letter);
-        self.queries.get(self.text_tail.iter().copied(), |&v| if v { Some(v) } else { None }).unwrap_or(false)
+        self.queries.walk(self.text_tail.iter().copied(), |&v| if v { Some(v) } else { None }).unwrap_or(false)
     }
 }
 

@@ -31,7 +31,7 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
         node.value = Some(value);
     }
 
-    pub fn get<V>(&self, key: impl IntoIterator<Item = K>, f: impl Fn(&T) -> Option<V>) -> Option<V> {
+    pub fn walk<V>(&self, key: impl IntoIterator<Item = K>, f: impl Fn(&T) -> Option<V>) -> Option<V> {
         let mut key = key.into_iter();
          let Some(mut node) = self.children.get(&(key.next().expect("Key must have at least one element"))) else {
             return None;
@@ -58,10 +58,10 @@ fn trie() {
     trie.insert("abc".chars(), 1);
     trie.insert("abd".chars(), 2);
     trie.insert("bcd".chars(), 3 );
-    assert_eq!(Some(1), trie.get("abc".chars(), |&v| Some(v)));
-    assert_eq!(Some(2), trie.get("abd".chars(), |&v| Some(v)));
-    assert_eq!(Some(3), trie.get("bcd".chars(), |&v| Some(v)));
-    assert_eq!(None, trie.get("ab".chars(), |&v| Some(v)));
-    assert_eq!(Some(1), trie.get("abcd".chars(), |&v| Some(v)));
-    assert_eq!(None, trie.get("abe".chars(), |&v| Some(v)));
+    assert_eq!(Some(1), trie.walk("abc".chars(), |&v| Some(v)));
+    assert_eq!(Some(2), trie.walk("abd".chars(), |&v| Some(v)));
+    assert_eq!(Some(3), trie.walk("bcd".chars(), |&v| Some(v)));
+    assert_eq!(None, trie.walk("ab".chars(), |&v| Some(v)));
+    assert_eq!(Some(1), trie.walk("abcd".chars(), |&v| Some(v)));
+    assert_eq!(None, trie.walk("abe".chars(), |&v| Some(v)));
 }
