@@ -12,8 +12,9 @@ impl StreamChecker {
 
     pub fn new(words: Vec<String>) -> Self {
         let max_len = words.iter().map(String::len).max().unwrap();
+        let node_capacity = 1 + words.iter().map(String::len).sum::<usize>();
         let text_tail = VecDeque::with_capacity(max_len);
-        let mut queries = ArrayTrie::new();
+        let mut queries = ArrayTrie::with_capacity(node_capacity);
         for word in words {
             queries.insert(word.bytes().rev().map(|b| b - b'a'), true);
         }

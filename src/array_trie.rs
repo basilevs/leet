@@ -18,8 +18,10 @@ impl<const N: usize, T: std::fmt::Debug> Default for ArrayTrieNode<N, T> {
 }
 
 impl<const N: usize, T: std::fmt::Debug> ArrayTrie<N, T> {
-    pub fn new() -> Self {
-        Self { nodes: vec![ArrayTrieNode::default()] }
+    pub fn with_capacity(capacity: usize) -> Self {
+        let mut nodes = Vec::with_capacity(capacity.max(1));
+        nodes.push(ArrayTrieNode::default());
+        Self { nodes }
     }
 
     pub fn insert(&mut self, key: impl IntoIterator<Item = u8>, value: T) {
@@ -47,7 +49,7 @@ impl<const N: usize, T: std::fmt::Debug> ArrayTrie<N, T> {
 
 #[test]
 fn array_trie() {
-    let mut trie: ArrayTrie<26, i32> = ArrayTrie::new();
+    let mut trie: ArrayTrie<26, i32> = ArrayTrie::with_capacity(10);
     trie.insert(b"abc".iter().map(|c| c - b'a'), 1);
     trie.insert(b"abd".iter().map(|c| c - b'a'), 2);
     trie.insert(b"bcd".iter().map(|c| c - b'a'), 3);
