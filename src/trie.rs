@@ -2,7 +2,7 @@ use std::{collections::HashMap, hash::Hash};
 
 #[derive(Debug)]
 pub struct Trie<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> {
-    children: HashMap<K, TrieNode<K, T>>,
+    root: TrieNode<K, T>,
 }
 
 #[derive(Debug)]
@@ -13,15 +13,11 @@ struct TrieNode<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> {
 
 impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
     pub fn new() -> Self {
-        Self { children: HashMap::new() }
+        Self { root: TrieNode { value: None, children: HashMap::new() } }
     }
 
     pub fn insert(&mut self, key: impl IntoIterator<Item = K>, value: T) {
-        let mut key = key.into_iter();
-        let mut node = self.children.entry(key.next().expect("Key must have at least one element")).or_insert_with(|| TrieNode {
-            value: None,
-            children: HashMap::new(),
-        });
+        let mut node = &mut self.root;
         for k in key {
             node = node.children.entry(k).or_insert_with(|| TrieNode {
                 value: None,
@@ -32,18 +28,9 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
     }
 
     pub fn walk<V>(&self, key: impl IntoIterator<Item = K>, f: impl Fn(&T) -> Option<V>) -> Option<V> {
-        let mut key = key.into_iter();
-         let Some(mut node) = self.children.get(&(key.next().expect("Key must have at least one element"))) else {
-            return None;
-        };
-        if let Some(v) = node.value.as_ref().and_then(|v| f(v)) {
-            return Some(v);
-        }
+        let mut node = &self.root;
         for k in key {
-            let Some(n) = node.children.get(&k) else {
-                return None
-            };
-            node = n;
+            node = node.children.get(&k)?;
             if let Some(v) = node.value.as_ref().and_then(|v| f(v)) {
                 return Some(v);
             }
