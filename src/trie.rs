@@ -17,14 +17,12 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
     }
 
     pub fn insert(&mut self, key: impl IntoIterator<Item = K>, value: T) {
-        let mut node = &mut self.root;
-        for k in key {
-            node = node.children.entry(k).or_insert_with(|| TrieNode {
+        key.into_iter().fold(&mut self.root, |node, k| {
+            node.children.entry(k).or_insert_with(|| TrieNode {
                 value: None,
                 children: HashMap::new(),
-            });
-        }
-        node.value = Some(value);
+            })
+        }).value = Some(value);
     }
 
     pub fn walk(&self, key: impl IntoIterator<Item = K>) -> impl Iterator<Item = &T> {
