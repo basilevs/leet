@@ -28,11 +28,9 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
     }
 
     pub fn walk(&self, key: impl IntoIterator<Item = K>) -> impl Iterator<Item = &T> {
-        let mut node = Some(&self.root);
-        let mut keys = key.into_iter();
-        std::iter::from_fn(move || {
-            node = node?.children.get(&keys.next()?);
-            Some(node?.value.as_ref())
+        key.into_iter().scan(Some(&self.root), |node, k| {
+            *node = (*node)?.children.get(&k);
+            Some((*node)?.value.as_ref())
         }).flatten()
     }
 }
