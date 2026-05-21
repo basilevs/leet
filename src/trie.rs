@@ -11,7 +11,7 @@ struct TrieNode<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> {
     children: HashMap<K, TrieNode<K, T>>,
 }
 
-impl<K: Eq + Hash + std::fmt::Debug, T: Default + std::fmt::Debug> Trie<K, T> {
+impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
     pub fn new() -> Self {
         Self { children: HashMap::new() }
     }
