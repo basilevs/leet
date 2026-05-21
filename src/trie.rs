@@ -16,7 +16,8 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
         Self { children: HashMap::new() }
     }
 
-    pub fn insert<I: Iterator<Item = K>>(&mut self, mut key: I, value: T) {
+    pub fn insert(&mut self, key: impl IntoIterator<Item = K>, value: T) {
+        let mut key = key.into_iter();
         let mut node = self.children.entry(key.next().expect("Key must have at least one element")).or_insert_with(|| TrieNode {
             value: None,
             children: HashMap::new(),
@@ -30,7 +31,8 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
         node.value = Some(value);
     }
 
-    pub fn get<I: Iterator<Item = K>, V, F: Fn(&T) -> Option<V>>(&self, mut key: I, f: F) -> Option<V> {
+    pub fn get<V>(&self, key: impl IntoIterator<Item = K>, f: impl Fn(&T) -> Option<V>) -> Option<V> {
+        let mut key = key.into_iter();
          let Some(mut node) = self.children.get(&(key.next().expect("Key must have at least one element"))) else {
             return None;
         };
