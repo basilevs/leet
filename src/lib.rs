@@ -35,3 +35,4 @@ pub mod kth_largest_q1;
 pub mod find_the_prefix_common_array_2657;
 pub mod stream_checker_q2;
 pub mod trie;
+pub mod longest_prefix_3043;
