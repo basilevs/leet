@@ -1,6 +1,3 @@
-
-use itertools::Itertools;
-
 use crate::array_trie::ArrayTrie;
 
 pub fn longest_common_prefix(arr1: Vec<i32>, arr2: Vec<i32>) -> i32 {
