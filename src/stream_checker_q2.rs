@@ -1,11 +1,11 @@
 use std::collections::VecDeque;
 
-use crate::hash_trie::HashTrie;
+use crate::array_trie::ArrayTrie;
 
 #[derive(Debug)]
 pub struct StreamChecker {
-    queries: HashTrie<char, bool>,
-    text_tail: VecDeque<char>,    
+    queries: ArrayTrie<26, bool>,
+    text_tail: VecDeque<u8>,
 }
 
 impl StreamChecker {
@@ -13,9 +13,9 @@ impl StreamChecker {
     pub fn new(words: Vec<String>) -> Self {
         let max_len = words.iter().map(String::len).max().unwrap();
         let text_tail = VecDeque::with_capacity(max_len);
-        let mut queries = HashTrie::new();
+        let mut queries = ArrayTrie::new();
         for word in words {
-            queries.insert(word.chars().rev(), true);
+            queries.insert(word.bytes().rev().map(|b| b - b'a'), true);
         }
         Self { queries, text_tail }
     }
@@ -24,7 +24,7 @@ impl StreamChecker {
         if self.text_tail.len() >= self.text_tail.capacity() {
             self.text_tail.pop_back();
         }
-        self.text_tail.push_front(letter);
+        self.text_tail.push_front(letter as u8 - b'a');
         self.queries.walk(self.text_tail.iter().copied()).any(|&v| v)
     }
 }
