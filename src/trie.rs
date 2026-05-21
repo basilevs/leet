@@ -27,15 +27,25 @@ impl<K: Eq + Hash + std::fmt::Debug, T: std::fmt::Debug> Trie<K, T> {
         node.value = Some(value);
     }
 
-    pub fn walk<V>(&self, key: impl IntoIterator<Item = K>, f: impl Fn(&T) -> Option<V>) -> Option<V> {
-        let mut node = &self.root;
-        for k in key {
-            node = node.children.get(&k)?;
-            if let Some(v) = node.value.as_ref().and_then(|v| f(v)) {
-                return Some(v);
+    pub fn walk(&self, key: impl IntoIterator<Item = K>) -> impl Iterator<Item = &T> {
+        let mut node = Some(&self.root);
+        let mut keys = key.into_iter();
+        std::iter::from_fn(move || loop {
+            let n = node?;
+            let k = keys.next()?;
+            match n.children.get(&k) {
+                Some(child) => {
+                    node = Some(child);
+                    if let Some(v) = child.value.as_ref() {
+                        return Some(v);
+                    }
+                }
+                None => {
+                    node = None;
+                    return None;
+                }
             }
-        }
-        None
+        })
     }
 }
 
@@ -44,11 +54,31 @@ fn trie() {
     let mut trie = Trie::new();
     trie.insert("abc".chars(), 1);
     trie.insert("abd".chars(), 2);
-    trie.insert("bcd".chars(), 3 );
-    assert_eq!(Some(1), trie.walk("abc".chars(), |&v| Some(v)));
-    assert_eq!(Some(2), trie.walk("abd".chars(), |&v| Some(v)));
-    assert_eq!(Some(3), trie.walk("bcd".chars(), |&v| Some(v)));
-    assert_eq!(None, trie.walk("ab".chars(), |&v| Some(v)));
-    assert_eq!(Some(1), trie.walk("abcd".chars(), |&v| Some(v)));
-    assert_eq!(None, trie.walk("abe".chars(), |&v| Some(v)));
+    trie.insert("bcd".chars(), 3);
+    assert_eq!(Some(&1), trie.walk("abc".chars()).next());
+    assert_eq!(Some(&2), trie.walk("abd".chars()).next());
+    assert_eq!(Some(&3), trie.walk("bcd".chars()).next());
+    assert_eq!(None, trie.walk("ab".chars()).next());
+    assert_eq!(Some(&1), trie.walk("abcd".chars()).next());
+    assert_eq!(None, trie.walk("abe".chars()).next());
+
+    // Multiple values along a path
+    trie.insert("a".chars(), 10);
+    trie.insert("ab".chars(), 20);
+    let vals: Vec<_> = trie.walk("abcd".chars()).collect();
+    assert_eq!(vec![&10, &20, &1], vals);
+
+    // Iterator terminates after dead end
+    let mut walk = trie.walk("abe".chars());
+    assert_eq!(Some(&10), walk.next()); // "a" has value
+    assert_eq!(Some(&20), walk.next()); // "ab" has value
+    assert_eq!(None, walk.next()); // "e" not found - dead end
+    assert_eq!(None, walk.next()); // stays terminated
+
+    // Iterator terminates after keys exhausted
+    let mut walk = trie.walk("ab".chars());
+    assert_eq!(Some(&10), walk.next());
+    assert_eq!(Some(&20), walk.next());
+    assert_eq!(None, walk.next()); // no more keys
+    assert_eq!(None, walk.next()); // stays terminated
 }
