@@ -37,3 +37,4 @@ pub mod stream_checker_q2;
 pub mod hash_trie;
 pub mod array_trie;
 pub mod longest_common_prefix_3043;
+pub mod search_rotated_33;
