@@ -39,3 +39,5 @@ pub mod array_trie;
 pub mod longest_common_prefix_3043;
 pub mod search_rotated_33;
 pub mod check_rotated_1752;
+pub mod disjoint_intervals_q3;
+pub mod max_jumps_1340;
