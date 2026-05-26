@@ -43,3 +43,4 @@ pub mod disjoint_intervals_q3;
 pub mod max_jumps_1340;
 pub mod can_reach_1871;
 pub mod number_of_special_chars_3120;
+pub mod stock_spanner_q1;
