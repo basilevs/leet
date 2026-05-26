@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-struct StockSpanner {
+pub struct StockSpanner {
     last_positions: BTreeMap<i32, usize>,
     position: usize,
 }
@@ -12,11 +12,11 @@ struct StockSpanner {
  */
 impl StockSpanner {
 
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {last_positions: BTreeMap::new(), position: 0}
     }
     
-    fn next(&mut self, price: i32) -> i32 {
+    pub fn next(&mut self, price: i32) -> i32 {
         let range = self.last_positions.range((price+1)..);
         // dbg!(&self.last_positions, price);
         let last_occurence = range.map(|p| p.1 + 1).max().unwrap_or(0);
