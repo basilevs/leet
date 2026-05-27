@@ -37,9 +37,7 @@ impl<'a, T: Debug> Iterator for ListIter<'a, T> {
     type Item = (usize, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Some(index) = self.index else {
-            return None;
-        };
+        let index = self.index?;
         let node = &self.data.buffer[index];
         self.index = node.next;
         Some((index, &node.data))
@@ -117,8 +115,8 @@ impl<T: Debug> VecList<T> {
 
     fn cut(&mut self, n: usize) {
         let node = self.buffer.get_mut(n).expect("Node should exist");
-        let prev =  replace(&mut node.prev, None);
-        let next =  replace(&mut node.next, None);
+        let prev = node.prev.take();
+        let next = node.next.take();
         if let Some(next) = next {
             self.buffer[next].prev = prev;
             self.update_ends(next);

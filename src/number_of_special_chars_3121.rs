@@ -1,35 +1,27 @@
 
+#[must_use]
 pub fn number_of_special_chars(word: String) -> i32 {
-    enum State {
-        NONE,
-        LOWER,
-        BOTH,
-        FAIL
-    }
+    enum State { None, Lower, Both, Fail }
     use State::*;
-    let mut states = [const {NONE}; 26];
+    let mut states = [const { None }; 26];
 
-    for c in word.chars() {
-        if c.is_ascii_lowercase() {
-            let i = c as usize - 'a' as usize;
+    for b in word.into_bytes() {
+        if b.is_ascii_lowercase() {
+            let i = (b - b'a') as usize;
             states[i] = match states[i] {
-                NONE => LOWER,
-                LOWER => LOWER,
-                BOTH => FAIL,
-                FAIL => FAIL,
+                None | Lower => Lower,
+                Both | Fail => Fail,
             };
-        } else if c.is_ascii_uppercase() {
-            let i = c as usize - 'A' as usize;
+        } else if b.is_ascii_uppercase() {
+            let i = (b - b'A') as usize;
             states[i] = match states[i] {
-                NONE => FAIL,
-                LOWER => BOTH,
-                BOTH => BOTH,
-                FAIL => FAIL,
-            };            
+                Lower | Both => Both,
+                None | Fail => Fail,
+            };
         }
     }
 
-    states.iter().filter(|&x| matches!(x, State::BOTH)).count() as i32
+    i32::try_from(states.iter().filter(|x| matches!(x, Both)).count()).expect("count fits i32")
 }
 
 #[test]

@@ -14,7 +14,7 @@
             let layer_height = grid_height - 2 * layer;
             let layer_width  = grid_width - 2 * layer;
             let layer_length = 2 * (layer_width + layer_height) - 4;
-            let positive_step =  usize::try_from((k % layer_length as i32 + layer_length as i32) as usize % layer_length).unwrap();
+            let positive_step =  (k % layer_length as i32 + layer_length as i32) as usize % layer_length;
             
             // https://cplusplus.com/reference/algorithm/rotate/
             let mut first = 0;
