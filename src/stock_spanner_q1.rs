@@ -56,3 +56,33 @@ impl StockSpanner {
     assert_eq!(2, s.next(76));  // return 2
     assert_eq!(1, s.next(51));  // return 1
  }
+
+ #[cfg(test)]
+fn create_adversarial_sequence() -> impl Iterator<Item=i32> {
+    (0..).flat_map(|i| [i, 1])
+}
+
+ #[test]
+ pub fn estimate_quadratic_growth_for_adversarial_pattern() {
+    let mut s = StockSpanner::new();
+
+    for i in create_adversarial_sequence().take(1000) {
+        s.next(i);
+    }
+
+    let mut s = StockSpanner::new();
+    let start = std::time::Instant::now();
+    for i in create_adversarial_sequence().take(1000) {
+        s.next(i);
+    }
+    let t1 = start.elapsed();
+
+    let mut s = StockSpanner::new();
+    let start = std::time::Instant::now();
+    for i in create_adversarial_sequence().take(10000) {
+        s.next(i);
+    }
+    let t2 = start.elapsed();
+
+    println!("1k: {t1:?}, 10k: {t2:?}, ratio: {:.1}x", t2.as_secs_f64() / t1.as_secs_f64());
+ }
