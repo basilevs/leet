@@ -46,3 +46,4 @@ pub mod number_of_special_chars_3120;
 pub mod stock_spanner_q1;
 pub mod number_of_special_chars_3121;
 pub mod string_indices_3093;
+pub mod min_element_3300;
