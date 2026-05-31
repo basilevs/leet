@@ -1,22 +1,15 @@
-use std::collections::BinaryHeap;
 
 pub fn asteroids_destroyed(mass: i32, mut asteroids: Vec<i32>) -> bool {
-    for i in asteroids.iter_mut() {
-        *i *= -1;
-    }
+    asteroids.sort_unstable();
     let mut mass: u64 = u64::try_from(mass).expect("Planet mass should be positive");
-    let mut heap = BinaryHeap::from(asteroids);
-    loop {
-        let Some(mut i) = heap.pop() else {
-            return true;
-        };
-        i *= -1;
+    for i in asteroids {
         let i: u64 = u64::try_from(i).expect("Asteroid mass should be positive");
         if mass < i {
             return false;
         }
         mass += i;
     }
+    true
 }
 
 // Example 1:
