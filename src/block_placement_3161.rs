@@ -1,40 +1,35 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeSet};
+
+use itertools::{Itertools, chain};
 
 pub fn get_results(queries: Vec<Vec<i32>>) -> Vec<bool> {
     let mut obstacles = BTreeSet::new();
-    // length: positions
-    let mut by_length: BTreeMap<i32, BTreeSet<i32>> = BTreeMap::new();
+    obstacles.insert(0);
     let mut results = vec![];
     for query in queries {
         match query[0] {
             1 => {
-                let previous = obstacles.range(..query[1]).last().copied().unwrap_or(0);
-                if previous == query[1] {
-                    continue;
-                }
-                debug_assert!(previous < query[1]);
-                let next = obstacles.range(previous+1..).next().copied();
-                if let Some(next) = next {
-                    debug_assert!(next > query[1]);
-                    let length = next - previous;
-                    let removed = by_length.get_mut(&length).expect("Length was visited before").remove(&previous);
-                    debug_assert!(removed);
-                    debug_assert!(next - query[1] > 0);
-                    by_length.entry(next - query[1]).or_default().insert(query[1]);
-                }
-                debug_assert!(query[1] - previous > 0);
-                by_length.entry(query[1] - previous).or_default().insert(previous);
                 obstacles.insert(query[1]);
             }
             2 => {
-                dbg!(&obstacles, &by_length);
+                dbg!(&obstacles);
                 let length = query[2];
                 let position = query[1];
-                if position >= obstacles.last().copied().unwrap_or(0) + length {
-                    results.push(true);
+                let mut found = false;
+                let max_start_position = position - length;
+                let last = obstacles.last().copied().unwrap_or(0);
+                if last <= max_start_position {
+                    found = true;
                 } else {
-                    results.push(by_length.range(length..).any(|(_, positions)| positions.first().map_or(false, |&p| p + length <= position)));
+                    for (&prev, &next) in chain(obstacles.range(..position), [&position]).tuple_windows() {
+                        let unobstructed_length = next - prev;
+                        if length <= unobstructed_length {
+                            found = true;
+                            break;
+                        }
+                    }
                 }
+                results.push(found);
             }
             _ => unreachable!(),
         }
