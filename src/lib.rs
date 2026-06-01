@@ -50,3 +50,4 @@ pub mod min_element_3300;
 pub mod block_placement_3161;
 pub mod asteroids_destroyed_2126;
 pub mod minimum_cost_2144;
+pub mod randomized_set_q1;
