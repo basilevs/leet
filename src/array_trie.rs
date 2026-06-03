@@ -93,7 +93,6 @@ impl<const N: usize, T: std::fmt::Debug> ArrayTrie<N, T> {
                 &stack,
                 &key
             );
-            dbg!(&key);
             let Some(&node_id) = stack.last() else {
                 return;
             };

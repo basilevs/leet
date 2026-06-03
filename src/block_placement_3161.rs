@@ -12,7 +12,7 @@ pub fn get_results(queries: Vec<Vec<i32>>) -> Vec<bool> {
                 obstacles.insert(query[1]);
             }
             2 => {
-                dbg!(&obstacles);
+                // dbg!(&obstacles);
                 let length = query[2];
                 let position = query[1];
                 let mut found = false;
