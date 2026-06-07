@@ -4,10 +4,7 @@ Run tests before and after changes.
 
 
 # Finding the LeetCode problem statement
-Each `src/<name>_<number>.rs` corresponds to LeetCode problem `<number>`. The
-file's `<name>` prefix is a local nickname, not the LeetCode slug, so do not
-try to construct the URL from it. (Numeric URLs like
-`https://leetcode.com/problems/2196/` return 404 — there is no redirect.)
+Each `src/<name>_<number>.rs` corresponds to LeetCode problem `<number>`.
 
 To locate the canonical problem statement (including official examples,
 constraints, and the full slug):
