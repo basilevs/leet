@@ -3,6 +3,36 @@ Public functions have an extra indent for easier pasting into https://leetcode.c
 Run tests before and after changes.
 
 
+# Finding the LeetCode problem statement
+Each `src/<name>_<number>.rs` corresponds to LeetCode problem `<number>`. The
+file's `<name>` prefix is a local nickname, not the LeetCode slug, so do not
+try to construct the URL from it. (Numeric URLs like
+`https://leetcode.com/problems/2196/` return 404 — there is no redirect.)
+
+To locate the canonical problem statement (including official examples,
+constraints, and the full slug):
+1. If the file already has a `// https://leetcode.com/problems/<slug>/` header,
+   use that URL.
+2. Otherwise resolve the slug with whatever web-search affordance you have
+   (a dedicated web-search tool, the editor's search action, or fetching a
+   search-engine results page) using the predicate:
+
+       site:leetcode.com/problems/ <number>
+
+   The first hit is the canonical `https://leetcode.com/problems/<slug>/`
+   page. If you have no dedicated tool, prefer endpoints that return
+   server-rendered HTML so `fetch_webpage`-style tools can read the results
+   directly — for example,
+   `https://html.duckduckgo.com/html/?q=site%3Aleetcode.com%2Fproblems%2F+<number>`
+   is known to work. Fetch the resolved page for the problem text and
+   examples, and add the `// https://leetcode.com/problems/<slug>/` URL as a
+   top-of-file comment so the next agent doesn't have to look it up again.
+3. When writing tests named `official1`, `official2`, ..., copy the inputs
+   verbatim from the problem's "Example N" sections; do not synthesize them
+   from the function signature — the input shape is rarely enough to pin down
+   which interpretation the problem actually requires.
+
+
 # Polishing procedure
 Steps:
 - Run lint checks (optionally strict Clippy groups).
