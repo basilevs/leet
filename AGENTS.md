@@ -1,6 +1,10 @@
 Strange ineffective top-level inputs in Rust code come from https://leetcode.com/ challenges and can't be changed. Consider them an external unavoidable limitation.
 Public functions have an extra indent for easier pasting into https://leetcode.com/.
-Run tests before and after changes.
+
+
+# Tests
+When asked to add tests, add them mechanically per specification, ignoring existing implementation and its defects.
+Fix implementation only when asked explicitly, let user practice.
 
 
 # Finding the LeetCode problem statement
