@@ -3,6 +3,9 @@
         "cargo build": true,
         "cargo fmt": true,
         "true": true,
-        "uniq": true
+        "uniq": true,
+        "git checkout": true,
+        "git add": true,
+        "git commit": true
     }
 }
