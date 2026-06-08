@@ -16,3 +16,7 @@ harness = false
 [[bench]]
 name = "robot_sim_874"
 harness = false
+
+[[bench]]
+name = "pivot_array_2161"
+harness = false
