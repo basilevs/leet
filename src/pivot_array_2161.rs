@@ -3,32 +3,25 @@
 pub fn pivot_array(nums: Vec<i32>, pivot: i32) -> Vec<i32> {
     let mut lesser = 0;
     let mut equal = 0;
-    for &i in nums.iter() {
-        if i == pivot {
-            equal += 1_usize;
-        } else if i < pivot {
-            lesser += 1_usize;
+    for &n in &nums {
+        if n == pivot {
+            equal += 1;
+        } else if n < pivot {
+            lesser += 1;
         }
-    }
-    if lesser >= nums.len() {
-        return nums;
-    }
-    if lesser == 0 && equal == 0 {
-        return nums;
     }
 
     let mut result = vec![pivot; nums.len()];
+    let (less_slots, rest) = result.split_at_mut(lesser);
+    let (_pivots, greater_slots) = rest.split_at_mut(equal);
+    let mut less_slots = less_slots.iter_mut();
+    let mut greater_slots = greater_slots.iter_mut();
 
-    let mut lesser_cursor = 0;
-    let mut greater_cursor = lesser + equal;
-
-    for i in nums {
-        if i < pivot {
-            result[lesser_cursor] = i;
-            lesser_cursor += 1;
-        } else if i > pivot {
-            result[greater_cursor] = i;
-            greater_cursor += 1;
+    for n in nums {
+        if n < pivot {
+            *less_slots.next().unwrap() = n;
+        } else if n > pivot {
+            *greater_slots.next().unwrap() = n;
         }
     }
 
