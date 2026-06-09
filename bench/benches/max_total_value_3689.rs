@@ -7,8 +7,9 @@ const K: i32 = 5;
 const SEED: u64 = 0x1234_5678_9ABC_DEF0;
 const SIZES: [usize; 4] = [1_000, 10_000, 100_000, 1_000_000];
 
-/// Deterministic SplitMix64 generator so every run (and every branch baseline)
-/// sees the exact same data, keeping comparisons meaningful.
+/// Deterministic SplitMix64 generator. The caller varies `seed` per iteration
+/// so that data is fresh every timed call (defeating branch-predictor
+/// memorization), while a fixed seed sequence keeps the whole run reproducible.
 fn random_nums(len: usize, seed: u64) -> Vec<i32> {
     let mut state = seed;
     (0..len)
@@ -24,16 +25,23 @@ fn random_nums(len: usize, seed: u64) -> Vec<i32> {
         .collect()
 }
 
-fn bench_random(c: &mut Criterion) {
-    let mut group = c.benchmark_group("max_total_value_random");
+fn bench_fresh(c: &mut Criterion) {
+    let mut group = c.benchmark_group("max_total_value_fresh");
 
     for len in SIZES {
-        let nums = random_nums(len, SEED);
-        group.bench_with_input(BenchmarkId::from_parameter(len), &nums, |b, nums| {
-            // LargeInput: the 1M-element vectors are big, so bound how many
-            // pre-cloned copies criterion holds at once.
+        group.bench_with_input(BenchmarkId::from_parameter(len), &len, |b, &len| {
+            // Fresh data for every timed call: each input gets a new seed, so the
+            // branch predictor can never memorize the sequence. This exposes the
+            // true random-data cost (including mispredictions) at every size,
+            // instead of letting the predictor learn one reused array at small N.
+            // LargeInput keeps timer overhead low while bounding memory; the
+            // generated batch holds many *different* arrays, not clones.
+            let mut seed = SEED;
             b.iter_batched(
-                || nums.clone(),
+                || {
+                    seed = seed.wrapping_add(0x9E37_79B9_7F4A_7C15);
+                    random_nums(len, seed)
+                },
                 |nums| max_total_value(black_box(nums), black_box(K)),
                 BatchSize::LargeInput,
             );
@@ -43,5 +51,5 @@ fn bench_random(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_random);
+criterion_group!(benches, bench_fresh);
 criterion_main!(benches);
