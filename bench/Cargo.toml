@@ -20,3 +20,7 @@ harness = false
 [[bench]]
 name = "pivot_array_2161"
 harness = false
+
+[[bench]]
+name = "max_total_value_3689"
+harness = false
