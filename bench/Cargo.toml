@@ -6,6 +6,9 @@ edition = "2024"
 [dependencies]
 leet = { path = ".." }
 
+[lib]
+bench = false
+
 [dev-dependencies]
 criterion = "0.5"
 
