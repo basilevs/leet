@@ -6,6 +6,8 @@
         "uniq": true,
         "git checkout": true,
         "git add": true,
-        "git commit": true
+        "git commit": true,
+        "cargo rustc": true,
+        "awk": true
     }
 }
