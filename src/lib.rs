@@ -56,3 +56,4 @@ pub mod total_waviness_3751;
 pub mod left_right_difference_2574;
 pub mod create_binary_tree_2196;
 pub mod pivot_array_2161;
+pub mod max_total_value_3689;
