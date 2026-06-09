@@ -41,12 +41,16 @@ Steps:
     ```
     cargo clippy -q --message-format=json -- -W clippy::pedantic -W clippy::nursery | jq -Rr 'fromjson? | select(.reason=="compiler-message") | .message.code.code? // empty' | sed '/^$/d' | sort | uniq -c | sort -nr
     ```
+- Save benchmark baseline.
+- Fix lint detections.
+- Run tests.
+- Compare new benchmark to baseline.
+
+# Benchmarking
 - Run becnhmark saving baseline:
     ```
     cargo bench --manifest-path bench/Cargo.toml  -- --save-baseline pre_lint_fix
     ```
-- Fix lint detections.
-- Run tests.
 - Run benchmarks comparing with saved baseline:
     ```
     cargo bench --manifest-path bench/Cargo.toml  -- --baseline pre_lint_fix
