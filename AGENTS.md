@@ -43,13 +43,13 @@ Steps:
     ```
 - Run becnhmark saving baseline:
     ```
-    cargo bench -- --save-baseline pre_lint_fix
+    cargo bench --manifest-path bench/Cargo.toml  -- --save-baseline pre_lint_fix
     ```
 - Fix lint detections.
 - Run tests.
 - Run benchmarks comparing with saved baseline:
     ```
-    cargo bench -- --baseline pre_lint_fix
+    cargo bench --manifest-path bench/Cargo.toml  -- --baseline pre_lint_fix
     ```
 
 
