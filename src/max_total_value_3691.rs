@@ -9,7 +9,7 @@ pub fn max_total_value(nums: Vec<i32>, k: i32) -> i64 {
     let min = SparseTable::new(nums.clone(), i32::min);
     let max = SparseTable::new(nums, i32::max);
     let k = usize::try_from(k).expect("k should be positive");
-    let mut queue = BinaryHeap::with_capacity(k);
+    let mut queue = BinaryHeap::with_capacity(n);
 
     for left in 0..n {
         let value = max.query(left..n) - min.query(left..n);
