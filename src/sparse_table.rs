@@ -14,6 +14,15 @@ where
     T: Copy,
     F: Fn(T, T) -> T,
 {
+    /// Builds the table over `input`, precomputing the aggregate of every
+    /// power-of-two-length block under `merge` in `O(n log n)` time.
+    ///
+    /// `merge` must be idempotent (`merge(x, x) == x`).
+    /// It is applied to same values multiple times due to precomputed blocks overlap.
+    /// This holds for `min`, `max`, and `gcd`, but **not** for `sum`,
+    /// where the overlap would be double-counted.
+    ///
+    /// [`query`]: Self::query
     pub fn new(input: Vec<T>, merge: F) -> Self {
         let n = input.len();
         let rows = n.checked_ilog2().unwrap_or(0) as usize + 1;
@@ -31,7 +40,9 @@ where
         Self { data, merge }
     }
 
-    // Idempotent range query over the half-open range `[start, end)`.
+    /// Returns the aggregate of the half-open range `[start, end)` under
+    /// `merge` in `O(1)` time. Correct only for idempotent `merge`; see
+    /// [`new`](Self::new).
     pub fn query(&self, range: Range<usize>) -> T {
         let Range { start, end } = range;
         let i = (end - start).ilog2() as usize;
