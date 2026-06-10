@@ -15,28 +15,18 @@ pub fn max_total_value(nums: Vec<i32>, k: i32) -> i64 {
         let value = max.query(left..n) - min.query(left..n);
         queue.push((value, left, n));
     }
-
-    let mut count = 0;
-    let mut result= 0i64;
     
-    loop {
-        let Some((value, left, right)) = queue.pop() else {
-            unreachable!();
-        };
-
-        count += 1;
+    let mut result = 0i64;
+    for _ in 0..k {
+        let (value, left, right) = queue.pop().expect("k <= number of subarrays");
         result += i64::from(value);
-
-        if count >= k {
-            break result;
-        }
-
         if left + 1 < right {
-            let range = left..(right-1);
-            let value = max.query(range.clone()) - min.query(range);
-            queue.push((value, left, right-1));
+            let end = right - 1;
+            let value = max.query(left..end) - min.query(left..end);
+            queue.push((value, left, end));
         }
     }
+    result
 
 }
 
