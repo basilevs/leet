@@ -6,24 +6,26 @@ use crate::sparse_table::SparseTable;
 
 pub fn max_total_value(nums: Vec<i32>, k: i32) -> i64 {
     let n = nums.len();
-    let min = SparseTable::new(nums.clone(), i32::min);
-    let max = SparseTable::new(nums, i32::max);
+    let pairs = nums.into_iter().map(|x| (x, x)).collect();
+    let table = SparseTable::new(pairs, |(lo1, hi1), (lo2, hi2)| {
+        (i32::min(lo1, lo2), i32::max(hi1, hi2))
+    });
     let k = usize::try_from(k).expect("k should be positive");
     let mut queue = BinaryHeap::with_capacity(n);
 
     for left in 0..n {
-        let value = max.query(left..n) - min.query(left..n);
-        queue.push((value, left, n));
+        let (lo, hi) = table.query(left..n);
+        queue.push((hi - lo, left, n));
     }
-    
+
     let mut result = 0i64;
     for _ in 0..k {
         let (value, left, right) = queue.pop().expect("k <= number of subarrays");
         result += i64::from(value);
         if left + 1 < right {
             let end = right - 1;
-            let value = max.query(left..end) - min.query(left..end);
-            queue.push((value, left, end));
+            let (lo, hi) = table.query(left..end);
+            queue.push((hi - lo, left, end));
         }
     }
     result
