@@ -51,5 +51,4 @@ mod tests {
         assert_eq!(1, subject.query(0..5));
         assert_eq!(2, subject.query(0..2));
     }
-    
 }
