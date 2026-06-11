@@ -1,10 +1,13 @@
 // https://leetcode.com/problems/number-of-ways-to-assign-edge-weights-i
 
-use std::{collections::HashSet, mem::swap};
+use std::{mem::swap};
 
 pub fn assign_edge_weights(edges: Vec<Vec<i32>>) -> i32 {
-    let mut adjacent = vec![Vec::new(); edges.len()*2+1]; // pessimistic allocation
-    let mut n = 0_usize;
+    let mut n = edges.len() + 1;
+    let mut adjacent = vec![Vec::new(); n + 1];
+    if edges.is_empty() {
+        return 0;
+    }
     for edge in edges {
         if let &[u, v] = edge.as_slice() {
             adjacent[u as usize].push(v); // first element unused
@@ -17,10 +20,10 @@ pub fn assign_edge_weights(edges: Vec<Vec<i32>>) -> i32 {
 
     // BFS
     let mut visited = vec![false; n + 1]; // first element unused
-    let mut current_layer = HashSet::with_capacity(n / 4);
-    current_layer.insert(1i32);
+    let mut current_layer = Vec::with_capacity(n / 4);
+    current_layer.push(1i32);
     visited[0..=1].fill(true);
-    let mut next_layer = HashSet::with_capacity(n / 4);
+    let mut next_layer = Vec::with_capacity(n / 4);
 
     loop {
         for &node in current_layer.iter() {
@@ -28,7 +31,7 @@ pub fn assign_edge_weights(edges: Vec<Vec<i32>>) -> i32 {
             for &child in &adjacent[node as usize] {
                 let v = &mut visited[child as usize];
                 if !*v {
-                    next_layer.insert(child);
+                    next_layer.push(child);
                     *v = true;
                 }
             }
