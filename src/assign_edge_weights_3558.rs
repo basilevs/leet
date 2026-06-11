@@ -43,7 +43,13 @@ pub fn assign_edge_weights(edges: Vec<Vec<i32>>) -> i32 {
     if depth < 1 {
         0
     } else {
-        2i32.pow(depth - 1)
+        let mut result = 1;
+        let modulo = 10i32.pow(9)+7;
+        for _ in 1..depth {
+            result *= 2;
+            result %= modulo;
+        }
+        result
     }
 
 }
@@ -56,5 +62,14 @@ fn official1() {
 #[test]
 fn official2() {
     assert_eq!(2, assign_edge_weights(vec![vec![1, 2], vec![1, 3], vec![3, 4], vec![3, 5]]));
+}
+
+#[test]
+fn deep_path() {
+    // Path 1-2-3-...-n at the constraint boundary n = 1e5: max depth = n - 1 = 99_999.
+    // Spec answer = 2^(depth-1) mod (1e9+7) = 2^99_998 mod (1e9+7) = 151_930_880.
+    let n = 100_000;
+    let edges: Vec<Vec<i32>> = (1..n).map(|i| vec![i, i + 1]).collect();
+    assert_eq!(151_930_880, assign_edge_weights(edges));
 }
 
