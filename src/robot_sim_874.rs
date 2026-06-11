@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-/// https://leetcode.com/problems/walking-robot-simulation
+// https://leetcode.com/problems/walking-robot-simulation
 #[must_use]
 pub fn robot_sim(commands: Vec<i32>, obstacles: Vec<Vec<i32>>) -> i32 {
     hashed(commands, obstacles)

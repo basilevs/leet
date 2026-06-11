@@ -21,8 +21,6 @@ where
     /// It is applied to same values multiple times due to precomputed blocks overlap.
     /// This holds for `min`, `max`, and `gcd`, but **not** for `sum`,
     /// where the overlap would be double-counted.
-    ///
-    /// [`query`]: Self::query
     pub fn new(input: Vec<T>, merge: F) -> Self {
         let n = input.len();
         let rows = n.checked_ilog2().unwrap_or(0) as usize + 1;
