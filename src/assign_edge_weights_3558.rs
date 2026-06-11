@@ -76,3 +76,9 @@ fn deep_path() {
     assert_eq!(151_930_880, assign_edge_weights(edges));
 }
 
+#[test]
+fn no_stack_overflow() {
+    let n = 99999;
+    let edges: Vec<Vec<i32>> = (1..n).map(|i| vec![i, i + 1]).collect();
+    assert_eq!(75965440, assign_edge_weights(edges));
+}
