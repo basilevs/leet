@@ -73,8 +73,30 @@ const MOD: i64 = 1_000_000_007;
 #[cfg(test)]
 mod tests {
     use super::Solution;
+
 fn to_vector(input: &[[i32; 2]]) -> Vec<Vec<i32>> {
     input.iter().map(Vec::from).collect()
+}
+
+fn load(filename: &str) -> (Vec<[i32; 2]>, Vec<[i32; 2]>, Vec<i32>) {
+    use std::fs;
+    use std::path::Path;
+    
+    let src_dir = Path::new(file!()).parent().expect("Failed to get source directory");
+    let test_file = src_dir.join(filename);
+    
+    let content = fs::read_to_string(&test_file)
+        .expect(&format!("Failed to read file: {:?}", test_file));
+    let lines: Vec<&str> = content.lines().collect();
+    
+    let edges: Vec<[i32; 2]> = serde_json::from_str(lines[0])
+        .expect("Failed to parse edges");
+    let queries: Vec<[i32; 2]> = serde_json::from_str(lines[1])
+        .expect("Failed to parse queries");
+    let expected: Vec<i32> = serde_json::from_str(lines[2])
+        .expect("Failed to parse expected");
+    
+    (edges, queries, expected)
 }
 
 #[test]
