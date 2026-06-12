@@ -1,6 +1,7 @@
 pub mod solution;
 pub mod vec_list;
 pub mod sparse_table;
+pub mod segment_tree;
 
 pub mod can_construct;
 pub mod list_middle;
