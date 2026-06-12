@@ -1,6 +1,5 @@
 
 use std::mem::swap;
-use itertools::chain;
 
 // https://leetcode.com/problems/number-of-ways-to-assign-edge-weights-ii
 use crate::{solution::Solution, sparse_table::SparseTable};
@@ -20,15 +19,34 @@ const MOD: i64 = 1_000_000_007;
         i32::try_from(res).unwrap()
     }
 
-    /// Returns nodeid and its depth in euler traversal order
-    fn tree_euler_tour(adjacent: &Vec<Vec<usize>>, cur:usize, prev: usize, depth:usize) -> Box<dyn Iterator<Item=(usize, usize)> + '_ > {
-        let result = adjacent[cur]
-            .iter()
-            .filter(move |&x| *x != prev)
-            .map(move |&x| 
-                chain(Self::tree_euler_tour(adjacent, x, cur, depth + 1), Some((cur, depth))))
-            .flatten();
-        Box::new(chain(Some((cur, depth)), result))
+    /// Returns each nodeid and its depth in euler traversal order.
+    ///
+    /// Uses an explicit stack instead of recursion. A recursive version -- even
+    /// one returning lazily-chained iterators -- builds nested iterator adaptors
+    /// whose `next()` calls delegate inward one level per tree edge, so consuming
+    /// the tour of a long path graph recurses to depth `n` and overflows the
+    /// stack. The explicit stack keeps that growth on the heap instead.
+    fn tree_euler_tour(adjacent: &[Vec<usize>], root: usize) -> Vec<(usize, usize)> {
+        let mut tour = Vec::with_capacity(2 * adjacent.len());
+        // Each frame: (node, parent, depth, index of next neighbor to examine).
+        let mut stack = vec![(root, 0_usize, 0_usize, 0_usize)];
+        tour.push((root, 0));
+        while let Some(&(node, parent, depth, idx)) = stack.last() {
+            if let Some(&next) = adjacent[node].get(idx) {
+                stack.last_mut().unwrap().3 += 1;
+                if next != parent {
+                    tour.push((next, depth + 1));
+                    stack.push((next, node, depth + 1, 0));
+                }
+            } else {
+                stack.pop();
+                // Re-emit the parent after finishing each child's subtree.
+                if let Some(&(pnode, _, pdepth, _)) = stack.last() {
+                    tour.push((pnode, pdepth));
+                }
+            }
+        }
+        tour
     }
 
     pub fn assign_edge_weights(edges: Vec<Vec<i32>>,  queries: Vec<Vec<i32>>) -> Vec<i32> {
@@ -43,7 +61,7 @@ const MOD: i64 = 1_000_000_007;
 
         let mut first: Vec<Option<usize>>= vec![None; n + 1];
         let mut depths = Vec::with_capacity(2 * n);
-        for (i, (node, depth)) in Self::tree_euler_tour(&g, 1, 0, 0).enumerate() {
+        for (i, (node, depth)) in Self::tree_euler_tour(&g, 1).into_iter().enumerate() {
             first[node].get_or_insert(i);
             depths.push(depth);
         }
