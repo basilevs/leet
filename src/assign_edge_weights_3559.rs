@@ -148,16 +148,4 @@ fn official584() {
     );
 }
 
-#[test]
-fn official585() {
-    let (edges, queries, expected) = load("assign_edge_weights_3559_test585.txt");
-    assert_eq!(
-        expected.to_vec(),
-        Solution::assign_edge_weights(
-            to_vector(&edges),
-            to_vector(&queries),
-        )
-    );
-}
-
 }

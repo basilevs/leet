@@ -3,8 +3,6 @@
 use std::cell::RefCell;
 
 
-
-
 // Definition for singly-linked list.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ListNode {
@@ -42,7 +40,7 @@ pub fn pair_sum(mut head: Option<Box<ListNode>>) -> i32 {
 
         let n = copy.len();
         debug_assert_eq!(0, n % 2);
-        copy.iter().take(copy.len() / 2).enumerate().map(|(i, val)| val + copy[n - 1 - i]).max().unwrap()
+        copy.iter().rev().zip(copy.iter()).take(n / 2).map(|(x, y)| x + y).max().unwrap()
     })
 }
 

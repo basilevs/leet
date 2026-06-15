@@ -31,3 +31,7 @@ harness = false
 [[bench]]
 name = "max_total_value_3691"
 harness = false
+
+[[bench]]
+name = "pair_sum_2130"
+harness = false
