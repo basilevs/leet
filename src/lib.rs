@@ -64,3 +64,4 @@ pub mod assign_edge_weights_3559;
 pub mod map_word_weights;
 pub mod pair_sum_2130;
 pub mod delete_middle_2095;
+pub mod process_str_3612;
