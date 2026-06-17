@@ -11,7 +11,7 @@ pub fn process_str(s: String, k: i64) -> char {
             b'#' => {
                 len *= 2;
             }
-            b'%' => {},
+            b'%' => {}
             _ => len += 1,
         }
     }
@@ -19,7 +19,7 @@ pub fn process_str(s: String, k: i64) -> char {
     if k >= len {
         return '.';
     }
-    
+
     for b in s.bytes().rev() {
         match b {
             b'*' => {
@@ -32,7 +32,7 @@ pub fn process_str(s: String, k: i64) -> char {
             }
             b'%' => {
                 k = len - 1 - k;
-            },
+            }
             c => {
                 len -= 1;
                 if len == k {
@@ -43,7 +43,6 @@ pub fn process_str(s: String, k: i64) -> char {
     }
 
     unreachable!();
-    
 }
 
 #[cfg(test)]
@@ -65,5 +64,3 @@ mod tests {
         assert_eq!(process_str("z*#".to_string(), 0), '.');
     }
 }
-
-
