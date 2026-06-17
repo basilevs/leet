@@ -1,70 +1,69 @@
 // https://leetcode.com/problems/process-string-with-special-operations-ii
 
-use std::{cmp::Reverse, collections::VecDeque};
+pub fn process_str(s: String, k: i64) -> char {
+    let mut len = 0_u64;
+    let mut k = u64::try_from(k).unwrap();
+    for b in s.bytes() {
+        match b {
+            b'*' => {
+                len = len.saturating_sub(1);
+            }
+            b'#' => {
+                len *= 2;
+            }
+            b'%' => {},
+            _ => len += 1,
+        }
+    }
 
-use crate::process_str_3614::Operator::Repeat;
-
-enum Operator {
-    Char(u8),
-    Repeat(u16),
-    Reverse,
-    RemoveFirst,
-    RemoveLast,
-}
-
-enum Expression {
-    Text(VecDeque<u8>),
-    Operation(Operator, Box<Expression>),
-    Sequence(Box<Expression>, Box<Expression>),
-}
-
-impl Operator {
-    fn apply(self, mut operand: Box<Expression>) -> Box<Expression> {
-        use Operator::*;
-        use Expression::*;
-        match self {
-            Char(c) => {
-                if let Text(mut v) = *operand {
-                    v.push_back(c);
-                    operand
-                } else {
-                    Box::new(Sequence ( operand, Box::new(Text (VecDeque::from([c])))))
+    if k >= len {
+        return '.';
+    }
+    
+    for b in s.bytes().rev() {
+        match b {
+            b'*' => {
+                len += 1;
+            }
+            b'#' => {
+                debug_assert!(len % 2 == 0);
+                len /= 2;
+                k %= len;
+            }
+            b'%' => {
+                k = len - 1 - k;
+            },
+            c => {
+                len -= 1;
+                if len == k {
+                    return char::from(c);
                 }
             }
-            _ => Box::new(Operation ( self, operand))
         }
     }
+
+    unreachable!();
+    
 }
 
-impl Expression {
-    fn len(&self) -> usize {
-        todo!()
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn official1() {
+        assert_eq!(process_str("a#b%*".to_string(), 1), 'a');
     }
-    fn get(&self, idx: usize) -> u8 {
-        use Expression::*;
-        match self {
-            Text(deq) => *deq.get(idx).unwrap_or(&b'.'),
-            Operation(operator, expression) => {
-                match operator {
-                    Operator::Char(c) => unreachable!(),
-                    Repeat(_) => todo!(),
-                    Operator::Reverse => todo!(),
-                    Operator::RemoveFirst => todo!(),
-                    Operator::RemoveLast => todo!(),
-                }
-            },
-            Sequence(expression, expression1) => {
-                let len = expression.len();
-                if len > idx {
-                    expression.get(idx)
-                } else {
-                    expression1.get(idx - len)
-                }
-            },
-        }
+
+    #[test]
+    fn official2() {
+        assert_eq!(process_str("cd%#*#".to_string(), 3), 'd');
+    }
+
+    #[test]
+    fn official3() {
+        assert_eq!(process_str("z*#".to_string(), 0), '.');
     }
 }
 
-pub fn process_str(s: String, k: i64) -> char {
 
-}
