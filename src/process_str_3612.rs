@@ -1,3 +1,4 @@
+// https://leetcode.com/problems/process-string-with-special-operations-i/
 pub fn process_str(s: String) -> String {
     let dups = s.bytes().filter(|x| *x == b'#').count();
     let mut result: Vec<u8> = Vec::with_capacity(s.len() * dups);
