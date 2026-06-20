@@ -67,3 +67,4 @@ pub mod delete_middle_2095;
 pub mod process_str_3612;
 pub mod process_str_3614;
 pub mod angle_clock_1344;
+pub mod max_building_1840;
