@@ -1,56 +1,46 @@
 // https://leetcode.com/problems/maximum-building-height
 
-
-struct Interval {
-    start: i32,
-    end: i32,
-}
-
-impl Interval {
-    fn grow(self, increase: i32) -> Interval {
-        Interval { start: self.start - increase, end: self.end + increase }
-    }
-
-    fn touches
-
-}
-
 pub fn max_building(n: i32, mut restrictions: Vec<Vec<i32>>) -> i32 {
-    restrictions.sort_unstable_by_key(|x| x[1]);
-    let mut left_position = 0;
-    let mut left_height = 0;
-    let mut right_position = n - 1;
-    let mut right_height = n - 1;
-    for r in restrictions {
-        let position = r[0] - 1;
-        let height = r[1];
-        dbg!(left_position, left_height, position, height, right_position, right_height);
-        debug_assert!(left_position < right_position);
-        if !(left_position..=right_position).contains(&position) {
-            continue;
-        }
 
-        let left_candidate_position = 
+    restrictions.sort_unstable_by_key(|x| x[0] + x[1]);
 
-        if height < position - left_position + left_height {
-            left_height = height;
-            left_position = position;
-            right_height = right_height.min(right_position - left_position + left_height);
-        } else if height < right_position - position + right_height {
-            right_height = height;
-            right_position = position;
-            left_height = left_height.min(right_position - left_position + right_height);
-        } else {
-            break;
+    let mut max = 0;
+    let mut iter = restrictions.into_iter();
+    let mut x = 1;
+    let mut y = 0;
+    loop {
+        let Some(restriction) = iter.next() else {
+            break max.max(n - x + y);
+        };
+        
+        
+        let delta = restriction[0] - x + restriction[1] - y;
+        
+        dbg!(x, y, restriction[0], restriction[1], delta);
+        debug_assert!(delta >= 0);
+        x += delta / 2;
+        y += delta / 2;
+        
+        if y >= restriction[1] {
+            max = max.max(y);
+            dbg!(x, y, restriction[0], restriction[1], delta, max);
+            x = restriction[0];
+            y = restriction[1];
         }
     }
-    dbg!(left_position, left_height, right_position, right_height);
-    left_height.max(right_height)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::max_building;
+
+fn to_vector<const N: usize>(input: &[[i32; N]]) -> Vec<Vec<i32>> {
+    input.into_iter().map(Vec::from).collect()
 }
 
 #[test]
 fn official1() {
-    assert_eq!(2, max_building(5, vec![vec![2, 1], vec![4, 1]]));
+    assert_eq!(2, max_building(5, to_vector(&[[2, 1], [4, 1]])));
 }
 
 #[test]
@@ -60,6 +50,13 @@ fn official2() {
 
 #[test]
 fn official3() {
-    assert_eq!(5, max_building(10, vec![vec![5, 3], vec![2, 5], vec![7, 4], vec![10, 3]]));
+    assert_eq!(5, max_building(10, to_vector(&[[5, 3], [2, 5], [7, 4], [10, 3]])));
 }
 
+#[test]
+fn official12() {
+    assert_eq!(2, max_building(10, to_vector(&[[6,2],[9,1],[5,2],[3,0],[10,2],[2,4],[7,0],[8,0],[4,4]])));
+}
+
+
+}
