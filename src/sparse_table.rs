@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-// https://cp-algorithms.com/data_structures/sparse-table.html
+/// <https://cp-algorithms.com/data_structures/sparse-table.html>
 pub struct SparseTable<T, F>
 where
     F: Fn(T, T) -> T,
