@@ -16,14 +16,16 @@ pub fn max_building(n: i32, mut restrictions: Vec<Vec<i32>>) -> i32 {
         
         let delta = restriction[0] - x + restriction[1] - y;
         
-        dbg!(x, y, restriction[0], restriction[1], delta);
+        // dbg!(x, y, restriction[0], restriction[1], delta);
         debug_assert!(delta >= 0);
-        x += delta / 2;
-        y += delta / 2;
-        
-        if y >= restriction[1] {
+
+        if y + delta / 2 >= restriction[1] {
+            let step = delta / 2;
+            x += delta - step;
+            y += step;
+            debug_assert_eq!(restriction[0]+restriction[1], x+y);
             max = max.max(y);
-            dbg!(x, y, restriction[0], restriction[1], delta, max);
+            // dbg!(x, y, max);
             x = restriction[0];
             y = restriction[1];
         }
@@ -53,10 +55,19 @@ fn official3() {
     assert_eq!(5, max_building(10, to_vector(&[[5, 3], [2, 5], [7, 4], [10, 3]])));
 }
 
+
+#[test]
+fn official9() {
+    assert_eq!(2, max_building(10, to_vector(&[[8,5],[9,0],[6,2],[4,0],[3,2],[10,0],[5,3],[7,3],[2,4]])));
+}
+
+
 #[test]
 fn official12() {
     assert_eq!(2, max_building(10, to_vector(&[[6,2],[9,1],[5,2],[3,0],[10,2],[2,4],[7,0],[8,0],[4,4]])));
 }
+
+
 
 
 }
