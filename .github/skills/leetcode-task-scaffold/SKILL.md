@@ -36,6 +36,7 @@ This is the template for the scaffold file. Fill in <slug>, <function_name>, sig
 
 pub fn <function_name>(/* signature */) -> /* return */ {
     todo!("training scaffold: implement solution");
+    dbg!(<arg1>, <arg2>); // suppress unused variable warnings for function arguments
 }
 
 #[cfg(test)]
@@ -140,6 +141,7 @@ import with `use super::*;` in the test module.
     <strong>Output:</strong> [0,1]
     </pre>
     ```
+  - Minimize safety prompts user gets on every `curl` invocation. Either pipe `curl` to `jq` or save the output to a file and inspect it with `jq` later.
 
 3. Create src/<function_name>_<frontend_id>.rs using the template above.
   - For algorithm problems the template is wrapped in a `Solution` impl block. Remove it and expose the inner function as a top-level function. For design problems keep the `struct`/`impl` and leave method bodies as `todo!()`.
