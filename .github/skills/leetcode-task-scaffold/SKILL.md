@@ -35,8 +35,8 @@ This is the template for the scaffold file. Fill in <slug>, <function_name>, sig
 // https://leetcode.com/problems/<slug>
 
 pub fn <function_name>(/* signature */) -> /* return */ {
-    todo!("training scaffold: implement solution");
     dbg!(<arg1>, <arg2>); // suppress unused variable warnings for function arguments
+    todo!("training scaffold: implement solution");
 }
 
 #[cfg(test)]
