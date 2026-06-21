@@ -17,16 +17,16 @@ Create a new solution module that:
 
 ## Conventions
 
-- File naming pattern: src/<problem_name>_<problem_number>.rs. <problem_name> matches function name from LeetCode implementation template.
+- File naming pattern: src/<function_name>_<questionId>.rs. <function_name> matches function name from LeetCode implementation template.
 - Solution file exposes a top-level public function or struct.
 - Top-of-file origin link format:
   - // https://leetcode.com/problems/<slug>/
 - Tests are in the same file under #[cfg(test)] and usually named official1, official2, ...
 - New module must be added in src/lib.rs as:
-  - pub mod <problem_name>_<problem_number>;
+  - pub mod <function_name>_<questionId>;
 
 ## Template
-This is the template for the scaffold file. Fill in <slug>, <function_name>, signature and return type according to the official implementation template.
+This is the template for the scaffold file. Fill in <slug>, <function_name>, signature and return type according to the official implementation template. If possible, the file should saved as src/<function_name>_<questionId>.rs
 
 ```rust
 // https://leetcode.com/problems/<slug>/
@@ -92,20 +92,20 @@ mod tests {
     example testcases):
 
     ```sh
-    curl -s 'https://leetcode.com/graphql' \
-      -H 'Content-Type: application/json' \
-      -H 'Referer: https://leetcode.com' \
-      --data '{"operationName":"questionData","variables":{"titleSlug":"two-sum"},"query":"query questionData($titleSlug: String!) { question(titleSlug: $titleSlug) { questionId title titleSlug content exampleTestcases codeSnippets { lang langSlug code } } }"}' \
-      | jq -r '.data.question
-          | "// https://leetcode.com/problems/\(.titleSlug)/\n",
+    jq -r '.data.question
+          | "questionId: \(.questionId)",
+            "// https://leetcode.com/problems/\(.titleSlug)/\n",
             (.codeSnippets[] | select(.langSlug=="rust") | .code),
             "\n--- exampleTestcases ---",
-            .exampleTestcases'
+            .exampleTestcases,
+            "\n--- content ---",
+            .content'
     ```
 
-    Output:
+    Output (content truncated):
 
     ```text
+    questionId: 1
     // https://leetcode.com/problems/two-sum/
 
     impl Solution {
@@ -121,15 +121,23 @@ mod tests {
     6
     [3,3]
     6
+
+    --- content ---
+    <p>Given an array of integers <code>nums</code>&nbsp;and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.</p>
+    ...
+    <pre>
+    <strong>Input:</strong> nums = [2,7,11,15], target = 9
+    <strong>Output:</strong> [0,1]
+    </pre>
     ```
 
-3. Create src/<problem_name>_<problem_number>.rs using the template above.
+3. Create src/<function_name>_<questionId>.rs using the template above.
   - Most problem implementation templates are wrapped in `Solution` impl block. Remove it and expose the inner function as a top-level function.
   - name, signature and return type of the implemntation must match the official implementation template.
   - Convert textual examples from the problem statement into Rust test code.
   - Name tests `fn official<example_number>() {...}`
 4. Add module registration to src/lib.rs:
-  - pub mod <problem_name>_<problem_number>;
+  - pub mod <function_name>_<questionId>;
 
 ## Guardrails
 
