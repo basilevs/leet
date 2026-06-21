@@ -1,3 +1,5 @@
+// https://leetcode.com/problems/ransom-note
+
 use std::collections::HashMap;
 
 #[must_use]

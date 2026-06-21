@@ -1,11 +1,16 @@
+// Utils
 pub mod solution;
 pub mod vec_list;
 pub mod sparse_table;
+pub mod hash_trie;
+pub mod array_trie;
 
-pub mod can_construct;
-pub mod list_middle;
-pub mod mirror_frequency_distance;
-pub mod reduce_steps;
+
+// Solutions 
+pub mod can_construct_383;
+pub mod list_middle_876;
+pub mod mirror_frequency_distance_3889;
+pub mod reduce_steps_1342;
 pub mod robot_sim_874;
 pub mod robot_sim_2069;
 pub mod xor_after_queries_3653;
@@ -35,8 +40,6 @@ pub mod get_common_2540;
 pub mod kth_largest_q1;
 pub mod find_the_prefix_common_array_2657;
 pub mod stream_checker_q2;
-pub mod hash_trie;
-pub mod array_trie;
 pub mod longest_common_prefix_3043;
 pub mod search_rotated_33;
 pub mod check_rotated_1752;
@@ -61,7 +64,7 @@ pub mod max_total_value_3689;
 pub mod max_total_value_3691;
 pub mod assign_edge_weights_3558;
 pub mod assign_edge_weights_3559;
-pub mod map_word_weights;
+pub mod map_word_weights_3838;
 pub mod pair_sum_2130;
 pub mod delete_middle_2095;
 pub mod process_str_3612;
