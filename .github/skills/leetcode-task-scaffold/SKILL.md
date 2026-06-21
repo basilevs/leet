@@ -136,6 +136,12 @@ mod tests {
   - name, signature and return type of the implemntation must match the official implementation template.
   - Convert textual examples from the problem statement into Rust test code.
   - Name tests `fn official<example_number>() {...}`
+  - Keep test inputs as close to example data as possible. If problem input is multidimensional add a helper function to `mod tests`to parse the input from the example testcases format into require Rust data structures. Use it in the tests. This way, multidimensional array would textually match Rust test code. Example:
+    ```rust
+    fn to_vector<const N: usize>(input: &[[i32; N]]) -> Vec<Vec<i32>> {
+      input.into_iter().map(Vec::from).collect()
+    }
+    ```
 4. Add module registration to src/lib.rs:
   - pub mod <function_name>_<questionId>;
 
