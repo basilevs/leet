@@ -62,6 +62,7 @@ pub mod create_binary_tree_2196;
 pub mod pivot_array_2161;
 pub mod max_total_value_3689;
 pub mod max_total_value_3691;
+pub mod max_number_of_balloons_1189;
 pub mod assign_edge_weights_3558;
 pub mod assign_edge_weights_3559;
 pub mod map_word_weights_3838;
