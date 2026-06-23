@@ -10,54 +10,23 @@ pub fn zig_zag_arrays(n: i32, l: i32, r: i32) -> i32 {
 }
 
 const MODULO: u32 = 1_000_000_007;
-fn add(a: u32, b: &u32) -> u32 {
-    (a % MODULO + b % MODULO) % MODULO
-}
-
-fn sub(a: u32, b: u32) -> u32 {
-    (MODULO + a % MODULO - b % MODULO) % MODULO
-}
-
 
 fn zig_zag_arrays_height(n: i32, height: usize) -> u32 {
-    dbg!(n, height); // suppress unused variable warnings for function arguments
     assert_ne!(0, height, "l < r");
     assert_ne!(1, height, "height > 1");
     assert!(n > 2);
-    let mut prev_step2 = vec![0; height];
-    let mut prev_step1 = vec![1; height];
-    let mut result = vec![height as u32; height];
+    let mut zigs1 = vec![0; height];
+    let mut zigs2 = (0..(height as u32)).collect::<Vec<_>>();
     for _ in 2..n {
-        dbg!(&result);
-        std::mem::swap(&mut prev_step1, &mut prev_step2);
-        std::mem::swap(&mut prev_step1, &mut result);
-        result.fill(0);
-        let mut prev_step1_below = 0_u32;
-        let mut prev_step2_below = 0_u32;
-        let prev_step1_sum = prev_step1.iter().fold(0, add);
-        let prev_step2_sum = prev_step2.iter().fold(0, add);
-        let mut prev_step1_above = prev_step1_sum;
-        let mut prev_step2_above = prev_step2_sum;
+        std::mem::swap(&mut zigs1, &mut zigs2);
+        let mut zig_acc = 0;
         for i in 0..height {
-            let monothonic = ((u64::from(prev_step1_below) * u64::from(prev_step2_below) + u64::from(prev_step1_above) * u64::from(prev_step2_above)) % u64::from(MODULO)) as u32;
-            let all_trajectories = (u64::from(prev_step1_sum) * u64::from(prev_step2_sum) % u64::from(MODULO)) as u32;
-            result[i] = sub(all_trajectories, monothonic);
-            
-            if i < height {
-                prev_step1_below = add(prev_step1_below, &prev_step1[i]);
-            }
-            if i > 0 {
-                prev_step1_above = sub(prev_step1_above, prev_step1[i-1]);
-                prev_step2_below = add(prev_step2_below, &prev_step2[i-1]);
-            }
-            if i > 1 {
-                prev_step2_above = sub(prev_step2_above, prev_step2[i-2]);
-            }
+            zigs2[i] = zig_acc;
+            zig_acc += zigs1[height - i - 1];
+            zig_acc %= MODULO;
         }
     }
-
-
-    result.iter().fold(0, add)
+    zigs2.iter().copied().fold(0_u32, |acc, x| (acc + x) % MODULO) * 2 % MODULO
 }
 
 #[cfg(test)]
@@ -72,5 +41,10 @@ mod tests {
     #[test]
     fn official2() {
         assert_eq!(10, zig_zag_arrays(3, 1, 3));
+    }
+
+    #[test]
+    fn official50() {
+        assert_eq!(16, zig_zag_arrays(4, 3, 5));
     }
 }
