@@ -56,6 +56,7 @@ pub mod asteroids_destroyed_2126;
 pub mod minimum_cost_2144;
 pub mod randomized_set_q1;
 pub mod earliest_finish_time_3633;
+pub mod zig_zag_arrays_3699;
 pub mod total_waviness_3751;
 pub mod left_right_difference_2574;
 pub mod create_binary_tree_2196;
