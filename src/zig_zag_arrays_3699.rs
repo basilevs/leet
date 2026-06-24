@@ -47,4 +47,9 @@ mod tests {
     fn official50() {
         assert_eq!(16, zig_zag_arrays(4, 3, 5));
     }
+
+    #[test]
+    fn t1() {
+        assert_eq!(140, zig_zag_arrays(5, 2, 5));
+    }
 }
