@@ -4,6 +4,7 @@ pub mod vec_list;
 pub mod sparse_table;
 pub mod hash_trie;
 pub mod array_trie;
+pub mod modint;
 
 
 // Solutions 

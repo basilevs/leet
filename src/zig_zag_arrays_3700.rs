@@ -1,13 +1,13 @@
 // https://leetcode.com/problems/number-of-zigzag-arrays-ii
 
-const MODULO: u64 = 1_000_000_007;
+use crate::modint::ModInt;
 
 pub fn zig_zag_arrays(n: i32, l: i32, r: i32) -> i32 {
     // AI converted from broken Python exponentiation and previous solution
     let height = usize::try_from(r - l).expect("l < r") + 1;
     assert!(height >= 2, "constraints guarantee l < r");
     assert!(n >= 3, "constraints guarantee n >= 3");
-    
+
     // 3699 reflection DP, lifted to matrix exponentiation so it scales to n up to 1e9.
     //
     // State v_t[i] = number of zigzag arrays of length t ending at value i whose last
@@ -18,45 +18,52 @@ pub fn zig_zag_arrays(n: i32, l: i32, r: i32) -> i32 {
     // up/down symmetry).
     let steps = u64::try_from(n - 2).unwrap();
     let powered = mat_pow(transition(height), steps);
-    let mut sum = 0u64;
-    for row in &powered {
-        let mut acc = 0u128;
-        for (j, &cell) in row.iter().enumerate() {
-            acc += u128::from(cell) * j as u128;
-        }
-        sum = (sum + (acc % u128::from(MODULO)) as u64) % MODULO;
-    }
-    i32::try_from(2 * sum % MODULO).unwrap()
+    let sum: ModInt = powered
+        .iter()
+        .flat_map(|row| {
+            row.iter()
+                .enumerate()
+                .map(|(j, &cell)| cell * ModInt::from(j))
+        })
+        .sum();
+    i32::from(ModInt::from(2) * sum)
 }
 
-fn transition(height: usize) -> Vec<Vec<u64>> {
+fn transition(height: usize) -> Vec<Vec<ModInt>> {
     (0..height)
-        .map(|i| (0..height).map(|j| u64::from(i + j >= height)).collect())
+        .map(|i| {
+            (0..height)
+                .map(|j| if i + j >= height { ModInt::ONE } else { ModInt::ZERO })
+                .collect()
+        })
         .collect()
 }
 
-fn mat_mul(a: &[Vec<u64>], b: &[Vec<u64>]) -> Vec<Vec<u64>> {
+fn mat_mul(a: &[Vec<ModInt>], b: &[Vec<ModInt>]) -> Vec<Vec<ModInt>> {
     let size = a.len();
-    let mut out = vec![vec![0u64; size]; size];
+    let mut out = vec![vec![ModInt::ZERO; size]; size];
     for i in 0..size {
         for k in 0..size {
-            if a[i][k] == 0 {
+            if a[i][k] == ModInt::ZERO {
                 continue;
             }
-            let aik = u128::from(a[i][k]);
+            let aik = a[i][k];
             for j in 0..size {
-                let v = u128::from(out[i][j]) + aik * u128::from(b[k][j]);
-                out[i][j] = (v % u128::from(MODULO)) as u64;
+                out[i][j] += aik * b[k][j];
             }
         }
     }
     out
 }
 
-fn mat_pow(mut base: Vec<Vec<u64>>, mut exp: u64) -> Vec<Vec<u64>> {
+fn mat_pow(mut base: Vec<Vec<ModInt>>, mut exp: u64) -> Vec<Vec<ModInt>> {
     let size = base.len();
-    let mut result: Vec<Vec<u64>> = (0..size)
-        .map(|i| (0..size).map(|j| u64::from(i == j)).collect())
+    let mut result: Vec<Vec<ModInt>> = (0..size)
+        .map(|i| {
+            (0..size)
+                .map(|j| if i == j { ModInt::ONE } else { ModInt::ZERO })
+                .collect()
+        })
         .collect();
     while exp > 0 {
         if exp & 1 == 1 {
