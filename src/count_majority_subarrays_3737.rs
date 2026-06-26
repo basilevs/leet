@@ -1,6 +1,7 @@
 // https://leetcode.com/problems/count-subarrays-with-majority-element-i
 
 pub fn count_majority_subarrays(nums: Vec<i32>, target: i32) -> i32 {
+    // see optimized version in count_majority_subarrays_3739.rs
     let prefix_sums = nums.iter()
         .map(|&x| if x == target { 1 } else { -1 })
         .scan(0_i32, |acc, x| {
@@ -9,7 +10,6 @@ pub fn count_majority_subarrays(nums: Vec<i32>, target: i32) -> i32 {
         }).collect::<Vec<i32>>();
 
     let mut result = 0_usize;
-    // TODO: add prefix sum freq and track active freq on sum change
     for (i, &sum) in prefix_sums.iter().enumerate() {
         let count = prefix_sums[0..i].iter().filter(|&&x| sum > x).count();
         result += count;

@@ -58,6 +58,7 @@ pub mod minimum_cost_2144;
 pub mod randomized_set_q1;
 pub mod earliest_finish_time_3633;
 pub mod count_majority_subarrays_3737;
+pub mod count_majority_subarrays_3739;
 pub mod zig_zag_arrays_3699;
 pub mod zig_zag_arrays_3700;
 pub mod total_waviness_3751;
