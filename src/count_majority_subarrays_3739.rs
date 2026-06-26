@@ -20,7 +20,6 @@ pub fn count_majority_subarrays(nums: Vec<i32>, target: i32) -> i64 {
         };
         result += count_of_lesser_prefixes as i64;
         freq[(prefix_sum + n as i32) as usize] += 1;
-        dbg!(prefix_sum, count_of_lesser_prefixes, result, &freq);
     }
 
     result
