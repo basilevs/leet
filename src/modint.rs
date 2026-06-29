@@ -27,6 +27,11 @@ impl ModInt {
         self.0
     }
 
+    #[must_use]
+    pub const fn new(value: u32) -> Self {
+        Self(value % MODULO)
+    }
+
     /// Modular exponentiation by squaring, computing `self^exp mod MODULO`.
     #[must_use]
     pub fn pow(self, mut exp: u64) -> Self {
@@ -45,7 +50,13 @@ impl ModInt {
 
 impl From<u32> for ModInt {
     fn from(value: u32) -> Self {
-        Self(value % MODULO)
+        Self::new(value)
+    }
+}
+
+impl From<u8> for ModInt {
+    fn from(value: u8) -> Self {
+        Self(u32::from(value))
     }
 }
 
