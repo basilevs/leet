@@ -80,3 +80,4 @@ pub mod max_building_1840;
 pub mod maximum_length_3020;
 pub mod maximum_element_after_decrementing_and_rearranging_1846;
 pub mod num_of_strings_1967;
+pub mod number_of_substrings_1358;
