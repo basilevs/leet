@@ -1,3 +1,5 @@
+// https://leetcode.com/problems/number-of-substrings-containing-all-three-characters
+
 pub fn number_of_substrings(s: String) -> i32 {
     let mut cursors = [0, 0, 0];
     let bytes = s.as_bytes();
