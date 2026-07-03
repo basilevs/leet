@@ -82,3 +82,4 @@ pub mod maximum_element_after_decrementing_and_rearranging_1846;
 pub mod num_of_strings_1967;
 pub mod number_of_substrings_1358;
 pub mod maximum_safeness_factor_2812;
+pub mod find_safe_walk_3286;
