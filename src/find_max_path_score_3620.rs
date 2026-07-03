@@ -1,8 +1,38 @@
 // https://leetcode.com/problems/network-recovery-pathways
 
+use std::collections::BinaryHeap;
+
 pub fn find_max_path_score(edges: Vec<Vec<i32>>, online: Vec<bool>, k: i64) -> i32 {
-    dbg!(edges, online, k);
-    todo!("training scaffold: implement solution");
+    let n = online.len();
+    let mut adjacent = vec![Vec::new(); n];
+    for edge in edges {
+        let u = edge[0] as usize;
+        let v = edge[1] as usize;
+        let price = edge[2];
+        if online[u] && online[v] {
+            adjacent[u].push((v, price));
+        }
+    }
+
+    
+    let mut queue = BinaryHeap::with_capacity(n);
+    // (score, cost, node)
+    queue.push((i32::MAX, 0i64, 0));
+    while let Some((score, cost, node)) = queue.pop() {
+        if node == n - 1 {
+            return score;
+        }
+        for &(next_node, price) in &adjacent[node] {
+            let next_cost = cost + price as i64;
+            if next_cost > k {
+                continue;
+            }
+            let next_score = score.min(price);
+            queue.push((next_score, next_cost, next_node));
+        }
+    }
+    -1
+
 }
 
 #[cfg(test)]
