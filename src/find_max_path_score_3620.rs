@@ -1,9 +1,8 @@
 // https://leetcode.com/problems/network-recovery-pathways
 
-use std::collections::BinaryHeap;
-
 pub fn find_max_path_score(edges: Vec<Vec<i32>>, online: Vec<bool>, k: i64) -> i32 {
     let n = online.len();
+    let en = edges.len();
     let mut adjacent = vec![Vec::new(); n];
     for edge in edges {
         let u = edge[0] as usize;
@@ -15,14 +14,18 @@ pub fn find_max_path_score(edges: Vec<Vec<i32>>, online: Vec<bool>, k: i64) -> i
     }
 
     
-    let mut queue = BinaryHeap::with_capacity(n);
+    let mut queue = Vec::with_capacity(en);
     // (score, cost, node)
     queue.push((i32::MAX, 0i64, 0));
+    let mut result = -1;
     while let Some((score, cost, node)) = queue.pop() {
         if node == n - 1 {
-            return score;
+            result = result.max(score);
         }
         for &(next_node, price) in &adjacent[node] {
+            if price <= result {
+                continue;
+            }
             let next_cost = cost + price as i64;
             if next_cost > k {
                 continue;
@@ -31,7 +34,7 @@ pub fn find_max_path_score(edges: Vec<Vec<i32>>, online: Vec<bool>, k: i64) -> i
             queue.push((next_score, next_cost, next_node));
         }
     }
-    -1
+    result
 
 }
 
@@ -67,5 +70,18 @@ mod tests {
             [2, 4, 6],
         ];
         assert_eq!(6, find_max_path_score(to_vector(edges), vec![true, true, true, false, true], 12));
+    }
+
+    #[test]
+    fn absent_path() {
+        #[rustfmt::skip]
+        let edges = [
+            [0, 1, 5],
+            [1, 2, 7],
+        ];
+        assert_eq!(
+            -1,
+            find_max_path_score(to_vector(edges), vec![true, false, true], 20)
+        );
     }
 }
