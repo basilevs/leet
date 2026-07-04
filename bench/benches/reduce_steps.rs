@@ -1,5 +1,5 @@
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
-use leet::reduce_steps::{
+use leet::reduce_steps_1342::{
     number_of_steps, number_of_steps_declarative, number_of_steps_from_leet,
     number_of_steps_imperative, number_of_steps_naive,
 };

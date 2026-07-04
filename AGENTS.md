@@ -6,6 +6,33 @@ Public functions have an extra indent for easier pasting into https://leetcode.c
 When asked to add tests, add them mechanically per specification, ignoring existing implementation and its defects.
 Fix implementation only when asked explicitly, let user practice.
 
+# Two-dimensional inputs
+Some inputs in examples are given as two-dimensional grids:
+
+```rust
+[
+    [0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0],
+]
+```
+Often those have to be converted to a `Vec<Vec<_>>`.
+
+Use an utility method and `#[rustfmt::skip]` to make the code compact and readable:
+
+```rust
+fn to_vector<const N: usize, const M: usize>(input: [[i32; M]; N]) -> Vec<Vec<i32>> { // replace i32 with a type required by a problem
+    input.iter().map(|row| row.to_vec()).collect()
+}
+
+#[rustfmt::skip]
+let grid = [
+    [0, 1, 0, 0, 0], // each row on its own line
+    [0, 1, 0, 1, 0], // no nested vec![]
+    [0, 0, 0, 1, 0], // input textual representation closely follows the example
+];
+assert!(find_safe_walk(to_vector(grid), 1));
+```
 
 # Finding the LeetCode problem statement
 Each `src/<name>_<number>.rs` corresponds to LeetCode problem `<number>`.

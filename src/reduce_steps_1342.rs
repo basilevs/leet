@@ -1,3 +1,5 @@
+// https://leetcode.com/problems/number-of-steps-to-reduce-a-number-to-zero
+
 #[derive(Clone, Copy)]
 struct ByteStats {
     most_significant: u8,
