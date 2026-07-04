@@ -1,8 +1,11 @@
 // https://leetcode.com/problems/network-recovery-pathways
 
+use std::{cmp::Reverse, collections::{BinaryHeap}};
+
 pub fn find_max_path_score(edges: Vec<Vec<i32>>, online: Vec<bool>, k: i64) -> i32 {
     let n = online.len();
-    let en = edges.len();
+    let mut min_price= i32::MAX;
+    let mut max_price= i32::MIN;
     let mut adjacent = vec![Vec::new(); n];
     for edge in edges {
         let u = edge[0] as usize;
@@ -10,33 +13,51 @@ pub fn find_max_path_score(edges: Vec<Vec<i32>>, online: Vec<bool>, k: i64) -> i
         let price = edge[2];
         if online[u] && online[v] {
             adjacent[u].push((v, price));
+            min_price = min_price.min(price);
+            max_price = max_price.max(price);
         }
     }
 
-    
-    let mut queue = Vec::with_capacity(en);
-    // (score, cost, node)
-    queue.push((i32::MAX, 0i64, 0));
-    let mut result = -1;
-    while let Some((score, cost, node)) = queue.pop() {
-        if node == n - 1 {
-            result = result.max(score);
+    let mut queue = BinaryHeap::with_capacity(n);
+    let mut node_cost = vec![i64::MAX; n];
+    let mut reachable = |minimum_price: &i32| -> bool {
+        queue.clear();
+        node_cost.fill(i64::MAX);
+        node_cost[0] = 0;
+        queue.push(Reverse((0, 0)));
+        while let Some(Reverse((cost, node))) = queue.pop() {
+            if node == n - 1 {
+                return true;
+            }
+            for &(next_node, price) in &adjacent[node] {
+                let next_cost = cost + price as i64;
+                if price >= *minimum_price && next_cost <= k  && next_cost < node_cost[next_node] {
+                    node_cost[next_node] = next_cost;
+                    queue.push(Reverse((next_cost, next_node)));
+                }
+            }
         }
-        for &(next_node, price) in &adjacent[node] {
-            if price <= result {
-                continue;
-            }
-            let next_cost = cost + price as i64;
-            if next_cost > k {
-                continue;
-            }
-            let next_score = score.min(price);
-            queue.push((next_score, next_cost, next_node));
+        false
+    };
+
+    if !reachable(&min_price) {
+        return -1;
+    }
+
+    while min_price <= max_price {
+        let mid = (min_price + max_price) / 2;
+        if reachable(&mid) {
+            min_price = mid + 1;
+        } else {
+            max_price = mid - 1;
         }
     }
-    result
+    
+    max_price
 
 }
+
+
 
 #[cfg(test)]
 mod tests {
