@@ -2,8 +2,7 @@
 pub mod solution;
 pub mod vec_list;
 pub mod sparse_table;
-pub mod hash_trie;
-pub mod array_trie;
+mod array_trie;
 pub mod modint;
 
 
@@ -85,3 +84,4 @@ pub mod maximum_safeness_factor_2812;
 pub mod find_safe_walk_3286;
 pub mod min_score_2492;
 pub mod find_max_path_score_3620;
+pub mod paths_with_max_score_1301;
