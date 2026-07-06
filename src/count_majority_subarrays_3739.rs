@@ -18,7 +18,7 @@ pub fn count_majority_subarrays(nums: Vec<i32>, target: i32) -> i64 {
             prefix_sum -= 1;
             count_of_lesser_prefixes -= freq[(prefix_sum + n as i32) as usize];
         };
-        result += count_of_lesser_prefixes as i64;
+        result += i64::from(count_of_lesser_prefixes);
         freq[(prefix_sum + n as i32) as usize] += 1;
     }
 

@@ -30,7 +30,7 @@ pub fn find_max_path_score(edges: Vec<Vec<i32>>, online: Vec<bool>, k: i64) -> i
                 return true;
             }
             for &(next_node, price) in &adjacent[node] {
-                let next_cost = cost + price as i64;
+                let next_cost = cost + i64::from(price);
                 if price >= *minimum_price && next_cost <= k  && next_cost < node_cost[next_node] {
                     node_cost[next_node] = next_cost;
                     queue.push(Reverse((next_cost, next_node)));

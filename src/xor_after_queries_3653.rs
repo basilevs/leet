@@ -82,7 +82,7 @@ impl Query {
         Query {key: Key::from(input), value: input[3]}
     }
     fn update(&mut self, value: i32) {
-        self.value = ((self.value as i64 * value as i64) % M) as i32;
+        self.value = ((i64::from(self.value) * i64::from(value)) % M) as i32;
     }
     fn as_singleton(&self) -> Option<Query> {
         self.key.as_singleton().map(|k| Query {key: k, value: self.value})
