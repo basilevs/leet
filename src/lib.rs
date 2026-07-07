@@ -86,3 +86,4 @@ pub mod min_score_2492;
 pub mod find_max_path_score_3620;
 pub mod paths_with_max_score_1301;
 pub mod remove_covered_intervals_1288;
+pub mod sum_and_multiply_3754;
