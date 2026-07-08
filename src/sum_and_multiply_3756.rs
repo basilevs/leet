@@ -1,41 +1,22 @@
 // https://leetcode.com/problems/concatenate-non-zero-digits-and-multiply-by-sum-ii
 
-use std::cell::RefCell;
+use std::{iter::successors, sync::OnceLock};
 
 use crate::modint::ModInt;
 
-thread_local! {
-    /// Cached `10^k mod MODULO`, grown lazily as larger exponents are requested.
-    static POW10: RefCell<Vec<ModInt>> = RefCell::new(vec![ModInt::ONE]);
-}
+static POW10: OnceLock<Vec<ModInt>> = OnceLock::new();
 
 fn pow10(exp: usize) -> ModInt {
-    POW10.with_borrow_mut(|table| {
-        while table.len() <= exp {
-            let next = *table.last().unwrap() * ModInt::from(10);
-            table.push(next);
-        }
-        table[exp]
-    })
+    let table = POW10.get_or_init(|| {
+        successors(Some(ModInt::ONE), |&p| Some(p * ModInt::from(10)))
+            .take(100_000)
+            .collect::<Vec<_>>()
+    });
+    table[exp]
 }
 
 pub fn sum_and_multiply(s: String, queries: Vec<Vec<i32>>) -> Vec<i32> {
     let bs = s.into_bytes();
-    let total_len: usize = queries.iter().map(|q| (q[1] - q[0]) as usize).sum();
-    if total_len < bs.len() {
-        return queries.into_iter().map(|q| {
-            let l: usize = q[0].try_into().expect("0 <= l < m");
-            let r: usize = q[1].try_into().expect("0 <= r < m");
-            let (x, sum) = bs[l..=r].iter().fold((ModInt::from(0), 0u32), |(x, sum), b| {
-                if *b == b'0' {
-                    (x, sum)
-                } else {
-                    (x * ModInt::from(10) + ModInt::from(b - b'0'), sum + u32::from(b - b'0'))
-                }
-            });
-            x * ModInt::from(sum)
-        }).map(ModInt::into).collect();
-    }
     // (digits, sum, non_zero_counts)
     let prefixes = bs.into_iter().scan((ModInt::from(0), 0u32, 0u32), |acc, b| {
         if b != b'0' {
@@ -121,5 +102,16 @@ mod tests {
         // x mod (1e9+7) for "9" * 40, then multiplied by 360, taken mod (1e9+7).
         let expected = vec![643_599_584];
         assert_eq!(expected, sum_and_multiply(s, to_queries(&[[0, 39]])));
+    }
+
+    #[test]
+    fn largest_input() {
+        // m = 10^5, all non-zero digits, so exponents reach the top of POW10.
+        // Two overlapping full-span queries push the total span past m, forcing
+        // the prefix path; the first query has l > 0 to exercise pow10.
+        let s = "123456789".repeat(11_112)[..100_000].to_string();
+        assert_eq!(s.len(), 100_000);
+        let expected = vec![925_156_883, 153_926_807];
+        assert_eq!(expected, sum_and_multiply(s, to_queries(&[[1, 99_999], [0, 99_999]])));
     }
 }
