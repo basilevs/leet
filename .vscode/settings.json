@@ -8,6 +8,7 @@
         "git add": true,
         "git commit": true,
         "cargo rustc": true,
-        "awk": true
+        "awk": true,
+        "./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh": true
     }
 }
