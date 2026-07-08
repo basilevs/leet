@@ -67,81 +67,26 @@ import with `use super::*;` in the test module.
 1. Determine the canonical problem slug.
   - If known, use it directly.
   - Otherwise prompt user.
-2. Fetch the problem description, implementation template, and example
-   testcases from the LeetCode GraphQL API (the rendered problem page is
-   client-side and does NOT contain the code template).
-  - Endpoint: POST https://leetcode.com/graphql
-  - Headers: Content-Type: application/json, Referer: https://leetcode.com
-  - Body (substitute <slug>):
-
-    ```json
-    {
-      "operationName": "questionData",
-      "variables": { "titleSlug": "<slug>" },
-      "query": "query questionData($titleSlug: String!) { question(titleSlug: $titleSlug) { questionFrontendId title titleSlug content exampleTestcases codeSnippets { lang langSlug code } } }"
-    }
-    ```
-
-  - Example invocation (concrete slug `two-sum`):
+2. Fetch the problem scaffold data with the bundled helper script (the rendered
+   problem page is client-side and does NOT contain the code template):
 
     ```sh
-    curl -s 'https://leetcode.com/graphql' \
-      -H 'Content-Type: application/json' \
-      -H 'Referer: https://leetcode.com' \
-      --data '{"operationName":"questionData","variables":{"titleSlug":"two-sum"},"query":"query questionData($titleSlug: String!) { question(titleSlug: $titleSlug) { questionFrontendId title titleSlug content exampleTestcases codeSnippets { lang langSlug code } } }"}'
+    ./scripts/fetch-problem.sh <slug>
     ```
 
-  - Read the response fields: `question.questionFrontendId` (the displayed
-    problem number used in filenames), `question.content` (HTML problem
-    statement and examples — the source of expected outputs),
-    `question.exampleTestcases` (newline-separated official inputs ONLY; it
-    does not contain expected outputs), and the `codeSnippets` entry with
-    `langSlug == "rust"` (the official Rust template, in
-    `impl Solution { pub fn ... }` form). Prefer `jq` over Python for parsing.
+   Run it from the skill directory (or pass the full path). It calls the
+   LeetCode GraphQL API and prints, in one shot:
+   - `frontendId` — the displayed problem number used in filenames.
+   - the origin link comment (`// https://leetcode.com/problems/<slug>`).
+   - the Rust template (`impl Solution { pub fn ... }` form).
+   - `exampleTestcases` — newline-separated official inputs ONLY (no expected
+     outputs).
+   - `content` — HTML problem statement and examples (the source of expected
+     outputs, from the `Output:` lines).
 
-    Example of `jq` extraction (prints the frontend id, origin link, the Rust
-    template, and the example testcases):
-
-    ```sh
-    jq -r '.data.question
-          | "frontendId: \(.questionFrontendId)",
-            "// https://leetcode.com/problems/\(.titleSlug)\n",
-            (.codeSnippets[] | select(.langSlug=="rust") | .code),
-            "\n--- exampleTestcases ---",
-            .exampleTestcases,
-            "\n--- content ---",
-            .content'
-    ```
-
-    Output (content truncated):
-
-    ```text
-    frontendId: 1
-    // https://leetcode.com/problems/two-sum
-
-    impl Solution {
-        pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
-
-        }
-    }
-
-    --- exampleTestcases ---
-    [2,7,11,15]
-    9
-    [3,2,4]
-    6
-    [3,3]
-    6
-
-    --- content ---
-    <p>Given an array of integers <code>nums</code>&nbsp;and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.</p>
-    ...
-    <pre>
-    <strong>Input:</strong> nums = [2,7,11,15], target = 9
-    <strong>Output:</strong> [0,1]
-    </pre>
-    ```
-  - Minimize safety prompts user gets on every `curl` invocation. Either pipe `curl` to `jq` or save the output to a file and inspect it with `jq` later.
+   See [fetch-problem.sh](./scripts/fetch-problem.sh) for the exact query. It
+   requires `curl` and `jq`. Because the whole request/parse happens in a single
+   command, the user only sees one terminal safety prompt.
 
 3. Create src/<function_name>_<frontend_id>.rs using the template above.
   - For algorithm problems the template is wrapped in a `Solution` impl block. Remove it and expose the inner function as a top-level function. For design problems keep the `struct`/`impl` and leave method bodies as `todo!()`.
