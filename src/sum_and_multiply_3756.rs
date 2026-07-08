@@ -1,6 +1,23 @@
 // https://leetcode.com/problems/concatenate-non-zero-digits-and-multiply-by-sum-ii
 
+use std::cell::RefCell;
+
 use crate::modint::ModInt;
+
+thread_local! {
+    /// Cached `10^k mod MODULO`, grown lazily as larger exponents are requested.
+    static POW10: RefCell<Vec<ModInt>> = RefCell::new(vec![ModInt::ONE]);
+}
+
+fn pow10(exp: usize) -> ModInt {
+    POW10.with_borrow_mut(|table| {
+        while table.len() <= exp {
+            let next = *table.last().unwrap() * ModInt::from(10);
+            table.push(next);
+        }
+        table[exp]
+    })
+}
 
 pub fn sum_and_multiply(s: String, queries: Vec<Vec<i32>>) -> Vec<i32> {
     let bs = s.into_bytes();
@@ -36,7 +53,7 @@ pub fn sum_and_multiply(s: String, queries: Vec<Vec<i32>>) -> Vec<i32> {
         } else {
             let (d_r, s_r, nz_c_r) = prefixes[r];
             let (d_l, s_l, nz_c_l) = prefixes[l - 1];
-            (d_r - d_l * ModInt::from(10).pow((nz_c_r - nz_c_l) as u64)) * ModInt::from(s_r - s_l)
+            (d_r - d_l * pow10((nz_c_r - nz_c_l) as usize)) * ModInt::from(s_r - s_l)
         }
     }).map(ModInt::into).collect()
 }
