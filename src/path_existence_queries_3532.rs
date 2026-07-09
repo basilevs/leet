@@ -9,11 +9,13 @@ pub fn path_existence_queries(
     debug_assert!(nums.is_sorted());
     let mut component = 0;
     let mut last_value = nums[0];
+    // iter_mut avoids repeated vector indexing
     for x in nums.iter_mut() {
         if *x - last_value > max_diff {
             component += 1;
         }
         last_value = *x;
+        // avoid allocations reusing the input vector
         *x = component;
     }
     queries.into_iter().map(|q| {
