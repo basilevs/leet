@@ -89,3 +89,4 @@ pub mod remove_covered_intervals_1288;
 pub mod sum_and_multiply_3754;
 pub mod sum_and_multiply_3756;
 pub mod path_existence_queries_3532;
+pub mod path_existence_queries_3534;
