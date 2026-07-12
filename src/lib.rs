@@ -10,6 +10,7 @@ pub mod modint;
 pub mod can_construct_383;
 pub mod list_middle_876;
 pub mod mirror_frequency_distance_3889;
+pub mod array_rank_transform_1331;
 pub mod reduce_steps_1342;
 pub mod robot_sim_874;
 pub mod robot_sim_2069;

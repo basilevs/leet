@@ -71,11 +71,11 @@ import with `use super::*;` in the test module.
    problem page is client-side and does NOT contain the code template):
 
     ```sh
-    ./scripts/fetch-problem.sh <slug>
+    ./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh <slug>
     ```
 
-   Run it from the skill directory (or pass the full path). It calls the
-   LeetCode GraphQL API and prints, in one shot:
+   Run it using repository-relative or absolute path to pass security audit.
+   It calls the LeetCode GraphQL API and prints, in one shot:
    - `frontendId` — the displayed problem number used in filenames.
    - the origin link comment (`// https://leetcode.com/problems/<slug>`).
    - the Rust template (`impl Solution { pub fn ... }` form).
