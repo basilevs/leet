@@ -1,17 +1,16 @@
 // https://leetcode.com/problems/rank-transform-of-an-array
 
 pub fn array_rank_transform(mut arr: Vec<i32>) -> Vec<i32> {
-    let mut sorted: Vec<usize> = (0..arr.len()).collect();
-    sorted.sort_unstable_by_key(|&i| arr[i]);
+    let mut sorted: Vec<(i32, usize)> = arr.iter().enumerate().map(|t| (*t.1, t.0)).collect();
+    sorted.sort_unstable();
     let mut rank = 0;
     let mut rank_value = i32::MIN;
-    for i in 0..sorted.len() {
-        let current_value = arr[sorted[i]];
+    for (current_value, i) in sorted {
         if current_value > rank_value {
             rank += 1;
             rank_value = current_value;
         }
-        arr[sorted[i]] = rank;
+        arr[i] = rank;
     }
     arr
 }
