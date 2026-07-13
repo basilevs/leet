@@ -24,7 +24,7 @@ test naming, copying example inputs verbatim).
 - Solution file exposes a top-level public function (or, for design problems, a `struct` with an `impl`).
 - Top-of-file origin link format (no trailing slash):
   - // https://leetcode.com/problems/<slug>
-- Tests are in the same file under #[cfg(test)] and usually named official1, official2, ...
+- Tests are in the same file under `#[cfg(test)]` and usually named official1, official2, ...
 - New module must be added in src/lib.rs as:
   - pub mod <function_name>_<frontend_id>;
 
