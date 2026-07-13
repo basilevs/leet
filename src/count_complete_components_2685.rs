@@ -13,7 +13,7 @@ pub fn count_complete_components(n: i32, edges: Vec<Vec<i32>>) -> i32 {
         *edge_count.entry(component).or_insert(0) += 1usize;
     });
     vertice_count.into_iter().filter(|(component, count)| {
-        let edges = edge_count.get(&component).copied().unwrap_or(0);
+        let edges = edge_count.get(component).copied().unwrap_or(0);
         edges == count * (count - 1) / 2
     }).count() as i32
 }

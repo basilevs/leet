@@ -1,4 +1,4 @@
-use std::{fmt::Debug, mem::replace};
+use std::{fmt::Debug};
 
 struct VecListNode<T> {
     pub data: T,
@@ -12,6 +12,7 @@ impl <T: Debug> Debug for VecListNode<T> {
     }
 }
 
+/// Vector-backed doubly-linked list. Each node is identified by its index in the vector.
 pub struct VecList<T> {
     buffer: Vec<VecListNode<T>>,
     head: Option<usize>,
@@ -28,7 +29,7 @@ impl<T: Debug> Debug for VecList<T> {
     }
 }
 
-pub struct ListIter<'a, T> {
+struct ListIter<'a, T> {
     data: &'a VecList<T>,
     index: Option<usize>,
 }
@@ -61,7 +62,7 @@ impl<T: Debug> VecList<T> {
         self.tail
     }
 
-    pub fn iter(&self) -> ListIter<'_, T> {
+    pub fn iter(&self) -> impl Iterator<Item = (usize, &T)> {
         ListIter { data: self, index: self.head }
     }
 
@@ -130,7 +131,7 @@ impl<T: Debug> VecList<T> {
     fn paste_before(&mut self, n: usize, before: usize) {
         assert_ne!(n, before);
         // dbg!(&self.buffer);
-        let prev =  replace(&mut self.buffer[before].prev, Some(n));
+        let prev =  self.buffer[before].prev.replace(n);
         if let Some(prev) = prev {
             self.buffer[prev].next = Some(n);
         }

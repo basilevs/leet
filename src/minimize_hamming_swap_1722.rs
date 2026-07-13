@@ -33,9 +33,9 @@ use itertools::Itertools;
 // https://dsar.rantai.dev/docs/part-iii/chapter-14/
 fn connected_components(vertice_count: usize, edges: Vec<Vec<i32>>) -> Vec<usize> {
     let mut parents = (0..vertice_count).collect_vec();
-    let mut slice = parents.as_mut_slice();
+    let slice = parents.as_mut_slice();
     for edge in edges {
-        add_component(edge, &mut slice);
+        add_component(edge, slice);
     }
     for i in 0..vertice_count {
         find_component(i, &mut parents);
@@ -46,7 +46,7 @@ fn connected_components(vertice_count: usize, edges: Vec<Vec<i32>>) -> Vec<usize
 fn add_component(new_component: Vec<i32>, parents: &mut [usize]) -> usize {
     debug_assert!(new_component.len() >= 2);
     let component = find_component( into_usize(*new_component.first().unwrap()), parents);
-    for &i in new_component[1..].into_iter() {
+    for &i in new_component[1..].iter() {
         parents[find_component(into_usize(i), parents)] = component;
     }
     component

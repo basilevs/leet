@@ -104,7 +104,7 @@ fn load(filename: &str) -> (Vec<[i32; 2]>, Vec<[i32; 2]>, Vec<i32>) {
     let test_file = src_dir.join(filename);
     
     let content = fs::read_to_string(&test_file)
-        .expect(&format!("Failed to read file: {:?}", test_file));
+        .unwrap_or_else(|e| panic!("Failed to read file: {:?}: {}", test_file, e));
     let lines: Vec<&str> = content.lines().collect();
     
     let edges: Vec<[i32; 2]> = serde_json::from_str(lines[0])

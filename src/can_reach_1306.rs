@@ -20,7 +20,7 @@ use std::mem::replace;
             }
             debug_assert!(value >= 0);
             debug_assert!(value < arr.len() as _);
-            for next in [i as i32 + value, i as i32 - value] {
+            for next in [i + value, i - value] {
                 if next < 0 || next >= arr.len() as _  {
                     continue;
                 }
