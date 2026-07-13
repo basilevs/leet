@@ -6,7 +6,7 @@ struct BitSet {
 
 impl BitSet {
     fn new(n: usize) -> Self {
-        Self { words: vec![0; (n + 63) / 64] }
+        Self { words: vec![0; n.div_ceil(64)] }
     }
 
     fn get(&self, i: usize) -> bool {
