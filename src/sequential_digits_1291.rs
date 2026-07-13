@@ -16,6 +16,7 @@ const SEQUENTIAL_DIGITS: [i32; 36] = [
 pub fn sequential_digits(low: i32, high: i32) -> Vec<i32> {
     let start = SEQUENTIAL_DIGITS.binary_search(&low).unwrap_or_else(|x| x);
     let end = SEQUENTIAL_DIGITS.binary_search(&high).map(|x| x + 1).unwrap_or_else(|x| x);
+    // result storage is never reallocated, because size is known
     SEQUENTIAL_DIGITS[start..end].to_vec()
 }
 
@@ -36,6 +37,30 @@ mod tests {
         let low = 1000;
         let high = 13000;
         let expected = vec![1234, 2345, 3456, 4567, 5678, 6789, 12345];
+        assert_eq!(expected, sequential_digits(low, high));
+    }
+
+    #[test]
+    fn exact_bounds() {
+        let low = 23;
+        let high = 234;
+        let expected = vec![23, 34, 45, 56, 67, 78, 89, 123, 234];
+        assert_eq!(expected, sequential_digits(low, high));
+    }
+
+    #[test]
+    fn out_of_bounds_low() {
+        let low = 10;
+        let high = 11;
+        let expected: Vec<i32> = vec![];
+        assert_eq!(expected, sequential_digits(low, high));
+    }
+    
+    #[test]
+    fn out_of_bounds_high() {
+        let low = 133456789;
+        let high = 143456789;
+        let expected: Vec<i32> = vec![];
         assert_eq!(expected, sequential_digits(low, high));
     }
 }
