@@ -101,6 +101,7 @@ import with `use super::*;` in the test module.
     ```
 4. Add module registration to src/lib.rs:
   - pub mod <function_name>_<frontend_id>;
+  - Add the new line to the end of file. Ignore existing order.
 5. Verify the scaffold compiles and is wired up:
   - `cargo test --lib <function_name>_<frontend_id> --no-run` confirms the
     module is registered and the populated tests compile.
