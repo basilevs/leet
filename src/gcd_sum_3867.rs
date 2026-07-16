@@ -1,53 +1,13 @@
 // https://leetcode.com/problems/sum-of-gcd-of-formed-pairs
 
-use std::collections::BTreeMap;
-
-pub fn gcd_sum(nums: Vec<i32>) -> i64 {
+pub fn gcd_sum(mut nums: Vec<i32>) -> i64 {
     let mut max = 0;
-    let mut buckets: BTreeMap<i32, u32> = BTreeMap::new();
-    let mut key = 0;
-    let mut acc = 0;
-    for num in nums {
-        max = (max).max(num);
-        let x = gcd(max, num);
-        if x == key {
-            acc += 1;
-        } else {
-            *buckets.entry(key).or_default() += acc;
-            key = x;
-            acc = 1;
-        }
+    for num in nums.iter_mut() {
+        max = (max).max(*num);
+        *num = gcd(max, *num)
     }
-    *buckets.entry(key).or_default() += acc;
-
-    let mut max_key = 0;
-    let mut max_count = 0;
-    let mut min_key = 0;
-    let mut min_count = 0;
-    let mut result = 0;
-    loop {
-        if max_count == 0 {
-            let Some(entry) = buckets.last_entry() else {
-                result += (min_count as i64 / 2) * min_key as i64;
-                break ;
-            };
-            (max_key, max_count) = entry.remove_entry();
-        }
-        if min_count == 0 {
-            let Some(entry) = buckets.first_entry() else {
-                result += (max_count as i64 / 2) * max_key as i64;
-                break;
-            };
-            (min_key, min_count) = entry.remove_entry();
-        }
-
-        let gcd = gcd(max_key, min_key);
-        let m = max_count.min(min_count);
-        result += gcd as i64 * m as i64;
-        max_count -= m;
-        min_count -= m;
-    }
-    result
+    nums.sort_unstable();
+    nums.iter().zip(nums.iter().rev()).take(nums.len()/2).map(|(a, b)| gcd(*a, *b) as i64).sum()
 }
 
 fn gcd(mut a: i32, mut b: i32) -> i32 {
