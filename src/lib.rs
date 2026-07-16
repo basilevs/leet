@@ -94,3 +94,4 @@ pub mod path_existence_queries_3532;
 pub mod path_existence_queries_3534;
 pub mod smaller_numbers_than_current_1365;
 pub mod sequential_digits_1291;
+pub mod gcd_sum_3867;
