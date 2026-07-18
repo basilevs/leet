@@ -10,18 +10,22 @@ pub fn gcd_values(nums: Vec<i32>, queries: Vec<i64>) -> Vec<i32> {
             gcd_stat[g as usize] += 1;
         }
     }
-    // dbg!(gcd_stat.iter().enumerate().filter(|&(_, &v)| v > 0).collect::<Vec<_>>());
+    // Visit queries in ascending order (via sorted indices) so we can sweep gcd_stat
+    // once with a running count instead of materializing prefix sums.
+    let mut order: Vec<usize> = (0..queries.len()).collect();
+    order.sort_unstable_by_key(|&i| queries[i]);
+    let mut ans = vec![0i32; order.len()];
+    let mut g = 0usize;
     let mut acc = 0u64;
-    for i in gcd_stat.iter_mut() {
-        acc += *i;
-        *i = acc;
+    for &qi in &order {
+        let q = queries[qi] as u64;
+        while acc <= q {
+            acc += gcd_stat[g];
+            g += 1;
+        }
+        ans[qi] = (g - 1) as i32;
     }
-    // dbg!(&gcd_stat[0..4]);
-    queries.iter().map(|&q| {
-        let q = q as u64;
-        let pp = gcd_stat.partition_point(|&x| x <= q);
-        pp as i32
-    }).collect()
+    ans
 }
 
 static GCD_TABLE: OnceLock<Vec<Vec<i32>>> = OnceLock::new();
