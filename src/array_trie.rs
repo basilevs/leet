@@ -74,6 +74,7 @@ impl<const N: usize, T: std::fmt::Debug> ArrayTrie<N, T> {
             .flatten()
     }
 
+    #[allow(dead_code)]
     pub fn visit(&self, mut visitor: impl FnMut(&[u8], &T)) {
         let mut key = vec![];
         let mut stack: Vec<usize> = vec![];
