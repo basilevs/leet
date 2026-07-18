@@ -32,8 +32,7 @@ impl Foo {
     {
         drop(self.condition.wait_while(self.step.lock().unwrap(), |s| *s < 1).unwrap());
         print_second();
-        let mut step = self.step.lock().unwrap();
-        *step = 2;
+        *self.step.lock().unwrap() = 2;
         self.condition.notify_all();
     }
 
@@ -43,8 +42,7 @@ impl Foo {
     {
         drop(self.condition.wait_while(self.step.lock().unwrap(), |s| *s < 2).unwrap());
         print_third();
-        let mut step = self.step.lock().unwrap();
-        *step = 3;
+        *self.step.lock().unwrap() = 3;
         self.condition.notify_all();
     }
 
