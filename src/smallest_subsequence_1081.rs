@@ -2,36 +2,30 @@
 
 pub fn smallest_subsequence(s: String) -> String {
     let bs = s.into_bytes();
-    let mut maxima = [usize::MAX; 26];
+    let mut last = [0usize; 26];
     for (i, current) in bs.iter().enumerate() {
-        maxima[to_index(*current)] = i;
+        last[to_index(*current)] = i;
     }
     
-    let mut absent:Vec<u8> = (b'a'..=b'z').collect();
-    absent.retain(|x| {
-        maxima[to_index(*x)] != usize::MAX
-    });
-    
-    let to_find = absent.len();
-    let mut position = 0;
-    let mut result: Vec<u8> = Vec::with_capacity(to_find);
-    while !absent.is_empty() {
-        for candidate in &absent {
-            let candidate_position = bs.iter().enumerate().skip(position).find(|&(_, x)| x == candidate).map(|(i, _)| {
-                i
-            }).unwrap();
-            let index = to_index(*candidate);
-            if maxima.iter().enumerate().filter(|(i, _)| *i != index).all(|(_, &p)| p > candidate_position) {
-                position = candidate_position + 1;
-                maxima[index] = usize::MAX;
-                result.push(*candidate);
+    let mut in_stack = [false; 26];
+    let mut stack: Vec<u8> = Vec::with_capacity(26);
+    for (i, &current) in bs.iter().enumerate() {
+        let index = to_index(current);
+        if in_stack[index] {
+            continue;
+        }
+        while let Some(&top) = stack.last() {
+            if top > current && last[to_index(top)] > i {
+                stack.pop();
+                in_stack[to_index(top)] = false;
+            } else {
                 break;
             }
         }
-        let resolved = result.last().unwrap();
-        absent.retain(|x| x != resolved);
+        stack.push(current);
+        in_stack[index] = true;
     }
-    String::from_utf8(result).unwrap()
+    String::from_utf8(stack).unwrap()
 }
 
 fn to_index(c: u8) -> usize {
