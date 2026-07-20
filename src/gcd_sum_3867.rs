@@ -39,7 +39,7 @@ mod tests {
         assert_eq!(5, gcd_sum(vec![3, 6, 2, 8]));
     }
 
-    #[derive(serde::Deserialize, Debug)]
+    #[derive(Debug)]
     struct Case {
         input: Vec<i32>,
         expected: i64,
@@ -54,9 +54,14 @@ mod tests {
             .parent()
             .expect("Failed to get source directory");
         let test_file = src_dir.join(filename);
-        let rdr = fs::File::open(&test_file)
+        let content = fs::read_to_string(&test_file)
             .unwrap_or_else(|e| panic!("Failed to open file: {:?}: {}", test_file, e));
-        serde_json::from_reader(rdr).unwrap()
+        let v: serde_json::Value = serde_json::from_str(&content).unwrap();
+        Case {
+            input: v["input"].as_array().unwrap().iter()
+                .map(|x| x.as_i64().unwrap() as i32).collect(),
+            expected: v["expected"].as_i64().unwrap(),
+        }
     }
 
     #[test]
