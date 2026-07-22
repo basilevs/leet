@@ -101,3 +101,4 @@ pub mod print_in_order_1114;
 pub mod print_foobar_1115;
 pub mod smallest_subsequence_1081;
 pub mod shift_grid_1260;
+pub mod max_active_sections_after_trade_3499;
