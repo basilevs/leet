@@ -2,7 +2,9 @@
 pub mod solution;
 pub mod vec_list;
 pub mod sparse_table;
-mod array_trie;
+pub mod segment_tree;
+pub mod hash_trie;
+pub mod array_trie;
 pub mod modint;
 
 
