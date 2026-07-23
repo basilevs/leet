@@ -80,6 +80,7 @@ mod tests {
         assert_eq!(1, seg_tree.query(0..=0));
         assert_eq!(5, seg_tree.query(4..=4));
         assert_eq!(9, seg_tree.query(1..=3));
+        assert_eq!(12, seg_tree.query(2..=4));
     }
 
     #[test]
@@ -92,6 +93,7 @@ mod tests {
         assert_eq!(1, seg_tree.query(0..=0));
         assert_eq!(6, seg_tree.query(5..=5));
         assert_eq!(9, seg_tree.query(1..=3));
+        assert_eq!(12, seg_tree.query(2..=4));
     }
 
 }
