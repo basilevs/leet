@@ -106,3 +106,4 @@ pub mod shift_grid_1260;
 pub mod max_active_sections_after_trade_3499;
 pub mod unique_xor_triplets_3513;
 pub mod unique_xor_triplets_3514;
+pub mod max_product_3536;
