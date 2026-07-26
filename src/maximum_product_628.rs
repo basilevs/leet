@@ -2,8 +2,11 @@
 use itertools::Itertools;
 
 pub fn maximum_product(nums: Vec<i32>) -> i32 {
-    let largest: Vec<i32> = nums.iter().k_largest_by_key(6, |&x| i32::abs(*x)).copied().collect();
-    largest.iter().combinations(3).map(|c| c.iter().copied().product()).max().unwrap_or(0)
+    let max = nums.iter().copied().k_largest(3).collect_vec();
+    let min = nums.iter().copied().k_smallest(2).collect_vec();
+    let top = max[0] * max[1] * max[2];
+    let low = min[0] * min[1] * max[0];
+    top.max(low)
 }
 
 #[cfg(test)]
