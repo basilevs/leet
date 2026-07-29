@@ -4,36 +4,36 @@
         let mut bytes = s.into_bytes();
         let n = bytes.len()/2;
         let mut k = usize::try_from(k-1).expect("k should be positive");
-        let total_permutations = usize::try_from(factorial(n as i32).unwrap_or(i32::MAX)).expect("total_permutations should be positive");
-        
-        if total_permutations <= k {
-            return String::new();
-        }
 
-        let mut buckets = bytes.iter().take(n).fold([0; 26], |mut acc, &b| {
+        let mut buckets = bytes.iter().take(n).fold([0u16; 26], |mut acc, &b| {
             acc[usize::from(b - b'a')] += 1;
             acc
         });
 
+        let total_permutations = bucket_permutations(&buckets);
+        if total_permutations <= k as u128 {
+            return String::new();
+        }
+
         for (i, byte) in bytes.iter_mut().enumerate().take(n) {
-            let tail_permutations = factorial((n - i - 1) as i32).unwrap_or(i32::MAX) as usize;
-            let mut selection = k / tail_permutations;
-            debug_assert!(selection < 26);
-            k -= selection * tail_permutations;
             let mut found = false;
-            for (j, bucket) in buckets.iter_mut().enumerate() {
-                if *bucket > 0 {
-                    if selection == 0 {
-                        *byte = b'a' + j as u8;
-                        *bucket -= 1;
-                        found = true;
-                        break;
-                    }
-                    selection -= 1;
+            for j in 0..buckets.len() {
+                if buckets[j] == 0 {
+                    continue;
                 }
+                buckets[j] -= 1;
+
+                let tail_permutations = bucket_permutations(&buckets);
+                if tail_permutations <= k as u128 {
+                    buckets[j] += 1;
+                    k -= tail_permutations as usize;
+                    continue;
+                }
+                *byte = b'a' + j as u8;
+                found = true;
+                break;
             }
             debug_assert!(found, "should have found a valid character to place at index {}", i);
-            debug_assert_eq!(selection, 0, "selection should be zero after the loop");
         }
         let last_part = bytes.len() - n;
         let (a, b) = bytes.split_at_mut(last_part);
@@ -43,8 +43,17 @@
 
     }
 
-fn factorial(n: i32) -> Option<i32> {
-    (1..=n).try_fold(1i32, |acc, x| acc.checked_mul(x))
+fn bucket_permutations(buckets: &[u16; 26]) -> u128 {
+    let n: u16 = buckets.iter().sum();
+    let numerator = factorial(n);
+    if numerator == u128::MAX {
+        return u128::MAX;
+    }
+    buckets.iter().filter(|&x| *x>0).fold(numerator, |acc, &count| acc / factorial(count))
+}
+    
+fn factorial(n: u16) -> u128 {
+    (1..=n).fold(1u128, |acc, x| acc.saturating_mul(x as u128))
 }
 
 #[cfg(test)]
