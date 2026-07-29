@@ -18,7 +18,6 @@
         for (i, byte) in bytes.iter_mut().enumerate().take(n) {
             let tail_permutations = factorial((n - i - 1) as i32).unwrap_or(i32::MAX) as usize;
             let mut selection = k / tail_permutations;
-            dbg!(i, k, tail_permutations, selection, buckets);
             debug_assert!(selection < 26);
             k -= selection * tail_permutations;
             let mut found = false;
