@@ -99,6 +99,7 @@ import with `use super::*;` in the test module.
       input.into_iter().map(Vec::from).collect()
     }
     ```
+  - Format test inputs per AGENTS.md formatting conventions. For example, split multidimensional arrays into one row per line
 4. Add module registration to src/lib.rs:
   - pub mod <function_name>_<frontend_id>;
   - Add the new line to the end of file. Ignore existing order.

@@ -55,10 +55,14 @@ constraints, and the full slug):
    is known to work. Fetch the resolved page for the problem text and
    examples, and add the `// https://leetcode.com/problems/<slug>/` URL as a
    top-of-file comment so the next agent doesn't have to look it up again.
-3. When writing tests named `official1`, `official2`, ..., copy the inputs
+3. To fetch the actual descritpion use shell command:
+    ````
+    ./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh <slug>
+    ```
+4. When writing tests named `official1`, `official2`, ..., copy the inputs
    verbatim from the problem's "Example N" sections; do not synthesize them
-   from the function signature — the input shape is rarely enough to pin down
-   which interpretation the problem actually requires.
+   from the function signature. Do not invent test data for `official` tests.
+   Tests with other names can be created with synthetic inputs.
 
 
 # Polishing procedure

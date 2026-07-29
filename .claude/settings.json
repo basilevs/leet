@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-palindromic-rearrangement-ii *)",
+      "Bash(cargo test *)"
+    ]
+  }
+}
