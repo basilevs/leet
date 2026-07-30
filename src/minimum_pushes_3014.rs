@@ -1,7 +1,10 @@
 // https://leetcode.com/problems/minimum-number-of-pushes-to-type-word-i
 
 pub fn minimum_pushes(word: String) -> i32 {
-    (0..word.len()).map(|i| (i / 8 + 1) as i32).sum()
+    let n = word.len() as i32;
+    let eights = n / 8;
+    let remainder = n % 8;
+    (eights + 1) * (4 * eights + remainder)
 }
 
 #[cfg(test)]
