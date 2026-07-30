@@ -43,26 +43,36 @@ impl<T, F> SegmentTree<T, F>
         if l == r {
             return self.tree[r].clone();
         }
-        let mut res: Option<T> = None;
+        // Nodes are collected from both ends of the range towards the middle, so
+        // the two frontiers need separate accumulators to keep `combine`
+        // arguments in range order: everything taken on the left goes before the
+        // accumulated prefix, everything on the right goes after the suffix.
+        let mut prefix: Option<T> = None;
+        let mut suffix: Option<T> = None;
         while l <= r {
             if !l.is_multiple_of(2) {
-                res = Some(match res {
+                prefix = Some(match prefix {
                     None => self.tree[l].clone(),
-                    Some(acc) => (self.combine)(&self.tree[l], &acc),
+                    Some(acc) => (self.combine)(&acc, &self.tree[l]),
                 });
                 l += 1;
             }
             if r.is_multiple_of(2) {
-                res = Some(match res {
+                suffix = Some(match suffix {
                     None => self.tree[r].clone(),
-                    Some(acc) => (self.combine)(&acc, &self.tree[r]),
+                    Some(acc) => (self.combine)(&self.tree[r], &acc),
                 });
                 r -= 1;
             }
             l /= 2;
             r /= 2;
         }
-        res.expect("empty range").clone()
+        match (prefix, suffix) {
+            (Some(p), Some(s)) => (self.combine)(&p, &s),
+            (Some(p), None) => p,
+            (None, Some(s)) => s,
+            (None, None) => panic!("empty range"),
+        }
     }
 }
 
@@ -96,4 +106,39 @@ mod tests {
         assert_eq!(12, seg_tree.query(2..=4));
     }
 
+    fn concat_tree(elements: &[&str]) -> SegmentTree<String, impl Fn(&String, &String) -> String> {
+        let input: Vec<String> = elements.iter().map(|s| s.to_string()).collect();
+        SegmentTree::from(
+            input.into_iter(),
+            |a: &String, b: &String| format!("{a}{b}"),
+            String::new(),
+        )
+    }
+
+    /// Concatenation is associative but not commutative, so it detects partial
+    /// results being combined out of range order — something `+` cannot catch.
+    #[test]
+    fn non_commutative_combine() {
+        let seg_tree = concat_tree(&["a", "b", "c", "d"]);
+        assert_eq!("abcd", seg_tree.query(0..=3));
+        assert_eq!("abc", seg_tree.query(0..=2));
+        assert_eq!("bcd", seg_tree.query(1..=3));
+        assert_eq!("bc", seg_tree.query(1..=2));
+    }
+
+    /// An odd length leaves the bottom row of the tree ragged, so ranges are
+    /// assembled from nodes at differing depths.
+    #[test]
+    fn non_commutative_combine_odd_element_count() {
+        let seg_tree = concat_tree(&["a", "b", "c", "d", "e"]);
+        assert_eq!("abcde", seg_tree.query(0..=4));
+        assert_eq!("abcde", seg_tree.query(..));
+        assert_eq!("a", seg_tree.query(0..=0));
+        assert_eq!("e", seg_tree.query(4..=4));
+        assert_eq!("ab", seg_tree.query(0..=1));
+        assert_eq!("de", seg_tree.query(3..=4));
+        assert_eq!("bcd", seg_tree.query(1..=3));
+        assert_eq!("cde", seg_tree.query(2..=4));
+        assert_eq!("abcd", seg_tree.query(0..4));
+    }
 }
