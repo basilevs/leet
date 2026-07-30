@@ -1,21 +1,7 @@
 // https://leetcode.com/problems/minimum-number-of-pushes-to-type-word-i
 
 pub fn minimum_pushes(word: String) -> i32 {
-    let mut freq = [0u8; 26];
-    for b in word.bytes() {
-        freq[(b - b'a') as usize] += 1;
-    }
-    freq.sort_unstable();
-
-    let mut used_slots = 0i32;
-    let mut result = 0i32;
-    for f in freq {
-        if f > 0 {
-            result += (used_slots/8 + 1) * i32::from(f);
-            used_slots += 1;
-        }
-    }
-    result
+    (0..word.len()).map(|i| (i / 8 + 1) as i32).sum()
 }
 
 #[cfg(test)]
@@ -32,5 +18,34 @@ mod tests {
     fn official2() {
         // Input from exampleTestcases; expected output copied from examples given in content.
         assert_eq!(12, minimum_pushes("xycdefghij".to_string()));
+    }
+
+    #[test]
+    fn single_char() {
+        assert_eq!(1, minimum_pushes("a".to_string()));
+    }
+
+    #[test]
+    fn exactly_fills_first_row() {
+        // 8 distinct letters: all one push each.
+        assert_eq!(8, minimum_pushes("abcdefgh".to_string()));
+    }
+
+    #[test]
+    fn one_past_first_row() {
+        // 9th letter spills into the second row (two pushes).
+        assert_eq!(10, minimum_pushes("abcdefghi".to_string()));
+    }
+
+    #[test]
+    fn exactly_fills_two_rows() {
+        // 16 distinct letters: 8 at one push, 8 at two pushes.
+        assert_eq!(24, minimum_pushes("abcdefghijklmnop".to_string()));
+    }
+
+    #[test]
+    fn full_alphabet() {
+        // All 26 letters distinct: 8*1 + 8*2 + 8*3 + 2*4.
+        assert_eq!(56, minimum_pushes("abcdefghijklmnopqrstuvwxyz".to_string()));
     }
 }
