@@ -1,21 +1,19 @@
 // https://leetcode.com/problems/minimum-number-of-pushes-to-type-word-ii
 
+use std::cmp::Reverse;
+
 pub fn minimum_pushes(word: String) -> i32 {
     let mut freq = [0u32; 26];
     for b in word.bytes() {
         freq[(b - b'a') as usize] += 1;
     }
-    freq.sort_unstable();
-    freq.reverse();
+    freq.sort_unstable_by_key(|&f| Reverse(f));
 
-    let mut used_slots = 0u32;
     let mut result = 0u32;
-    for f in freq {
-        if f > 0 {
-            result += (used_slots/8 + 1) * f;
-            used_slots += 1;
-        }
+    for (slot, f) in freq.into_iter().enumerate() {
+        result += (slot as u32 / 8 + 1) * f;
     }
+
     result as i32
 }
 
@@ -37,7 +35,6 @@ mod tests {
     fn official3() {
         assert_eq!(24, minimum_pushes("aabbccddeeffgghhiiiiii".to_string()));
     }
-
 
     #[test]
     fn single_char() {
@@ -67,5 +64,4 @@ mod tests {
         // All 26 letters distinct: 8*1 + 8*2 + 8*3 + 2*4.
         assert_eq!(56, minimum_pushes("abcdefghijklmnopqrstuvwxyz".to_string()));
     }
-
 }
