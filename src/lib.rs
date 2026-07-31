@@ -111,3 +111,4 @@ pub mod maximum_product_628;
 pub mod smallest_palindrome_3517;
 pub mod smallest_palindrome_3518;
 pub mod minimum_pushes_3014;
+pub mod minimum_pushes_3016;
