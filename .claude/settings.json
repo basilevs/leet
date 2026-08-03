@@ -6,7 +6,8 @@
       "Bash(cargo build *)",
       "Bash(cargo clippy *)",
       "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh minimum-number-of-pushes-to-type-word-ii *)"
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh minimum-number-of-pushes-to-type-word-ii *)",
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh stone-game-iii *)"
     ]
   }
 }
