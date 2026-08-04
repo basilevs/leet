@@ -16,7 +16,9 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(make -C cpp test T=_probe_0)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(/usr/bin/clang++ --version)",
+      "Read(//opt/homebrew/opt/**)"
     ]
   }
 }
