@@ -35,3 +35,7 @@ harness = false
 [[bench]]
 name = "pair_sum_2130"
 harness = false
+
+[[bench]]
+name = "find_missing_elements_3731"
+harness = false
