@@ -7,7 +7,16 @@
       "Bash(cargo clippy *)",
       "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh *)",
       "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh minimum-number-of-pushes-to-type-word-ii *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh stone-game-iii *)"
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh stone-game-iii *)",
+      "Bash(c++ --version)",
+      "Bash(make --version)",
+      "Bash(make test *)",
+      "Bash(make -C cpp clean)",
+      "Bash(make -C cpp test)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(make -C cpp test T=_probe_0)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
