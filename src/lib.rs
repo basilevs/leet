@@ -88,6 +88,7 @@ pub mod maximum_safeness_factor_2812;
 pub mod find_safe_walk_3286;
 pub mod min_score_2492;
 pub mod find_max_path_score_3620;
+pub mod find_missing_elements_3731;
 pub mod paths_with_max_score_1301;
 pub mod remove_covered_intervals_1288;
 pub mod sum_and_multiply_3754;

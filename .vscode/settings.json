@@ -11,6 +11,7 @@
         "awk": true,
         "./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh": true,
         "./scripts/fetch-problem.sh": true,
-        "git stash": true
+        "git stash": true,
+        "./.github/skills/leetcode-task-scaffold/scripts/fetch-daily-slug.sh": true
     }
 }
