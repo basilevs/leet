@@ -13,23 +13,23 @@ Create a new solution module that:
 - Has a canonical LeetCode origin link at the top of the file.
 - Has no implementation (training scaffold only).
 - Includes populated tests (official examples) that fail until solution is correctly implemented by user.
-- Is registered in src/lib.rs.
+- Is registered in rust/src/lib.rs.
 
 See also AGENTS.md for repository-wide conventions (slug resolution, `official<N>`
 test naming, copying example inputs verbatim).
 
 ## Conventions
 
-- File naming pattern: src/<function_name>_<frontend_id>.rs. <function_name> matches function name from LeetCode implementation template. <frontend_id> is the displayed problem number (GraphQL `questionFrontendId`, NOT the internal `questionId`).
+- File naming pattern: rust/src/<function_name>_<frontend_id>.rs. <function_name> matches function name from LeetCode implementation template. <frontend_id> is the displayed problem number (GraphQL `questionFrontendId`, NOT the internal `questionId`).
 - Solution file exposes a top-level public function (or, for design problems, a `struct` with an `impl`).
 - Top-of-file origin link format (no trailing slash):
   - // https://leetcode.com/problems/<slug>
 - Tests are in the same file under `#[cfg(test)]` and usually named official1, official2, ...
-- New module must be added in src/lib.rs as:
+- New module must be added in rust/src/lib.rs as:
   - pub mod <function_name>_<frontend_id>;
 
 ## Template
-This is the template for the scaffold file. Fill in <slug>, <function_name>, signature and return type according to the official implementation template. If possible, save the file as src/<function_name>_<frontend_id>.rs
+This is the template for the scaffold file. Fill in <slug>, <function_name>, signature and return type according to the official implementation template. If possible, save the file as rust/src/<function_name>_<frontend_id>.rs
 
 ```rust
 // https://leetcode.com/problems/<slug>
@@ -99,7 +99,7 @@ import with `use super::*;` in the test module.
    requires `curl` and `jq`. Because the whole request/parse happens in a single
    command, the user only sees one terminal safety prompt.
 
-3. Create src/<function_name>_<frontend_id>.rs using the template above.
+3. Create rust/src/<function_name>_<frontend_id>.rs using the template above.
   - For algorithm problems the template is wrapped in a `Solution` impl block. Remove it and expose the inner function as a top-level function. For design problems keep the `struct`/`impl` and leave method bodies as `todo!()`.
   - name, signature and return type of the implementation must match the official implementation template.
   - Convert textual examples from the problem statement into Rust test code. Take inputs from `exampleTestcases` and expected outputs from `content` (the `Output:` lines), copied verbatim.
@@ -111,11 +111,11 @@ import with `use super::*;` in the test module.
     }
     ```
   - Format test inputs per AGENTS.md formatting conventions. For example, split multidimensional arrays into one row per line
-4. Add module registration to src/lib.rs:
+4. Add module registration to rust/src/lib.rs:
   - pub mod <function_name>_<frontend_id>;
   - Add the new line to the end of file. Ignore existing order.
 5. Verify the scaffold compiles and is wired up:
-  - `cargo test --lib <function_name>_<frontend_id> --no-run` confirms the
+  - `cargo test --manifest-path rust/Cargo.toml --lib <function_name>_<frontend_id> --no-run` confirms the
     module is registered and the populated tests compile.
   - Running the tests is expected to FAIL: the `todo!()` body panics, which
     confirms the tests exercise the (not-yet-written) implementation.
@@ -123,7 +123,7 @@ import with `use super::*;` in the test module.
 ## Guardrails
 
 - Do not implement the algorithm in scaffold mode.
-- Do not skip src/lib.rs registration.
+- Do not skip rust/src/lib.rs registration.
 - Do not omit the origin link.
 - No empty tests: populate every test from an official example so it fails against the `todo!()` body until implemented.
 - Keep test names aligned with repository style (official1, official2, ...).

@@ -37,7 +37,7 @@ assert!(find_safe_walk(to_vector(grid), 1));
 ```
 
 # Finding the LeetCode problem statement
-Each `src/<name>_<number>.rs` corresponds to LeetCode problem `<number>`.
+Each `rust/src/<name>_<number>.rs` corresponds to LeetCode problem `<number>`.
 
 To locate the canonical problem statement (including official examples,
 constraints, and the full slug):
@@ -72,7 +72,7 @@ Steps:
 - Run lint checks (optionally strict Clippy groups).
     To see Clippy warnings statistics, use:
     ```
-    cargo clippy -q --message-format=json -- -W clippy::pedantic -W clippy::nursery | jq -Rr 'fromjson? | select(.reason=="compiler-message") | .message.code.code? // empty' | sed '/^$/d' | sort | uniq -c | sort -nr
+    cargo clippy --manifest-path rust/Cargo.toml -q --message-format=json -- -W clippy::pedantic -W clippy::nursery | jq -Rr 'fromjson? | select(.reason=="compiler-message") | .message.code.code? // empty' | sed '/^$/d' | sort | uniq -c | sort -nr
     ```
 - Save benchmark baseline.
 - Fix lint detections.
@@ -82,11 +82,11 @@ Steps:
 # Benchmarking
 - Run becnhmark saving baseline:
     ```
-    cargo bench --manifest-path bench/Cargo.toml  -- --save-baseline pre_lint_fix
+    cargo bench --manifest-path rust/bench/Cargo.toml  -- --save-baseline pre_lint_fix
     ```
 - Run benchmarks comparing with saved baseline:
     ```
-    cargo bench --manifest-path bench/Cargo.toml  -- --baseline pre_lint_fix
+    cargo bench --manifest-path rust/bench/Cargo.toml  -- --baseline pre_lint_fix
     ```
 
 
