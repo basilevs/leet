@@ -1,5 +1,15 @@
-Strange ineffective top-level inputs in Rust code come from https://leetcode.com/ challenges and can't be changed. Consider them an external unavoidable limitation.
-Public functions have an extra indent for easier pasting into https://leetcode.com/.
+This repository holds solutions in two languages, each in its own folder:
+
+- `rust/src/<name>_<number>.rs` — Cargo workspace, tests and benchmarks.
+- `cpp/src/<name>_<number>.cpp` — Makefile build, tests only (no benchmarks yet).
+
+Both use the same `<name>_<number>` stem for the same problem, so the two
+implementations sit side by side. `<name>` is the function name from the
+language's own LeetCode template, converted to `snake_case`; `<number>` is the
+frontend problem ID.
+
+Strange ineffective top-level inputs come from https://leetcode.com/ challenges and can't be changed. Consider them an external unavoidable limitation.
+Public functions have an extra indent for easier pasting into https://leetcode.com/ (both languages: the LeetCode template wraps them in `impl Solution` / `class Solution`).
 
 The LeetCode Rust environment ships with `itertools`, so solutions may freely use it. See [What are the environments for the programming languages?](https://support.leetcode.com/hc/en-us/articles/360011833974-What-are-the-environments-for-the-programming-languages#:~:text=Rust).
 
@@ -36,8 +46,67 @@ let grid = [
 assert!(find_safe_walk(to_vector(grid), 1));
 ```
 
+In C++ no helper is needed — nested braced initialisers already read like the
+example, and `check_eq` prints them back in the same shape:
+
+```cpp
+// clang-format off
+check_eq(true, findSafeWalk({
+    {0, 1, 0, 0, 0}, // each row on its own line
+    {0, 1, 0, 1, 0}, // input textual representation closely follows the example
+    {0, 0, 0, 1, 0},
+}, 1));
+// clang-format on
+```
+
+# C++
+Each `cpp/src/*.cpp` is a standalone translation unit: the solution, its tests,
+and — via `#include "test.hpp"` — its own `main`. There is no shared library and
+nothing to register, so adding a file is enough to make it build and run.
+
+The harness in `cpp/include/test.hpp` is deliberately tiny:
+
+```cpp
+// https://leetcode.com/problems/<slug>
+
+#include "test.hpp"
+
+#include <vector>
+
+    int findGcd(std::vector<int> nums) {
+        unused(nums);              // silences unused-parameter warnings
+        todo();                    // C++ counterpart of Rust's todo!()
+    }
+
+TEST(official1) {
+    check_eq(2, findGcd({2, 5, 6, 9, 10}));
+}
+```
+
+- `TEST(name) { ... }` registers a test; names follow `official1`, `official2`, ...
+- `check_eq(expected, actual)` — expected first, matching Rust's `assert_eq!`.
+  `expected` is a non-deduced parameter, so a braced initialiser works directly:
+  `check_eq({9, 5, 3}, pivotArray({...}, 10))`. Failures print both values;
+  vectors, nested vectors, pairs and strings all format themselves.
+- `check(condition)` for boolean results, `todo()` for unimplemented scaffolds.
+- `unused(a, b)` where a scaffold would otherwise warn about its arguments.
+
+Build and run:
+
+```sh
+make -C cpp test              # everything
+make -C cpp test T=find_gcd   # substring filter on the file name
+./cpp/build/find_gcd_1979 official2   # substring filter on the test name
+make -C cpp list
+make -C cpp clean
+```
+
+Warnings are on (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion`) but not
+fatal; the standard is C++23, matching the LeetCode judge.
+
 # Finding the LeetCode problem statement
-Each `rust/src/<name>_<number>.rs` corresponds to LeetCode problem `<number>`.
+Each `rust/src/<name>_<number>.rs` and `cpp/src/<name>_<number>.cpp` corresponds
+to LeetCode problem `<number>`.
 
 To locate the canonical problem statement (including official examples,
 constraints, and the full slug):
@@ -68,6 +137,9 @@ constraints, and the full slug):
 
 
 # Polishing procedure
+Rust only — C++ has no benchmark harness yet, so polishing a C++ solution means
+building warning-clean with `make -C cpp test` and nothing more.
+
 Steps:
 - Run lint checks (optionally strict Clippy groups).
     To see Clippy warnings statistics, use:
