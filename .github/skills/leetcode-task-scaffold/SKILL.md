@@ -20,10 +20,9 @@ test naming, copying example inputs verbatim, C++ harness reference).
 
 ## Choosing the language
 
-Ask the user which language to scaffold — **Rust**, **C++**, or **both** — unless
-they already said so in their request (e.g. "scaffold today's daily in C++",
-"scaffold both"). Do not assume Rust by default. When both are requested, produce
-both files from a single problem fetch; the tests are the same examples
+If the implementation language is clear from context — the user asked for **Rust**,
+**C++**, or **both** — use that. Otherwise assume Rust. When both are requested, produce
+both files from a single problem fetch (passing "both" argument to fetch script); the tests are the same examples
 transcribed into each language.
 
 ## Conventions
@@ -202,7 +201,6 @@ calling `todo()`, and drive it from `TEST(...)` blocks.
 ## Guardrails
 
 - Do not implement the algorithm in scaffold mode.
-- Do not assume a language — ask for Rust, C++, or both when the user has not said.
 - Do not skip `rust/src/lib.rs` registration for Rust scaffolds.
 - Do not omit the origin link.
 - No empty tests: populate every test from an official example so it fails against the unimplemented body until implemented.
