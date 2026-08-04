@@ -9,7 +9,7 @@ const SEED: u64 = 0x1234_5678_9ABC_DEF0;
 /// Full-range spans to exercise. The range-scan variants (bitset / bool array)
 /// pay `O(span)`, while the sort-based baseline pays `O(n log n)` on the present
 /// values, so widening the span stresses the scanners specifically.
-const SPANS: [usize; 4] = [1_000, 10_000, 100_000, 1_000_000];
+const SPANS: [usize; 5] = [100, 1_000, 10_000, 100_000, 1_000_000];
 
 /// Deterministic SplitMix64 step.
 fn split_mix(state: &mut u64) -> u64 {
