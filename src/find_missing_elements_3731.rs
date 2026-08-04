@@ -2,10 +2,8 @@
 
 pub fn find_missing_elements(mut nums: Vec<i32>) -> Vec<i32> {
     nums.sort_unstable();
-    nums.into_iter().scan(None, |prev: &mut Option<i32>, x| {
-        let result = prev.map_or(0..0, |p| (p + 1)..x);
-        prev.replace(x);
-        Some(result)
+    nums.into_iter().scan(None, |prev, x| {
+        Some(prev.replace(x).map_or(0..0, |p| (p + 1)..x))
     })
     .flatten()
     .collect()
