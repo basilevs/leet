@@ -1,6 +1,6 @@
 ---
 name: leetcode-task-scaffold
-description: "Prepare training scaffolding for a LeetCode problem. Use when user asks to scaffold a new task/problem file."
+description: "Prepare training scaffolding for a LeetCode problem, including today's daily challenge. Use when user asks to scaffold a new task/problem file or the daily question."
 ---
 
 # LeetCode Task Scaffold (Rust)
@@ -66,6 +66,17 @@ import with `use super::*;` in the test module.
 
 1. Determine the canonical problem slug.
   - If known, use it directly.
+  - If the user asks to scaffold "today's daily problem", "the daily
+    challenge", or similar, without naming a specific problem, resolve the
+    slug automatically instead of asking:
+
+    ```sh
+    ./.github/skills/leetcode-task-scaffold/scripts/fetch-daily-slug.sh
+    ```
+
+    This calls the LeetCode GraphQL `activeDailyCodingChallengeQuestion`
+    query and prints just the slug. Use it for the rest of this workflow
+    exactly as if the user had supplied it.
   - Otherwise prompt user.
 2. Fetch the problem scaffold data with the bundled helper script (the rendered
    problem page is client-side and does NOT contain the code template):
