@@ -3,7 +3,7 @@ use criterion::{
 };
 use leet::find_missing_elements_3731::{
     find_missing_elements, find_missing_elements_bitset, find_missing_elements_bool,
-    find_missing_elements_u128,
+    find_missing_elements_loop, find_missing_elements_u128,
 };
 
 const SEED: u64 = 0x1234_5678_9ABC_DEF0;
@@ -66,6 +66,7 @@ fn bench_variant(
 
 fn bench_all(c: &mut Criterion) {
     bench_variant(c, "find_missing_sort", &SPANS, find_missing_elements);
+    bench_variant(c, "find_missing_loop", &SPANS, find_missing_elements_loop);
     bench_variant(c, "find_missing_bitset", &SPANS, find_missing_elements_bitset);
     bench_variant(c, "find_missing_bool", &SPANS, find_missing_elements_bool);
     // The single-u128 mask only holds values < 128, so it is valid only at the

@@ -48,6 +48,19 @@ pub fn find_missing_elements_bool(nums: Vec<i32>) -> Vec<i32> {
         .collect()
 }
 
+/// Alternative: sort, then imperatively push every value strictly between
+/// consecutive elements.
+pub fn find_missing_elements_loop(mut nums: Vec<i32>) -> Vec<i32> {
+    nums.sort_unstable();
+    let mut ans = Vec::new();
+    for i in 0..nums.len() - 1 {
+        for x in nums[i] + 1..nums[i + 1] {
+            ans.push(x);
+        }
+    }
+    ans
+}
+
 /// Alternative: pack presence into a single `u128` bitmask, then walk from the
 /// lowest set bit to the highest, emitting positions whose bit is unset. Only
 /// valid when all values fit in `0..128` (true for this problem: `1 <= v <= 100`).
@@ -65,7 +78,8 @@ pub fn find_missing_elements_u128(nums: Vec<i32>) -> Vec<i32> {
 mod tests {
     use super::{
         find_missing_elements, find_missing_elements_bitset,
-        find_missing_elements_bool, find_missing_elements_u128,
+        find_missing_elements_bool, find_missing_elements_loop,
+        find_missing_elements_u128,
     };
 
     #[test]
@@ -102,5 +116,12 @@ mod tests {
         assert_eq!(vec![3], find_missing_elements_u128(vec![1, 4, 2, 5]));
         assert_eq!(vec![] as Vec<i32>, find_missing_elements_u128(vec![7, 8, 6, 9]));
         assert_eq!(vec![2, 3, 4], find_missing_elements_u128(vec![5, 1]));
+    }
+
+    #[test]
+    fn loop_matches_official() {
+        assert_eq!(vec![3], find_missing_elements_loop(vec![1, 4, 2, 5]));
+        assert_eq!(vec![] as Vec<i32>, find_missing_elements_loop(vec![7, 8, 6, 9]));
+        assert_eq!(vec![2, 3, 4], find_missing_elements_loop(vec![5, 1]));
     }
 }
