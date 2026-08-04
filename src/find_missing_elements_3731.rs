@@ -48,11 +48,24 @@ pub fn find_missing_elements_bool(nums: Vec<i32>) -> Vec<i32> {
         .collect()
 }
 
+/// Alternative: pack presence into a single `u128` bitmask, then walk from the
+/// lowest set bit to the highest, emitting positions whose bit is unset. Only
+/// valid when all values fit in `0..128` (true for this problem: `1 <= v <= 100`).
+pub fn find_missing_elements_u128(nums: Vec<i32>) -> Vec<i32> {
+    let b = nums.into_iter().fold(0u128, |f, n| f | 1 << n);
+
+    std::iter::successors(Some(b), |n| Some(n >> 1))
+        .skip(b.trailing_zeros() as _)
+        .zip(b.trailing_zeros() as i32..127 - b.leading_zeros() as i32)
+        .filter_map(|(b, m)| (b & 1 == 0).then_some(m))
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
         find_missing_elements, find_missing_elements_bitset,
-        find_missing_elements_bool,
+        find_missing_elements_bool, find_missing_elements_u128,
     };
 
     #[test]
@@ -82,5 +95,12 @@ mod tests {
         assert_eq!(vec![3], find_missing_elements_bool(vec![1, 4, 2, 5]));
         assert_eq!(vec![] as Vec<i32>, find_missing_elements_bool(vec![7, 8, 6, 9]));
         assert_eq!(vec![2, 3, 4], find_missing_elements_bool(vec![5, 1]));
+    }
+
+    #[test]
+    fn u128_matches_official() {
+        assert_eq!(vec![3], find_missing_elements_u128(vec![1, 4, 2, 5]));
+        assert_eq!(vec![] as Vec<i32>, find_missing_elements_u128(vec![7, 8, 6, 9]));
+        assert_eq!(vec![2, 3, 4], find_missing_elements_u128(vec![5, 1]));
     }
 }

@@ -3,6 +3,7 @@ use criterion::{
 };
 use leet::find_missing_elements_3731::{
     find_missing_elements, find_missing_elements_bitset, find_missing_elements_bool,
+    find_missing_elements_u128,
 };
 
 const SEED: u64 = 0x1234_5678_9ABC_DEF0;
@@ -43,10 +44,11 @@ fn present_values(span: usize, seed: u64) -> Vec<i32> {
 fn bench_variant(
     c: &mut Criterion,
     name: &str,
+    spans: &[usize],
     f: fn(Vec<i32>) -> Vec<i32>,
 ) {
     let mut group = c.benchmark_group(name);
-    for span in SPANS {
+    for &span in spans {
         group.bench_with_input(BenchmarkId::from_parameter(span), &span, |b, &span| {
             let mut seed = SEED;
             b.iter_batched(
@@ -63,9 +65,12 @@ fn bench_variant(
 }
 
 fn bench_all(c: &mut Criterion) {
-    bench_variant(c, "find_missing_sort", find_missing_elements);
-    bench_variant(c, "find_missing_bitset", find_missing_elements_bitset);
-    bench_variant(c, "find_missing_bool", find_missing_elements_bool);
+    bench_variant(c, "find_missing_sort", &SPANS, find_missing_elements);
+    bench_variant(c, "find_missing_bitset", &SPANS, find_missing_elements_bitset);
+    bench_variant(c, "find_missing_bool", &SPANS, find_missing_elements_bool);
+    // The single-u128 mask only holds values < 128, so it is valid only at the
+    // problem's real ceiling (span = 100); larger spans would overflow the shift.
+    bench_variant(c, "find_missing_u128", &[100], find_missing_elements_u128);
 }
 
 criterion_group!(benches, bench_all);
