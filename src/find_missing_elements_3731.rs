@@ -1,12 +1,13 @@
 // https://leetcode.com/problems/find-missing-elements
 
+use itertools::Itertools;
+
 pub fn find_missing_elements(mut nums: Vec<i32>) -> Vec<i32> {
     nums.sort_unstable();
-    nums.into_iter().scan(None, |prev, x| {
-        Some(prev.replace(x).map_or(0..0, |p| (p + 1)..x))
-    })
-    .flatten()
-    .collect()
+    nums.into_iter()
+        .tuple_windows()
+        .flat_map(|(a, b)| (a + 1)..b)
+        .collect()
 }
 
 #[cfg(test)]
