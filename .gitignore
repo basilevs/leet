@@ -2,3 +2,4 @@
 /rust/bench/target
 /cpp/build
 .claude/.DS_Store
+/target
