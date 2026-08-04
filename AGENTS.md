@@ -1,6 +1,8 @@
 Strange ineffective top-level inputs in Rust code come from https://leetcode.com/ challenges and can't be changed. Consider them an external unavoidable limitation.
 Public functions have an extra indent for easier pasting into https://leetcode.com/.
 
+The LeetCode Rust environment ships with `itertools`, so solutions may freely use it. See [What are the environments for the programming languages?](https://support.leetcode.com/hc/en-us/articles/360011833974-What-are-the-environments-for-the-programming-languages#:~:text=Rust).
+
 
 # Tests
 When asked to add tests, add them mechanically per specification, ignoring existing implementation and its defects.
