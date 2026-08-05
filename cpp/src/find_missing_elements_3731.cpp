@@ -4,16 +4,17 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <ranges>
 #include <unordered_set>
 #include <vector>
 
 std::vector<int> findMissingElements(std::vector<int> nums) {
     std::ranges::sort(nums);
     std::vector<int> result;
-    for (std::size_t i = 0; i < nums.size() - 1; ++i) {
-        for (int x = nums[i] + 1; x < nums[i + 1]; ++x) {
-            result.push_back(x);
-        }
+    // `zip` with a dropped-by-one copy is the pairwise view libc++ lacks; it also
+    // sidesteps the `nums.size() - 1` underflow on an empty input.
+    for (const auto [lo, hi] : std::views::zip(nums, nums | std::views::drop(1))) {
+        result.append_range(std::views::iota(lo + 1, hi));
     }
     return result;
 }
