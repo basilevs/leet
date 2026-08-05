@@ -15,7 +15,7 @@ pub fn remaining_methods(n: i32, k: i32, invocations: Vec<Vec<i32>>) -> Vec<i32>
     //dfs
     let mut stack = vec![k as usize];
     let mut counter = 0;
-    let visited = &mut vec![false; n as usize];
+    let mut visited = vec![false; n as usize];
     visited[k as usize] = true;
     while let Some(node) = stack.pop() {
         counter += 1;
@@ -59,10 +59,18 @@ fn add_component(new_component: &[i32], parents: &mut [usize]) -> usize {
 }
 
 fn find_component(x: usize, parent: &mut [usize]) -> usize {
-    if parent[x] != x {
-        parent[x] = find_component(parent[x], parent); // Path compression
+    let mut root = x;
+    while parent[root] != root {
+        root = parent[root];
     }
-    parent[x]
+    // Path compression
+    let mut cur = x;
+    while parent[cur] != root {
+        let next = parent[cur];
+        parent[cur] = root; 
+        cur = next;
+    }
+    root
 }
 
 fn into_usize(input: i32) -> usize {
