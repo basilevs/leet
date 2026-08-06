@@ -117,3 +117,4 @@ pub mod predict_the_winner_486;
 pub mod stone_game_iii_1406;
 pub mod remaining_methods_3310;
 pub mod smallest_number_3345;
+pub mod smallest_number_3348;
