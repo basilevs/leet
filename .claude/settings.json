@@ -22,7 +22,8 @@
       "Bash(make -C cpp test T=find_missing_elements_3731)",
       "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-daily-slug.sh)",
       "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh remove-methods-from-project *)",
-      "Bash(make -C cpp test T=remaining_methods_3310)"
+      "Bash(make -C cpp test T=remaining_methods_3310)",
+      "Bash(rustc --version)"
     ]
   }
 }
