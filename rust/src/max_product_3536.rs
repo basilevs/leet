@@ -8,7 +8,7 @@ pub fn max_product(n: i32) -> i32 {
 }
     
 fn digits( n: i32) -> impl Iterator<Item=u8> {
-    successors(Some(n), |x: &i32| x.is_positive().then(|| x / 10)).map(|n| (n % 10) as u8)
+    successors(Some(n), |x: &i32| (*x >= 10).then(|| x / 10)).map(|n| (n % 10) as u8)
 }
 
 
