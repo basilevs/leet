@@ -25,7 +25,8 @@
       "Bash(make -C cpp test T=remaining_methods_3310)",
       "Bash(rustc --version)",
       "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-divisible-digit-product-i *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-divisible-digit-product-ii *)"
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-divisible-digit-product-ii *)",
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh stone-game-ii *)"
     ]
   }
 }
