@@ -1,13 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-palindromic-rearrangement-ii *)",
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh *)",
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh:*)",
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-daily-slug.sh)",
       "Bash(cargo test *)",
       "Bash(cargo build *)",
       "Bash(cargo clippy *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh minimum-number-of-pushes-to-type-word-ii *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh stone-game-iii *)",
       "Bash(c++ --version)",
       "Bash(make --version)",
       "Bash(make test *)",
@@ -20,14 +19,23 @@
       "Bash(/usr/bin/clang++ --version)",
       "Read(//opt/homebrew/opt/**)",
       "Bash(make -C cpp test T=find_missing_elements_3731)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-daily-slug.sh)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh remove-methods-from-project *)",
       "Bash(make -C cpp test T=remaining_methods_3310)",
       "Bash(rustc --version)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-divisible-digit-product-i *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-divisible-digit-product-ii *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh stone-game-ii *)",
-      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh smallest-missing-integer-greater-than-sequential-prefix-sum *)"
+      "WebFetch(domain:docs.claude.com)",
+      "WebSearch"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c 'if ((.tool_input.command // \"\") | test(\"^(\\\\./)?\\\\.github/skills/leetcode-task-scaffold/scripts/(fetch-problem|fetch-daily-slug)\\\\.sh( [A-Za-z0-9._-]+){0,2}$\")) then {hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"allow\",permissionDecisionReason:\"leetcode scaffold script\"}} else {} end'"
+          }
+        ]
+      }
     ]
   }
 }
