@@ -1,43 +1,33 @@
 // https://leetcode.com/problems/stone-game-iv
 
-use std::{collections::HashMap, cell::RefCell};
+use std::cell::RefCell;
 
+// `CACHE[k]` — does the player to move win with `k` stones left?
+// Filled bottom-up and kept between calls, so a later testcase only extends it.
 thread_local! {
-    static CACHE: RefCell<HashMap<i32, bool>> = RefCell::new(HashMap::new());
+    static CACHE: RefCell<Vec<bool>> = const { RefCell::new(Vec::new()) };
 }
 
 pub fn winner_square_game(n: i32) -> bool {
+    let n = n as usize;
     CACHE.with(|cache| {
-        // Borrow ends with this statement, before any recursion below.
-        if let Some(&cached) = cache.borrow().get(&n) {
-            return cached;
+        let mut wins = cache.borrow_mut();
+        if wins.is_empty() {
+            wins.push(false); // No stones left: the player to move cannot move.
         }
 
-        let sqrt = (n as f64).sqrt() as i32;
-        let mut result = false;
-        if is_square(n) {
-            result = true;
-        } else {
-            for i in 1..=sqrt {
-                let square = i * i;
-                if !winner_square_game(n - square) {
-                    result = true;
-                    break;
-                }
-            }
+        for k in wins.len()..=n {
+            let win = (1usize..)
+                .map(|i| i * i)
+                .take_while(|&square| square <= k)
+                .any(|square| !wins[k - square]);
+            wins.push(win);
         }
 
-        cache.borrow_mut().insert(n, result);
-        result
+        wins[n]
     })
 }
 
-fn is_square(n: i32) -> bool {
-    n >= 0 && {
-        let r = n.isqrt();
-        r * r == n
-    }
-}
 #[cfg(test)]
 mod tests {
     use super::winner_square_game;
