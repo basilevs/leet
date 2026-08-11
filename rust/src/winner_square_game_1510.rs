@@ -7,29 +7,29 @@ thread_local! {
 }
 
 pub fn winner_square_game(n: i32) -> bool {
-    {
-        let result_option = CACHE.with(|cache| cache.borrow().get(&n).copied());
-        if let Some(r) = result_option {
-            return r;
+    CACHE.with(|cache| {
+        // Borrow ends with this statement, before any recursion below.
+        if let Some(&cached) = cache.borrow().get(&n) {
+            return cached;
         }
-    }
 
-    let sqrt = (n as f64).sqrt() as i32;
-    let mut result = false;
-    if is_square(n) {
-        result = true;
-    } else {
-        for i in 1..=sqrt {
-            let square = i * i;
-            if !winner_square_game(n - square) {
-                result = true;
-                break;
+        let sqrt = (n as f64).sqrt() as i32;
+        let mut result = false;
+        if is_square(n) {
+            result = true;
+        } else {
+            for i in 1..=sqrt {
+                let square = i * i;
+                if !winner_square_game(n - square) {
+                    result = true;
+                    break;
+                }
             }
         }
-    }
 
-    CACHE.with(|c| c.borrow_mut().insert(n, result));
-    result
+        cache.borrow_mut().insert(n, result);
+        result
+    })
 }
 
 fn is_square(n: i32) -> bool {
@@ -55,5 +55,13 @@ mod tests {
     #[test]
     fn official3() {
         assert!(winner_square_game(4));
+    }
+
+    /// Alice wins only through a longer line: 13 -> 12, leaving Bob a losing
+    /// pile. Every Bob reply (12 -> 11, 8 or 3) hands Alice a winning pile
+    /// again, e.g. 13 -> 12 -> 11 -> 10 -> 9 -> 0.
+    #[test]
+    fn several_moves() {
+        assert!(winner_square_game(13));
     }
 }

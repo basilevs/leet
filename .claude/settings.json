@@ -24,7 +24,8 @@
       "WebFetch(domain:docs.claude.com)",
       "WebSearch",
       "Bash(git checkout *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh stone-game-iv *)"
     ]
   },
   "hooks": {
