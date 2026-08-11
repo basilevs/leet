@@ -119,3 +119,4 @@ pub mod remaining_methods_3310;
 pub mod smallest_number_3345;
 pub mod smallest_number_3348;
 pub mod stone_game_ii_1140;
+pub mod missing_integer_2996;
