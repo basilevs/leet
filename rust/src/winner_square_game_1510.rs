@@ -16,7 +16,12 @@ pub fn winner_square_game(n: i32) -> bool {
             wins.push(false); // No stones left: the player to move cannot move.
         }
 
-        for k in wins.len()..=n {
+        // One allocation for the whole extension: each `win` has to read
+        // entries pushed earlier in this very loop, so the values cannot come
+        // from an iterator handed to `extend` — it would borrow `wins` twice.
+        let computed = wins.len();
+        wins.reserve((n + 1).saturating_sub(computed));
+        for k in computed..=n {
             let win = (1usize..)
                 .map(|i| i * i)
                 .take_while(|&square| square <= k)
