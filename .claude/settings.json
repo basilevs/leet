@@ -22,7 +22,9 @@
       "Bash(make -C cpp test T=remaining_methods_3310)",
       "Bash(rustc --version)",
       "WebFetch(domain:docs.claude.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git checkout *)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "hooks": {
