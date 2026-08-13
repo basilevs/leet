@@ -3,25 +3,29 @@
 use crate::segment_tree::SegmentTree;
 
 pub fn longest_repeating(s: String, query_characters: String, query_indices: Vec<i32>) -> Vec<i32> {
-    let mut tree = SegmentTree::from(s.into_bytes().iter().copied().map(Segment::new), merge, Segment::default());
-    query_characters.into_bytes().into_iter().zip(query_indices.into_iter()).map(|(c, i)| {
-        tree.update(i as usize, Segment::new(c));
-        tree.query(0..tree.len()).max_count
+    let mut tree = SegmentTree::from(s.into_bytes().iter().copied().map(|x| Segment::new(char::from(x))), merge, Segment::default());
+    query_characters.into_bytes().into_iter().zip(query_indices).map(|(c, i)| {
+        // dbg!(tree.query(..));
+        tree.update(i as usize, Segment::new(char::from(c)));
+        let full_range = tree.query(..);
+        // dbg!(&full_range);
+        full_range.max_count
     }).collect()
 }
 
 #[derive(Clone, Debug)]
 struct Segment {
-    left_letter: u8,
+    left_letter: char,
     left_count: i32,
-    right_letter: u8,
+    right_letter: char,
     right_count: i32,
-    max_letter: u8,
+    max_letter: char,
     max_count: i32,
+    homogenous: bool,
 }
 
 impl Segment {
-    fn new(letter: u8) -> Self {
+    fn new(letter: char) -> Self {
         Segment {
             left_letter: letter,
             left_count: 1,
@@ -29,17 +33,19 @@ impl Segment {
             right_count: 1,
             max_letter: letter,
             max_count: 1,
+            homogenous: true,
         }
     }
 
     fn default() -> Self {
         Segment {
-            left_letter: 0,
+            left_letter: '\0',
             left_count: 0,
-            right_letter: 0,
+            right_letter: '\0',
             right_count: 0,
-            max_letter: 0,
+            max_letter: '\0',
             max_count: 0,
+            homogenous: false,
         }
     }
 }
@@ -55,22 +61,35 @@ fn merge(left: &Segment, right: &Segment) -> Segment {
         max_count = right.max_count;
     }
 
+    let mut left_count = left.left_count;
+    let mut right_count = right.right_count;
     if left.right_letter == right.left_letter {
         let combined_count = left.right_count + right.left_count;
         if combined_count > max_count {
             max_letter = left.right_letter;
             max_count = combined_count;
         }
+        if left.homogenous {
+            left_count += right.left_count;
+        }
+
+        if right.homogenous {
+            right_count += left.right_count;
+        }
+
     }
 
-    Segment {
+    let result = Segment {
         left_letter: left.left_letter,
-        left_count: left.left_count,
+        left_count,
         right_letter: right.right_letter,
-        right_count: right.right_count,
+        right_count,
         max_letter,
         max_count,
-    }
+        homogenous: left.homogenous && right.homogenous && left.right_letter == right.left_letter,
+    };
+    dbg!(&left, &right, &result);
+    result
 }
 
 #[cfg(test)]
@@ -97,6 +116,30 @@ mod tests {
                 "abyzz".to_string(),
                 "aa".to_string(),
                 vec![2, 1]
+            )
+        );
+    }
+
+    #[test]
+    fn official45() {
+        assert_eq!(
+            vec![1,1,2,2,2,2,2,2,2,1],
+            longest_repeating(
+                "geuqjmt".to_string(),
+                "bgemoegklm".to_string(),
+                vec![3,4,2,6,5,6,5,4,3,2]
+            )
+        );
+    }
+
+    #[test]
+    fn minimal45() {
+        assert_eq!(
+            vec![2],
+            longest_repeating(
+                "geebgoe".to_string(),
+                "g".to_string(),
+                vec![5]
             )
         );
     }
