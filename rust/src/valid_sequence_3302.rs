@@ -1,10 +1,41 @@
 // https://leetcode.com/problems/find-the-lexicographically-smallest-valid-sequence
 
     pub fn valid_sequence(word1: String, word2: String) -> Vec<i32> {
-
-        let mut dp: = vec![]
-        dbg!(&word1, &word2);
-        todo!("training scaffold: implement solution");
+        let mut dp = vec![0; word1.len() + 1];
+        let word1 = word1.into_bytes();
+        let word2 = word2.into_bytes();
+        let mut suffix_start = word2.len();
+        dp[word1.len()] = suffix_start;
+        for (i, &c) in word1.iter().enumerate().rev() {
+            let candidate = suffix_start.saturating_sub(1);
+            if c == word2[candidate] {
+                suffix_start = candidate;
+            }
+            dp[i] = suffix_start;
+        }
+        
+        let mut result: Vec<i32> = word1.iter().enumerate()
+            .zip(dp.into_iter().skip(1))
+            .scan((0usize, false),|(cursor1, wildcard_used), ((i, &c), suffix_start)| {
+                if *cursor1 >= word2.len() {
+                    None
+                } else if word2[*cursor1] == c {
+                    *cursor1 += 1;
+                    Some(i as i32)
+                } else if !*wildcard_used && *cursor1 + 1 >= suffix_start {
+                    *wildcard_used = true;
+                    *cursor1 += 1;
+                    Some(i as i32)
+                } else {
+                    Some(-1)
+                }
+            })
+            .filter(|&x| x != -1)
+            .collect();
+        if result.len() < word2.len() {
+            result.clear();
+        }
+        result
     }
 
 #[cfg(test)]
