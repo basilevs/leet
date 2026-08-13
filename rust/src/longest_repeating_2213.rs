@@ -88,7 +88,7 @@ fn merge(left: &Segment, right: &Segment) -> Segment {
         max_count,
         homogenous: left.homogenous && right.homogenous && left.right_letter == right.left_letter,
     };
-    dbg!(&left, &right, &result);
+    // dbg!(&left, &right, &result);
     result
 }
 
