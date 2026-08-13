@@ -27,6 +27,10 @@ impl<T, F> SegmentTree<T, F>
         Self { tree, combine }
     }
 
+    pub fn len(&self) -> usize {
+        self.tree.len() / 2
+    }
+
     pub fn query(&self, range: impl RangeBounds<usize>) -> T {
         use std::ops::Bound;
         let n = self.tree.len() / 2;
@@ -74,6 +78,16 @@ impl<T, F> SegmentTree<T, F>
             (None, None) => panic!("empty range"),
         }
     }
+    
+    pub fn update(&mut self, i: usize, element: T) {
+        let n = self.tree.len() / 2;
+        let mut i = i + n;
+        self.tree[i] = element;
+        while i > 1 {
+            i /= 2;
+            self.tree[i] = (self.combine)(&self.tree[2 * i], &self.tree[2 * i + 1]);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -118,7 +132,7 @@ mod tests {
     /// Concatenation is associative but not commutative, so it detects partial
     /// results being combined out of range order — something `+` cannot catch.
     #[test]
-    fn non_commutative_combine() {
+    fn non_commutative_combine_even_element_count() {
         let seg_tree = concat_tree(&["a", "b", "c", "d"]);
         assert_eq!("abcd", seg_tree.query(0..=3));
         assert_eq!("abc", seg_tree.query(0..=2));
