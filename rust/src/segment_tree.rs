@@ -96,28 +96,24 @@ mod tests {
 
     #[test]
     fn odd_element_count() {
-        let input = vec![1, 2, 3, 4, 5];
-        let combine = |a: &i32, b: &i32| a + b;
-        let seg_tree = SegmentTree::from(input.into_iter(), combine, 0);
-        assert_eq!(15, seg_tree.query(0..=4));
-        assert_eq!(15, seg_tree.query(0..5));
-        assert_eq!(1, seg_tree.query(0..=0));
-        assert_eq!(5, seg_tree.query(4..=4));
-        assert_eq!(9, seg_tree.query(1..=3));
-        assert_eq!(12, seg_tree.query(2..=4));
+        let seg_tree = concat_tree(&["a", "b", "c", "d", "e"]);
+        assert_eq!("abcde", seg_tree.query(0..=4));
+        assert_eq!("abcde", seg_tree.query(0..5));
+        assert_eq!("a", seg_tree.query(0..=0));
+        assert_eq!("e", seg_tree.query(4..=4));
+        assert_eq!("bcd", seg_tree.query(1..=3));
+        assert_eq!("cde", seg_tree.query(2..=4));
     }
 
     #[test]
     fn even_element_count() {
-        let input = vec![1, 2, 3, 4, 5, 6];
-        let combine = |a: &i32, b: &i32| a + b;
-        let seg_tree = SegmentTree::from(input.into_iter(), combine, 0);
-        assert_eq!(21, seg_tree.query(0..=5));
-        assert_eq!(21, seg_tree.query(0..6));
-        assert_eq!(1, seg_tree.query(0..=0));
-        assert_eq!(6, seg_tree.query(5..=5));
-        assert_eq!(9, seg_tree.query(1..=3));
-        assert_eq!(12, seg_tree.query(2..=4));
+        let seg_tree = concat_tree(&["a", "b", "c", "d", "e", "f"]);
+        assert_eq!("abcdef", seg_tree.query(0..=5));
+        assert_eq!("abcdef", seg_tree.query(0..6));
+        assert_eq!("a", seg_tree.query(0..=0));
+        assert_eq!("f", seg_tree.query(5..=5));
+        assert_eq!("bcd", seg_tree.query(1..=3));
+        assert_eq!("cde", seg_tree.query(2..=4));
     }
 
     fn concat_tree(elements: &[&str]) -> SegmentTree<String, impl Fn(&String, &String) -> String> {
@@ -154,5 +150,15 @@ mod tests {
         assert_eq!("bcd", seg_tree.query(1..=3));
         assert_eq!("cde", seg_tree.query(2..=4));
         assert_eq!("abcd", seg_tree.query(0..4));
+    }
+
+    #[test]
+    fn update(){
+        let mut seg_tree = concat_tree(&["a", "b", "c", "d", "e"]);
+        assert_eq!("abcde", seg_tree.query(..));
+        seg_tree.update(2, "X".to_string());
+        assert_eq!("abXde", seg_tree.query(..));
+        seg_tree.update(0, "Z".to_string());
+        assert_eq!("ZbXde", seg_tree.query(..));
     }
 }
