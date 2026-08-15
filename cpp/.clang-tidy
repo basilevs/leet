@@ -19,10 +19,6 @@ Checks: >
   cppcoreguidelines-prefer-member-initializer,
   cppcoreguidelines-pro-type-member-init,
   -bugprone-easily-swappable-parameters,
-  -bugprone-exception-escape,
-  -bugprone-macro-parentheses,
-  -bugprone-throwing-static-initialization,
-  -modernize-use-auto,
   -modernize-use-trailing-return-type,
   -performance-unnecessary-value-param,
 # Only the solution translation unit is linted; the harness header is skipped.

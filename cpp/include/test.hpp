@@ -14,8 +14,12 @@
 // filters tests by substring: `./build/find_gcd_1979 official2`.
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <cstdlib>
+#include <cxxabi.h>
 #include <exception>
+#include <execinfo.h>
 #include <iostream>
 #include <iterator>
 #include <ostream>
@@ -24,6 +28,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <typeinfo>
 #include <vector>
 
 namespace leet_test {
@@ -139,7 +144,7 @@ inline std::vector<Case>& registry() {
 }
 
 struct Registrar {
-    Registrar(const char* name, void (*run)()) { registry().push_back(Case{name, run}); }
+    Registrar(const char* name, void (*run)()) noexcept { registry().push_back(Case{name, run}); }
 };
 
 inline int run_all(std::string_view filter) {
@@ -186,6 +191,52 @@ inline int run_all(std::string_view filter) {
     return failures.empty() ? 0 : 1;
 }
 
+// --- crash diagnostics ----------------------------------------------------
+
+inline std::string demangle(const char* name) {
+    int status = 0;
+    char* demangled = abi::__cxa_demangle(name, nullptr, nullptr, &status);
+    std::string result = (status == 0 && demangled != nullptr) ? demangled : name;
+    std::free(demangled);
+    return result;
+}
+
+// Installed as the terminate handler: reports the in-flight exception and a
+// demangled backtrace, then aborts so macOS still writes a symbolicated report.
+[[noreturn]] inline void terminate_with_trace() noexcept {
+    if (const std::exception_ptr ep = std::current_exception()) {
+        try {
+            std::rethrow_exception(ep);
+        } catch (const std::exception& e) {
+            std::cerr << "\nfatal: uncaught " << demangle(typeid(e).name()) << ": " << e.what()
+                      << '\n';
+        } catch (...) {
+            std::cerr << "\nfatal: uncaught exception of unknown type\n";
+        }
+    } else {
+        std::cerr << "\nfatal: std::terminate called with no active exception\n";
+    }
+
+    std::array<void*, 64> frames{};
+    const int depth = backtrace(frames.data(), static_cast<int>(frames.size()));
+    char** symbols = backtrace_symbols(frames.data(), depth);
+    std::cerr << "stack trace (" << depth << " frames):\n";
+    for (int i = 0; i < depth; ++i) {
+        const std::string_view line = (symbols != nullptr) ? symbols[i] : "?";
+        const auto start = line.find("_Z");
+        if (start == std::string_view::npos) {
+            std::cerr << "  " << line << '\n';
+            continue;
+        }
+        const auto end = line.find_first_of(" +", start);
+        const std::string mangled(line.substr(start, end - start));
+        std::cerr << "  " << line.substr(0, start) << demangle(mangled.c_str())
+                  << line.substr(end == std::string_view::npos ? line.size() : end) << '\n';
+    }
+    std::free(symbols);
+    std::abort();
+}
+
 }  // namespace leet_test
 
 using leet_test::check;
@@ -198,7 +249,11 @@ using leet_test::unused;
     static const ::leet_test::Registrar leet_test_registrar_##name(#name, &name); \
     static void name()
 
+// main lets exceptions escape on purpose: the installed terminate handler prints
+// a stack trace before aborting, which is more useful than a caught-and-logged error.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {
+    std::set_terminate(::leet_test::terminate_with_trace);
     const std::string_view filter = argc > 1 ? argv[1] : "";
     return ::leet_test::run_all(filter);
 }

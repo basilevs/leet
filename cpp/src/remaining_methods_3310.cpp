@@ -6,13 +6,13 @@
 
     std::vector<int> remainingMethods(int n_, int k_, const std::vector<std::vector<int>>& invocations) {
         using namespace std;
-        size_t n = static_cast<size_t>(n_);
-        size_t k = static_cast<size_t>(k_);
+        auto n = static_cast<size_t>(n_);
+        auto k = static_cast<size_t>(k_);
         vector<vector<size_t>> graph(n);
         vector<int> in_degree(n, 0);
         for (const auto& edge : invocations) {
-            size_t u = static_cast<size_t>(edge[0]);
-            size_t v = static_cast<size_t>(edge[1]);
+            auto u = static_cast<size_t>(edge[0]);
+            auto v = static_cast<size_t>(edge[1]);
             graph[u].push_back(v);
             in_degree[v]++;
         }
