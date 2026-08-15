@@ -23,7 +23,7 @@ std::vector<int> findMissingElements(std::vector<int> nums) {
 // range collecting values that are still `false`.
 std::vector<int> findMissingElementsBool(std::vector<int> nums) {
     const auto [min_val, max_val] = std::ranges::minmax(nums);
-    const auto span = static_cast<std::size_t>(max_val - min_val + 1);
+    const auto span = static_cast<std::size_t>(static_cast<std::int64_t>(max_val) - min_val + 1);
 
     std::vector<bool> present(span, false);
     for (int v : nums) {
@@ -58,7 +58,7 @@ std::vector<int> findMissingElementsHashSet(const std::vector<int>& nums) {
 // range collecting values whose bit is unset.
 std::vector<int> findMissingElementsBitset(const std::vector<int>& nums) {
     const auto [min_val, max_val] = std::ranges::minmax(nums);
-    const auto span = static_cast<std::size_t>(max_val - min_val + 1);
+    const auto span = static_cast<std::size_t>(static_cast<std::int64_t>(max_val) - min_val + 1);
     const auto num_words = (span + 63) / 64;
     std::vector<std::uint64_t> bits(num_words, 0);
 

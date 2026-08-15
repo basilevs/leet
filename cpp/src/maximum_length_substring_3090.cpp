@@ -2,6 +2,7 @@
 
 #include "test.hpp"
 
+#include <array>
 #include <string>
 
     int maximumLengthSubstring(const std::string& s) {
@@ -9,7 +10,7 @@
         std::size_t back = 0;
         int length = 0;
         int longest_length = 0;
-        int freq[26] = {};
+        std::array<int, 26> freq{};
         for (char ch : s) {
             int num = ch - 'a';
             int& bucket = freq[num];

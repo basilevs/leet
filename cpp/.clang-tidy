@@ -1,0 +1,32 @@
+# clang-tidy configuration for the C++ LeetCode solutions.
+#
+# Purpose: lint style/correctness only (no formatting, no reindentation). The
+# checks are curated to catch real modernization and initializer issues while
+# staying out of the way of this repo's LeetCode conventions:
+#   * function signatures are copied verbatim from LeetCode (taken by value,
+#     no trailing return types) -> value-param and trailing-return checks off;
+#   * solutions lean on explicit casts and operator[] -> auto and bounds
+#     checks off;
+#   * test data is full of literals -> magic-number check off;
+#   * the test.hpp harness is infrastructure -> excluded via HeaderFilterRegex,
+#     and the checks its TEST() macro would trip are disabled below.
+Checks: >
+  -*,
+  bugprone-*,
+  modernize-*,
+  performance-*,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-prefer-member-initializer,
+  cppcoreguidelines-pro-type-member-init,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -bugprone-macro-parentheses,
+  -bugprone-throwing-static-initialization,
+  -modernize-use-auto,
+  -modernize-use-trailing-return-type,
+  -performance-unnecessary-value-param,
+# Only the solution translation unit is linted; the harness header is skipped.
+HeaderFilterRegex: '$^'
+# Never let --fix touch layout; this repo formats by hand.
+FormatStyle: none
+WarningsAsErrors: ''
