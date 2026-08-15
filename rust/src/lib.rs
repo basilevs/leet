@@ -125,3 +125,4 @@ pub mod winner_square_game_1510;
 pub mod max_subarray_length_2958;
 pub mod longest_repeating_2213;
 pub mod valid_sequence_3302;
+pub mod longest_subsequence_3702;
