@@ -12,7 +12,8 @@
         "./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh": true,
         "./scripts/fetch-problem.sh": true,
         "git stash": true,
-        "./.github/skills/leetcode-task-scaffold/scripts/fetch-daily-slug.sh": true
+        "./.github/skills/leetcode-task-scaffold/scripts/fetch-daily-slug.sh": true,
+        "make": true
     },
     "C_Cpp.intelliSenseEngine": "disabled",
     "makefile.makefilePath": "cpp/Makefile"
