@@ -23,8 +23,7 @@ fn can_win(state: GameState, cache: &mut HashMap<GameState, bool>) -> bool {
         if let Some(&result) = cache.get(&state) {
             result
         } else {
-            let result = (0..=2)
-                .filter_map(|stone_type| state.take(stone_type))
+            let result = state.valid_moves()
                 .any(|next_state| !can_win(next_state, cache));
             dbg!(&state, result);
             cache.insert(state, result);
@@ -49,19 +48,21 @@ impl GameState {
         self.stones.iter().all(|&s| s == 0)
     }
 
-    fn take(&self, stone_type: usize) -> Option<GameState> {
-        debug_assert!(stone_type < 3, "Invalid stone type");
-        if self.stones[stone_type] == 0 {
-            return None;
-        }
-        let remainder = (self.remainder + stone_type as u32) % 3;
-        if remainder == 0 {
-            return None;
-        }
-        let mut stones = self.stones;
-        stones[stone_type] -= 1;
-        
-        Some(GameState { stones, remainder, turn: !self.turn })
+    fn valid_moves(&self) -> impl Iterator<Item=GameState> {
+        (0..=2)
+            .filter_map(move |stone_type| {
+                if self.stones[stone_type] == 0 {
+                    return None;
+                }
+                let remainder = (self.remainder + stone_type as u32) % 3;
+                if remainder == 0 {
+                    return None;
+                }
+                let mut stones = self.stones;
+                stones[stone_type] -= 1;
+                
+                Some(GameState { stones, remainder, turn: !self.turn })
+            })
     }
 }
 
