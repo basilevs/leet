@@ -3,7 +3,7 @@
 use std::{cell::RefCell, collections::HashMap};
 
 thread_local! {
-    static CACHE: RefCell<HashMap<GameState, GameResult>> = RefCell::new(HashMap::new());
+    static CACHE: RefCell<HashMap<GameState, bool>> = RefCell::new(HashMap::new());
 }
 
 pub fn stone_game_ix(stones: Vec<i32>) -> bool {
@@ -12,29 +12,22 @@ pub fn stone_game_ix(stones: Vec<i32>) -> bool {
         freq[(stone % 3) as usize] += 1;
     }
     CACHE.with_borrow_mut(|cache| {
-        match can_win(GameState::new(freq), cache) {
-            GameResult::CurrentPlayerBadSum | GameResult::CurrentPlayerNoStones | GameResult::NextPlayerNoStones => false,
-            GameResult::NextPlayerBadSum  => true,
-        }
+        can_win(GameState::new(freq, true), cache)
     })
 }
 
-fn can_win(state: GameState, cache: &mut HashMap<GameState, GameResult>) -> GameResult {
+fn can_win(state: GameState, cache: &mut HashMap<GameState, bool>) -> bool {
     if state.is_empty() {
-        GameResult::CurrentPlayerNoStones
-    } else if state.stones[1] == 0 && state.stones[2] == 0 {
-        GameResult::CurrentPlayerBadSum
+        !state.turn
     } else {
-        if let Some(result) =  cache.get(&state){
-            result.clone()
+        if let Some(&result) = cache.get(&state) {
+            result
         } else {
-            let result = (1..=2).filter_map(|stone_type| state.take(stone_type))
-                .map(|next_state| can_win(next_state, cache))
-                .find(|result| matches!(result, GameResult::CurrentPlayerBadSum | GameResult::CurrentPlayerNoStones))
-                .map(|result| result.flip())
-                .unwrap_or(GameResult::CurrentPlayerBadSum);
-            dbg!(&state, &result);
-            cache.insert(state, result.clone());
+            let result = (0..=2)
+                .filter_map(|stone_type| state.take(stone_type))
+                .any(|next_state| !can_win(next_state, cache));
+            dbg!(&state, result);
+            cache.insert(state, result);
             result
         }
     }
@@ -43,11 +36,13 @@ fn can_win(state: GameState, cache: &mut HashMap<GameState, GameResult>) -> Game
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct GameState {
     stones: [u32; 3],
+    remainder: u32,
+    turn: bool,
 }
 
 impl GameState {
-    fn new(stones: [u32; 3]) -> Self {
-        GameState { stones }
+    fn new(stones: [u32; 3], turn: bool) -> Self {
+        GameState { stones, remainder: 0, turn }
     }
 
     fn is_empty(&self) -> bool {
@@ -59,35 +54,21 @@ impl GameState {
         if self.stones[stone_type] == 0 {
             return None;
         }
-        let mut new_stones = self.stones;
-        new_stones[stone_type] -= 1;
-        new_stones.rotate_right(stone_type);
-        Some(GameState::new(new_stones))
-    }
-}
-
-#[derive(Clone, Debug)]
-enum GameResult {
-    CurrentPlayerBadSum,
-    NextPlayerBadSum,
-    CurrentPlayerNoStones,
-    NextPlayerNoStones,
-}
-
-impl GameResult {
-    fn flip(&self) -> GameResult {
-        match self {
-            GameResult::CurrentPlayerBadSum => GameResult::NextPlayerBadSum,
-            GameResult::NextPlayerBadSum => GameResult::CurrentPlayerBadSum,
-            GameResult::CurrentPlayerNoStones => GameResult::NextPlayerNoStones,
-            GameResult::NextPlayerNoStones => GameResult::CurrentPlayerNoStones,
+        let remainder = (self.remainder + stone_type as u32) % 3;
+        if remainder == 0 {
+            return None;
         }
+        let mut stones = self.stones;
+        stones[stone_type] -= 1;
+        
+        Some(GameState { stones, remainder, turn: !self.turn })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::stone_game_ix;
+    use itertools::Itertools;
 
     fn naive_stone_game_ix(stones: Vec<i32>) -> bool {
         fn can_win(stones: &[i32], current_sum: i32, turn: bool) -> bool {
@@ -101,9 +82,11 @@ mod tests {
                     continue;
                 }
                 if !can_win(&next_stones, current_sum + stone, !turn) {
+                    // dbg!(turn, current_sum, stones, true);
                     return true;
                 }
             }
+            // dbg!(turn, current_sum, stones, false);
             false
         }
         can_win(&stones, 0, true)
@@ -127,5 +110,32 @@ mod tests {
         assert!(!stone_game_ix(vec![5, 1, 2, 4, 3]));
     }
 
+    #[test]
+    fn one_to_three() {
+        assert!(!naive_stone_game_ix(vec![1, 2, 3]));
+        assert!(!stone_game_ix(vec![1, 2, 3]));
+    } 
 
+    #[test]
+    fn one_three() {
+        assert!(!naive_stone_game_ix(vec![1, 3]));
+        assert!(!stone_game_ix(vec![1, 3]));
+    } 
+
+    #[test]
+    fn one_two_four_five() {
+        assert!(naive_stone_game_ix(vec![1, 2, 4, 5]));
+        assert!(stone_game_ix(vec![1, 2, 4, 5]));
+    } 
+
+    #[test]
+    fn powerset_1_to_10() {
+        for subset in (1..=10).powerset() {
+            assert_eq!(
+                naive_stone_game_ix(subset.clone()),
+                stone_game_ix(subset.clone()),
+                "mismatch for {subset:?}"
+            );
+        }
+    }
 }
