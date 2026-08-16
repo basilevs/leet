@@ -23,11 +23,33 @@ fn can_win(state: GameState, cache: &mut HashMap<GameState, bool>) -> bool {
         if let Some(&result) = cache.get(&state) {
             result
         } else {
-            let result = state.valid_moves()
-                .any(|next_state| !can_win(next_state, cache));
-            dbg!(&state, result);
-            cache.insert(state, result);
-            result
+            let mut stack = vec![state.clone()];
+            while let Some(current_state) = stack.last().cloned() {
+                if current_state.is_empty() {
+                    cache.insert(current_state.clone(), !current_state.turn);
+                    stack.pop();
+                    continue;
+                }
+                if cache.contains_key(&current_state) {
+                    stack.pop();
+                    continue;
+                }
+                let mut all_children_cached = true;
+                for next_state in current_state.valid_moves() {
+                    if !cache.contains_key(&next_state) {
+                        all_children_cached = false;
+                        stack.push(next_state);
+                    }
+                }
+                if all_children_cached {
+                    let result = current_state.valid_moves()
+                        .any(|next_state| !cache[&next_state]);
+                    cache.insert(current_state.clone(), result);
+                    stack.pop();
+                }
+            }
+            // dbg!(&state, result);
+            cache.get(&state).copied().unwrap()
         }
     }
 }
