@@ -1,6 +1,6 @@
 ---
 name: leetcode-commit
-description: "Commit a LeetCode solution to version control, classifying it as complete, incomplete, or failing first. Use when the user asks to commit a solution/problem, or to version-control training progress. Produces a minimal message whose first line is `<frontend_id> <problem blurb>` and whose body is the problem link."
+description: "Commit a LeetCode solution to version control, classifying it as complete, incomplete, or failing first. Use when the user asks to commit a solution/problem, or to version-control training progress. Produces a minimal message whose first line is `<frontend_id> <problem blurb>` and whose body is the problem link. DO NOT use for tooling, docs, skills, or non-solution commits — defer to commit-message-storyteller for those."
 ---
 
 # LeetCode Commit
@@ -13,6 +13,21 @@ messages stay minimal and mechanical.
 See AGENTS.md for the file layout (`<function_name>_<frontend_id>` stem, Rust in
 `rust/src/`, C++ in `cpp/src/`) and for the note that registering a module in
 `rust/src/lib.rs` is routine and must NOT be mentioned in the message.
+
+## Scope and precedence
+
+This skill is deliberately narrow. Use it ONLY for committing the **solution
+files** of a LeetCode problem in this repo — `rust/src/<stem>.rs`,
+`cpp/src/<stem>.cpp`, the `rust/src/lib.rs` registration line, and stem-matched
+fixtures. Within that scope it takes precedence over any general commit-message
+skill: solution commits are a minimal training log, not a narrative.
+
+For anything else — tooling, build config, the skills themselves, docs, `AGENTS.md`,
+or a mixed change that is not a single problem's solution — do NOT use this
+skill. Defer to the general `commit-message-storyteller` skill, whose narrative
+Conventional Commits format is the right fit there. If a change spans both a
+solution and unrelated files, split it: commit the solution with this skill, and
+the rest with the storyteller.
 
 ## 1. Identify what is being committed
 
