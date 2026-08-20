@@ -6,19 +6,19 @@
 
     std::vector<int> resultArray(const std::vector<int>& nums) {
         auto result = std::vector<int>(nums.size());
+        auto front = result.begin();
+        auto back = result.end();
         auto i = nums.begin();
-        size_t cursor1{0};
-        size_t cursor2{nums.size() - 1};
-        result[cursor1] = *i++;
-        result[cursor2] = *i++;
+        *front = *i++;
+        *--back = *i++;
         for (; i != nums.end(); ++i) {
-            if (result[cursor1] > result[cursor2]) {
-                result[++cursor1] = *i;
+            if (*front > *back) {
+                *++front = *i;
             } else {
-                result[--cursor2] = *i;
+                *--back = *i;
             }
         }
-        std::reverse(result.begin() + cursor2, result.end());
+        std::reverse(back, result.end());
         return result;
     }
 
