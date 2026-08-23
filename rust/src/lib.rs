@@ -128,3 +128,4 @@ pub mod valid_sequence_3302;
 pub mod longest_subsequence_3702;
 pub mod stone_game_ix_2029;
 pub mod result_array_3069;
+pub mod sum_game_1927;
