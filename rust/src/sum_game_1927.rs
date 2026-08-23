@@ -14,20 +14,11 @@ pub fn sum_game(num: String) -> bool {
         return true;
     }
 
-    let mut balance = i32::try_from(left_statistics.1).unwrap() - i32::try_from(right_statistics.1).unwrap();
-    let mut move_count = i32::try_from(left_statistics.0).unwrap() - i32::try_from(right_statistics.0).unwrap();
-    assert_eq!(0, move_count % 2);
+    let balance = i32::try_from(left_statistics.1).unwrap() - i32::try_from(right_statistics.1).unwrap();
+    let move_count = i32::try_from(left_statistics.0).unwrap() - i32::try_from(right_statistics.0).unwrap();
+    debug_assert_eq!(0, move_count % 2);
 
-    if move_count < 0 {
-        balance *= -1;
-        move_count *= -1;
-    }
-
-    if balance + move_count / 2 * 9 > 0 {
-        true
-    } else {
-        move_count / 2 * 9 + balance < 0
-    }
+    balance + move_count / 2 * 9 != 0
 }
 
 // (question_mark_count, digit_sum)
@@ -61,5 +52,58 @@ mod tests {
     #[test]
     fn official3() {
         assert!(!sum_game("?3295???".to_string()));
+    }
+
+    // Minimax ground truth: Alice (first) wants the halves to differ, Bob wants
+    // them equal. A move fills any remaining '?' on either side with a digit,
+    // so only per-side sums and '?' counts matter.
+    fn brute(l_sum: i32, r_sum: i32, l_q: u32, r_q: u32, alice_turn: bool) -> bool {
+        if l_q == 0 && r_q == 0 {
+            return l_sum != r_sum;
+        }
+        let mut outcomes = Vec::new();
+        for d in 0..=9 {
+            if l_q > 0 {
+                outcomes.push(brute(l_sum + d, r_sum, l_q - 1, r_q, !alice_turn));
+            }
+            if r_q > 0 {
+                outcomes.push(brute(l_sum, r_sum + d, l_q, r_q - 1, !alice_turn));
+            }
+        }
+        if alice_turn {
+            outcomes.into_iter().any(|alice_wins| alice_wins)
+        } else {
+            outcomes.into_iter().all(|alice_wins| alice_wins)
+        }
+    }
+
+    fn expected(num: &str) -> bool {
+        let bytes = num.as_bytes();
+        let mid = bytes.len() / 2;
+        let (mut l_sum, mut r_sum, mut l_q, mut r_q) = (0, 0, 0, 0);
+        for (i, &c) in bytes.iter().enumerate() {
+            match (c, i < mid) {
+                (b'?', true) => l_q += 1,
+                (b'?', false) => r_q += 1,
+                (_, true) => l_sum += i32::from(c - b'0'),
+                (_, false) => r_sum += i32::from(c - b'0'),
+            }
+        }
+        brute(l_sum, r_sum, l_q, r_q, true)
+    }
+
+    #[test]
+    fn brute_force_comparison() {
+        let alphabet = *b"059?";
+        for &len in &[2usize, 4] {
+            for mut code in 0..alphabet.len().pow(len as u32) {
+                let mut s = String::with_capacity(len);
+                for _ in 0..len {
+                    s.push(alphabet[code % alphabet.len()] as char);
+                    code /= alphabet.len();
+                }
+                assert_eq!(expected(&s), sum_game(s.clone()), "mismatch for {s:?}");
+            }
+        }
     }
 }
