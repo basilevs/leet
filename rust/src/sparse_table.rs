@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::ops::{Bound, RangeBounds};
 
 /// <https://cp-algorithms.com/data_structures/sparse-table.html>
 pub struct SparseTable<T, F>
@@ -41,8 +41,18 @@ where
     /// Returns the aggregate of the half-open range `[start, end)` under
     /// `merge` in `O(1)` time. Correct only for idempotent `merge`; see
     /// [`new`](Self::new).
-    pub fn query(&self, range: Range<usize>) -> T {
-        let Range { start, end } = range;
+    pub fn query(&self, range: impl RangeBounds<usize>) -> T {
+        let n = self.data[0].len();
+        let start = match range.start_bound() {
+            Bound::Included(&x) => x,
+            Bound::Excluded(&x) => x + 1,
+            Bound::Unbounded => 0,
+        };
+        let end = match range.end_bound() {
+            Bound::Included(&x) => x + 1,
+            Bound::Excluded(&x) => x,
+            Bound::Unbounded => n,
+        };
         let i = (end - start).ilog2() as usize;
         (self.merge)(self.data[i][start], self.data[i][end - (1 << i)])
     }
@@ -59,5 +69,23 @@ mod tests {
         assert_eq!(3, subject.query(0..1));
         assert_eq!(1, subject.query(0..5));
         assert_eq!(2, subject.query(0..2));
+    }
+
+    #[test]
+    fn range_inclusive() {
+        let subject = SparseTable::new(vec![3, 2, 1, 4, 5], i32::min);
+        assert_eq!(1, subject.query(0..=4));
+        assert_eq!(3, subject.query(0..=0));
+        assert_eq!(5, subject.query(4..=4));
+        assert_eq!(1, subject.query(1..=3));
+    }
+
+    #[test]
+    fn range_unbounded() {
+        let subject = SparseTable::new(vec![3, 2, 1, 4, 5], i32::min);
+        assert_eq!(1, subject.query(..));
+        assert_eq!(1, subject.query(1..));
+        assert_eq!(3, subject.query(..1));
+        assert_eq!(1, subject.query(..=2));
     }
 }
