@@ -1,12 +1,10 @@
-// https://leetcode.com/problems/find-the-minimum-and-maximum-number-of-nodes-between-critical-points/
+// https://leetcode.com/problems/find-the-minimum-and-maximum-number-of-nodes-between-critical-points
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
+// Definition for singly-linked list.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ListNode {
     pub val: i32,
-    pub next: Option<Rc<RefCell<ListNode>>>,
+    pub next: Option<Box<ListNode>>,
 }
 
 impl ListNode {
@@ -16,85 +14,86 @@ impl ListNode {
     }
 }
 
-impl Solution {
-    pub fn nodes_between_critical_points(
-        head: Option<Rc<RefCell<ListNode>>>,
-    ) -> Vec<i32> {
-        let mut cur = match &head {
-            Some(node) => node.borrow_mut().next.take(),
-            None => return vec![-1, -1],
-        };
+#[must_use]
+pub fn nodes_between_critical_points(head: Option<Box<ListNode>>) -> Vec<i32> {
+    let Some(head) = head else {
+        return vec![-1, -1];
+    };
 
-        let mut prev_val = head
-            .as_ref()
-            .map(|node| node.borrow().val)
-            .unwrap_or_default();
-        let mut i = 1;
-        let mut first_critical = -1;
-        let mut last_critical = -1;
-        let mut min_distance = -1;
+    let mut first = None;
+    let mut last: Option<i32> = None;
+    let mut min_distance = i32::MAX;
 
-        while let Some(node) = cur.clone() {
-            let borrowed = node.borrow();
-            let v = borrowed.val;
-            let nxt = borrowed.next.as_ref().map(|n| n.borrow().val);
+    // A critical point needs both neighbours, so the walk starts at the second
+    // node and stops at the last one. Nodes are dropped as they are passed.
+    let mut previous = head.val;
+    let mut current = head.next;
+    let mut index = 1;
 
-            if let Some(nxt_val) = nxt {
-                if (v > prev_val && v > nxt_val) || (v < prev_val && v < nxt_val) {
-                    if first_critical == -1 {
-                        first_critical = i;
-                    } else if min_distance == -1 || i - last_critical < min_distance {
-                        min_distance = i - last_critical;
-                    }
-                    last_critical = i;
+    while let Some(node) = current {
+        if let Some(next) = node.next.as_deref() {
+            let local_maxima = node.val > previous && node.val > next.val;
+            let local_minima = node.val < previous && node.val < next.val;
+            if local_maxima || local_minima {
+                if let Some(previous_critical) = last.replace(index) {
+                    min_distance = min_distance.min(index - previous_critical);
+                } else {
+                    first = Some(index);
                 }
             }
-
-            prev_val = v;
-            drop(borrowed);
-            cur = node.borrow_mut().next.take();
-            i += 1;
         }
 
-        if min_distance == -1 {
-            vec![-1, -1]
-        } else {
-            vec![min_distance, last_critical - first_critical]
-        }
+        previous = node.val;
+        current = node.next;
+        index += 1;
+    }
+
+    match (first, last) {
+        // Equal bounds mean a single critical point, which has no distinct pair.
+        (Some(first), Some(last)) if first < last => vec![min_distance, last - first],
+        _ => vec![-1, -1],
     }
 }
 
-pub struct Solution;
-
 #[cfg(test)]
-mod tests {
-    use super::*;
+fn list(values: &[i32]) -> Option<Box<ListNode>> {
+    values.iter().rev().fold(None, |next, &val| {
+        let mut node = ListNode::new(val);
+        node.next = next;
+        Some(Box::new(node))
+    })
+}
 
-    fn create_list(vals: Vec<i32>) -> Option<Rc<RefCell<ListNode>>> {
-        let mut head = None;
-        for &val in vals.iter().rev() {
-            let mut node = ListNode::new(val);
-            node.next = head;
-            head = Some(Rc::new(RefCell::new(node)));
-        }
-        head
-    }
+#[test]
+fn official1() {
+    assert_eq!(vec![-1, -1], nodes_between_critical_points(list(&[3, 1])));
+}
 
-    #[test]
-    fn official1() {
-        let head = create_list(vec![3, 1]);
-        assert_eq!(vec![-1, -1], Solution::nodes_between_critical_points(head));
-    }
+#[test]
+fn official2() {
+    assert_eq!(
+        vec![1, 3],
+        nodes_between_critical_points(list(&[5, 3, 1, 2, 5, 1, 2]))
+    );
+}
 
-    #[test]
-    fn official2() {
-        let head = create_list(vec![5, 3, 1, 2, 5, 1, 2]);
-        assert_eq!(vec![1, 3], Solution::nodes_between_critical_points(head));
-    }
+#[test]
+fn official3() {
+    assert_eq!(
+        vec![3, 3],
+        nodes_between_critical_points(list(&[1, 3, 2, 2, 3, 2, 2, 2, 7]))
+    );
+}
 
-    #[test]
-    fn official3() {
-        let head = create_list(vec![1, 3, 2, 2, 3, 2, 2, 2, 7]);
-        assert_eq!(vec![3, 3], Solution::nodes_between_critical_points(head));
-    }
+#[test]
+fn single_critical_point() {
+    assert_eq!(
+        vec![-1, -1],
+        nodes_between_critical_points(list(&[2, 2, 1, 3]))
+    );
+}
+
+#[test]
+fn empty_list() {
+    assert_eq!(vec![-1, -1], nodes_between_critical_points(None));
 }
