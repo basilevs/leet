@@ -1,5 +1,6 @@
 // https://leetcode.com/problems/construct-uniform-parity-array-ii
 
+    #[must_use]
     pub fn uniform_array(nums1: Vec<i32>) -> bool {
         let mut min = i32::MAX;
         let mut has_odd = false;
