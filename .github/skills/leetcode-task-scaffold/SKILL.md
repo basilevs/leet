@@ -43,6 +43,14 @@ Shared:
 Rust (`rust/src/<function_name>_<frontend_id>.rs`):
 - Exposes a top-level public function (or, for design problems, a `struct` with an `impl`).
 - Must be registered in `rust/src/lib.rs` as `pub mod <function_name>_<frontend_id>;`.
+- The crate sets `warnings = "deny"`, so Clippy findings in a new file are hard
+  errors, not advisories. The one that bites scaffolds constantly is
+  `clippy::bool_assert_comparison`: when the expected value is a literal `true`
+  or `false`, write `assert!(expr)` / `assert!(!expr)` rather than
+  `assert_eq!(true, expr)` / `assert_eq!(false, expr)`. Use `assert_eq!` only
+  when the expected value is a real value — a number, string, or collection.
+  Step 6 catches this, but writing it correctly the first time is cheaper than
+  a lint round-trip.
 
 C++ (`cpp/src/<function_name>_<frontend_id>.cpp`):
 - Function keeps the template's camelCase name (`twoSum`), the file stem does not.
@@ -85,6 +93,22 @@ mod tests {
         assert_eq!(<expected_2>, <function_name>(<input_2>));
     }
 }
+```
+
+When the example's expected output is `true` or `false`, the assertion collapses
+to the boolean form instead — `assert_eq!` with a literal bool is a denied lint
+here (see Conventions above):
+
+```rust
+    #[test]
+    fn official1() {
+        assert!(<function_name>(<input_1>));  // Output: true
+    }
+
+    #[test]
+    fn official2() {
+        assert!(!<function_name>(<input_2>)); // Output: false
+    }
 ```
 
 For design problems (template is a `struct` plus `impl Solution` with multiple
@@ -191,12 +215,36 @@ calling `todo()`, and drive it from `TEST(...)` blocks.
   - Rust: append `pub mod <function_name>_<frontend_id>;` to the end of
     `rust/src/lib.rs`. Ignore existing order.
   - C++: nothing to do.
-6. Verify the scaffold compiles and is wired up:
-  - Rust: `cargo test --manifest-path rust/Cargo.toml --lib <function_name>_<frontend_id> --no-run`
-    confirms the module is registered and the populated tests compile.
+6. Validate the scaffold.
+  - Rust — one command, which is also the definition of "done":
+
+    ```sh
+    ./.github/skills/leetcode-task-scaffold/scripts/validate-rust-scaffold.sh <function_name>_<frontend_id>
+    ```
+
+    It runs every check this repository can make deterministically: origin
+    link, `rust/src/lib.rs` registration, `todo!()` still present, `official<N>`
+    numbering, Clippy, and a test run. Do not also run `cargo test`,
+    `cargo build`, or `cargo clippy` by hand — the script already ran them, and
+    run separately they only reproduce output it has already filtered for you.
+
+    Two things it does that a bare cargo invocation cannot:
+    - **Filters diagnostics to the new file.** The crate holds many older
+      solutions that still trip Clippy, and `[lints.rust] warnings = "deny"`
+      makes those hard errors, so a plain `cargo clippy` returns dozens of
+      unrelated failures with yours buried among them.
+    - **Requires every test to fail by reaching `todo!()`.** A test that
+      *passes* against an unimplemented solution is asserting nothing, or never
+      calls the function — a scaffold that gives the user no signal.
+
+    Fix whatever it reports and rerun until it prints `OK:`. Fix the scaffold
+    itself: never `#[allow(...)]`, never edit another module to quiet the crate.
+    Rerunning is cheap — the first run costs ~19s, each later one ~3s.
   - C++: `make -C cpp test T=<function_name>_<frontend_id>` builds and runs it.
-  - Running the tests is expected to FAIL: `todo!()` / `todo()` aborts the test,
-    which confirms the tests exercise the (not-yet-written) implementation.
+    Warnings are on but not fatal, and there is no equivalent script yet.
+  - In both languages a finished scaffold FAILS its tests. `todo!()` / `todo()`
+    aborts each one, which is what proves the tests reach the code the user is
+    about to write.
 
 ## Guardrails
 
@@ -206,3 +254,10 @@ calling `todo()`, and drive it from `TEST(...)` blocks.
 - No empty tests: populate every test from an official example so it fails against the unimplemented body until implemented.
 - Keep test names aligned with repository style (official1, official2, ...).
 - Use `questionFrontendId` (displayed number) for filenames/modules, never the internal `questionId`.
+- Do not hand a Rust scaffold back before `validate-rust-scaffold.sh` prints
+  `OK:`. A scaffold that does not compile, trips a denied lint, or has a test
+  that passes without an implementation is not a working starting point — the
+  user's first `cargo test` then fails for a reason that has nothing to do with
+  the algorithm they came to practise.
+- Do not silence a lint with `#[allow(...)]`, and do not edit unrelated modules
+  to quiet the crate.

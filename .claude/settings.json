@@ -29,7 +29,8 @@
       "Bash(cargo check *)",
       "Bash(cargo fmt *)",
       "Bash(make -C cpp test T=maximum_length_substring_3090)",
-      "Bash(cargo --version)"
+      "Bash(cargo --version)",
+      "Bash(./.github/skills/leetcode-task-scaffold/scripts/validate-rust-scaffold.sh uniform_array_3876)"
     ]
   },
   "hooks": {
