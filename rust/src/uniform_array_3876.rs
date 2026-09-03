@@ -1,8 +1,13 @@
 // https://leetcode.com/problems/construct-uniform-parity-array-ii
 
     pub fn uniform_array(nums1: Vec<i32>) -> bool {
-        dbg!(&nums1);
-        todo!("training scaffold: implement solution");
+        let mut min = i32::MAX;
+        let mut has_odd = false;
+        for i in nums1 {
+            has_odd |= i % 2 != 0;
+            min = min.min(i);
+        }
+        !has_odd || (min % 2 != 0)
     }
 
 #[cfg(test)]
