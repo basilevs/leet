@@ -132,3 +132,4 @@ pub mod missing_multiple_3718;
 pub mod nodes_between_critical_points_2058;
 pub mod sum_game_1927;
 pub mod uniform_array_3876;
+pub mod first_stable_index_3903;
