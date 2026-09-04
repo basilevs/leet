@@ -145,16 +145,8 @@ constraints, and the full slug):
 A solution file states its signature but never its constraints, so a reviewer
 without the problem statement cannot tell an overflow from a safe subtraction,
 an unreachable branch from a missing one, or an `official` test that drifted
-from its example. Review subagents have been observed unable to close that gap
-themselves — a review of `first_stable_index_3903` reported the fetch blocked
-and left the overflow question open, while the same command succeeded from the
-agent that spawned it moments later — so do not rely on a subagent fetching for
-itself.
-
-The user starts a review — by typing `/code-review` or `/simplify`, or by
-asking for one in words. The agent receiving that request is the one that must
-fetch, before it spawns any review subagent. When the review covers
-`rust/src/<name>_<number>.rs` or `cpp/src/<name>_<number>.cpp`:
+from its example. If you are not aware of the problem statement for a file under
+review, use following procedure to get one:
 
 1. Take every `// https://leetcode.com/problems/<slug>` URL from the top of the
    file — a file that answers two problems carries two, and both bind the code.
@@ -165,10 +157,12 @@ fetch, before it spawns any review subagent. When the review covers
     ./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh <slug> rust
     ```
 
-3. Put the **Constraints** list and the official examples into the prompt of
-   every review subagent spawned, next to the problem URL. Pass those, not the
-   whole `--- content ---` HTML: the constraints are what a reviewer reasons
-   from, and the rest is payload.
+   Run it exactly like that — bare. No `| head`, no `2>&1`, no `&&` chain, no
+   quotes around the slug: any of those fail security audit in
+   an unattended agent. Read the whole output
+   and pick what you need out of it. If the fetch fails anyway — wrong slug,
+   LeetCode unreachable — say so in the resulting report.
+3. Do the normal review flow taking the problem statement into account.
 
 # Polishing procedure
 Rust only — C++ has no benchmark harness yet, so polishing a C++ solution means
