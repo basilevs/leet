@@ -1,6 +1,6 @@
 ---
 name: leetcode-commit
-description: "Commit a LeetCode solution to version control, classifying it as complete, incomplete, or failing first. Use when the user asks to commit a solution/problem, or to version-control training progress. Produces a minimal message whose first line is `<frontend_id> <problem blurb>` and whose body is the problem link. DO NOT use for tooling, docs, skills, or non-solution commits — defer to commit-message-storyteller for those."
+description: "Commit a LeetCode solution to version control, classifying it as complete, incomplete, or failing first. Use when the user asks to commit a solution/problem, or to version-control training progress. Produces a minimal message whose first line is `<frontend_id> <problem blurb>` and whose body is the problem link. Commits only a problem's solution files and leaves every unrelated change untouched. DO NOT use for tooling, docs, skills, or non-solution commits."
 ---
 
 # LeetCode Commit
@@ -14,82 +14,92 @@ See AGENTS.md for the file layout (`<function_name>_<frontend_id>` stem, Rust in
 `rust/src/`, C++ in `cpp/src/`) and for the note that registering a module in
 `rust/src/lib.rs` is routine and must NOT be mentioned in the message.
 
-## Scope and precedence
+## Scope
 
-This skill is deliberately narrow. Use it ONLY for committing the **solution
-files** of a LeetCode problem in this repo — `rust/src/<stem>.rs`,
+This skill is deliberately narrow. It covers exactly one thing: committing the
+**solution files** of a single LeetCode problem — `rust/src/<stem>.rs`,
 `cpp/src/<stem>.cpp`, the `rust/src/lib.rs` registration line, and stem-matched
-fixtures. Within that scope it takes precedence over any general commit-message
-skill: solution commits are a minimal training log, not a narrative.
+fixtures. Within that scope its minimal training-log format is the right one;
+a solution commit records which problem and what state, not a narrative.
 
-For anything else — tooling, build config, the skills themselves, docs, `AGENTS.md`,
-or a mixed change that is not a single problem's solution — do NOT use this
-skill. Defer to the general `commit-message-storyteller` skill, whose narrative
-Conventional Commits format is the right fit there. If a change spans both a
-solution and unrelated files, split it: commit the solution with this skill, and
-the rest with the storyteller.
+Everything else in the working tree — tooling, build config, the skills
+themselves, docs, `AGENTS.md`, other problems — is **out of scope. Leave it
+untouched.** Do not stage it, do not commit it, and do not decide what should
+happen to it; that is the user's call to make in a separate request.
 
-## 1. Identify what is being committed
+So when a working tree holds both a solution and unrelated changes, this skill's
+job is finished once the solution is committed. Name the untouched files in your
+closing report so the user knows what is still pending, and stop there. Do not
+carry on to commit them under some other format, and do not ask whether you
+should — a request to commit a solution is not a request to clear the tree.
 
-Determine the solution stem(s) `<function_name>_<frontend_id>` from the user's
-request, the active editor file, or `git status`. A single problem may touch the
-Rust file, the C++ file, or both; commit the paired files for one problem
-together. Do not sweep unrelated files into the same commit — if `git status`
-shows changes to other problems or to tooling, stage only this problem's paths
-explicitly.
+## 1. Gather the facts — one command
 
-Per problem, the candidate paths are:
-- `rust/src/<stem>.rs` and its registration line in `rust/src/lib.rs`
-- `cpp/src/<stem>.cpp`
-- any adjacent test-data fixtures sharing the stem (e.g. `<stem>_test*.txt`, `<stem>_test*.json`)
+Everything mechanical about a solution commit comes from one script. Run it
+before anything else, and do not reach for `git status`, `cargo test`,
+`make -C cpp test`, `cargo clippy`, or `grep` for `todo` — it has already done
+all of them and reconciled the results:
 
-Read each changed solution file. Extract from it:
-- `<frontend_id>` — the trailing number in the stem.
-- `<slug>` — from the top-of-file `// https://leetcode.com/problems/<slug>` header.
-- a short **blurb** — a plain-language phrase for the problem, derived from the
-  slug (e.g. `longest-subsequence-with-non-zero-xor` → `longest subsequence with
-  non-zero XOR`). Keep it to a handful of words; it is a label, not a summary.
+```sh
+./.github/skills/leetcode-commit/scripts/classify-solution.sh <stem>
+```
 
-## 2. Classify the solution
+Call it with no argument first if you do not yet know the stem; it lists the
+problems with uncommitted changes, and separately lists any dirty files that
+are *not* part of a solution. That second list exists so you can recognise
+those files and leave them alone — it is not a to-do list.
 
-Every commit must be labelled with the honest state of the solution. Check, for
-each language present:
+The report gives you the frontend id, the slug and problem link, which files
+exist and which are dirty, the exact `git add` path list (including the
+`lib.rs` registration line and stem-matched fixtures), the classification per
+language and overall, every warning with its lint name, and the ready-made
+`(WIP: ...; warn: ...)` parenthetical. Its exit status is the classification —
+`0` complete, `1` failing, `2` incomplete, `3` usage or setup error — so you
+can branch on it without re-reading the output.
 
-**Incomplete** — the scaffold is unfinished. Signals:
-- Rust: a `todo!(` remains in the solution body.
-- C++: a `todo(` remains in the solution body.
-- an `unused(...)` / `dbg!(...)` argument-suppression call still stands in for
-  real work.
+Two things it deliberately leaves to you, because they are not mechanical:
 
-**Failing** — implemented but the official tests do not pass. Run only this
-problem's tests:
-- Rust: `cargo test --manifest-path rust/Cargo.toml -q <stem>::`
-- C++: `make -C cpp test T=<stem>`
+- **The blurb.** It prints the slug with hyphens replaced by spaces as a
+  starting point. Turn that into a label a human would write: fix acronyms and
+  numerals (`non-zero-xor` → `non-zero XOR`, `two-arrays-i` → `two arrays I`),
+  and trim to a handful of words. It is a label, not a summary.
+- **Consent for a non-complete state** — see step 3.
 
-If a language build/test command needs the project venv or a specific cwd,
-activate/enter it in the same command (see environment notes).
+Read the solution file yourself only if you need to (e.g. the report flags a
+missing origin link, or you want context for the blurb).
 
-**Complete** — no `todo` markers remain and every official test passes.
+## 2. Read the classification
 
-If both languages are present they may differ (e.g. Rust complete, C++ failing);
-classify the commit by the *weakest* state (incomplete < failing < complete).
+The script has already classified the solution; this section is what its
+verdicts mean, not a second set of commands to run.
+
+**Incomplete** — the scaffold is unfinished: a `todo!(` (Rust) or `todo()`
+(C++) remains, or no tests ran at all (usually a missing `pub mod <stem>;`).
+The report also notes a surviving `dbg!(` on an otherwise-complete solution —
+that one is a judgement call, not an automatic downgrade: it is normally a
+scaffold leftover worth removing before committing.
+
+**Failing** — implemented, but official tests are red. The report names the
+failing tests.
+
+**Complete** — no `todo` markers and every official test passes.
+
+When both languages are present they may differ (e.g. Rust complete, C++
+failing); the overall class is the *weakest* of the two (incomplete < failing <
+complete), and the script has already applied that rule.
 
 ### Compilation warnings
 
-Warnings do NOT change the completeness class — this repo builds warning-enabled
-but non-fatal (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion` in C++; the Rust
-compiler's own lints). A solution with warnings is still "complete" if its tests
-pass. But warnings are training signal, so the skill MUST surface them.
+Warnings do NOT change the completeness class — this repo builds
+warning-enabled but non-fatal (`-Wall -Wextra -Wpedantic -Wshadow
+-Wconversion` in C++; Clippy at `pedantic`/`nursery` strictness in Rust). A
+solution with warnings is still "complete" if its tests pass. But warnings are
+training signal, so always relay them.
 
-Capture warnings from a clean build of each language present and report every
-one (file:line, lint name, message):
-- C++: `make -C cpp clean >/dev/null 2>&1; make -C cpp test T=<stem> 2>&1 | grep -iE 'warning|error'`
-- Rust: the `cargo test` run above already prints `warning:` lines; scan them.
-  For lint-level detail optionally run `cargo clippy --manifest-path rust/Cargo.toml -q`.
-
-Emit a **warnings report** before composing the message: list each warning, or
-state "no compilation warnings" when the build is clean. Do not silently drop
-warnings just because the tests are green.
+The report lists each lint by name, scoped to this problem's files — the crate
+carries lint debt elsewhere that is none of this commit's business. Relay that
+list to the user, or say "no compilation warnings" when it is empty. Do not
+silently drop warnings just because the tests are green.
 
 ## 3. Confirm intent for non-complete states
 
@@ -134,6 +144,11 @@ Use the lint name (`warn: -Wsign-conversion`); list a couple comma-separated whe
 distinct, or a count (`warn: 3`) when there are many. A clean build adds no flag.
 When a solution is both non-complete and warns, combine the markers in one
 parenthetical, state first: `(WIP: tests failing; warn: -Wsign-conversion)`.
+
+The script composes this whole parenthetical for you and prints it inside a
+ready-to-run `git commit` line — take it verbatim and fill in only the blurb.
+The rules above are here so you can recognise a wrong-looking flag, not so you
+can rebuild one by hand.
 
 **Body:** a blank line, then only the problem link:
 
@@ -186,16 +201,26 @@ https://leetcode.com/problems/longest-repeating-character-replacement-with-subst
 
 ## 5. Stage and commit
 
-Stage only this problem's paths (the solution file(s), the `lib.rs` registration
-line for a new Rust module, and any stem-matched fixtures), then commit with the
-composed message. Prefer a single `-m`/`-m` pair (title, body) so the blank-line
-separation is exact.
+Run the two commands the report printed, with the blurb filled in. The `git add`
+line already lists exactly this problem's paths — the solution file(s), the
+`lib.rs` registration line when the diff adds one, and any stem-matched
+fixtures — so nothing unrelated is swept in. The `-m`/`-m` pair keeps the
+blank-line separation exact.
 
 ```sh
 git add rust/src/<stem>.rs rust/src/lib.rs cpp/src/<stem>.cpp
 git commit -m "<frontend_id> <blurb>" -m "https://leetcode.com/problems/<slug>"
 ```
 
+One case needs care: if the report warns that `rust/src/lib.rs` also has changes
+unrelated to this stem, `git add rust/src/lib.rs` would stage those too. Stage
+that hunk selectively instead.
+
 Do not `git push` unless the user explicitly asks. After committing, report the
 one-line title, the classification you used, and the warnings report (each
 warning, or "no compilation warnings").
+
+If the tree still holds changes that were out of scope, close by naming them as
+left untouched — a plain statement of fact, so the user can see what remains and
+decide for themselves. Then stop. The task was to commit this solution, and it
+is done.
