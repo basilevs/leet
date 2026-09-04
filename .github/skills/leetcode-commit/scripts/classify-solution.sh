@@ -227,7 +227,16 @@ if ! git diff --quiet HEAD -- rust/src/lib.rs 2>/dev/null; then
   fi
 fi
 
-dirty=$(git status --porcelain -- "${paths[@]}" | sed 's/^...//')
+dirty=$(git status --porcelain --no-renames -- "${paths[@]}" | sed 's/^...//')
+
+# The index may already hold unrelated work staged before this script ran. A
+# bare `git commit` would sweep that into the solution commit, so the commit
+# line below is pathspec-limited and this names anything at risk.
+staged_other=""
+staged=$(git diff --cached --name-only --no-renames)
+if [[ -n $staged ]]; then
+  staged_other=$(grep -vxF "$(printf '%s\n' "${paths[@]}")" <<<"$staged")
+fi
 
 # --------------------------------------------------------------------- flag --
 all_warns=$(printf '%s\n%s\n' "$rust_warns" "$cpp_warns" | grep -v '^$' | sort -u)
@@ -297,9 +306,17 @@ else
 fi
 [[ -n $lib_note ]] && echo "$lib_note"
 echo
+if [[ -n $staged_other ]]; then
+  echo "ALREADY STAGED, not part of this problem:"
+  indent '  ' <<<"$staged_other"
+  echo "  ^ the commit line below ends in '-- <paths>', which commits only this"
+  echo "    problem's files and leaves the above staged and untouched. Do not"
+  echo "    drop that pathspec, and do not unstage their work to tidy up."
+  echo
+fi
 echo "commit (blurb is yours to write):"
 echo "  git add ${paths[*]}"
-echo "  git commit -m \"$frontend_id <blurb>$flag\" -m \"https://leetcode.com/problems/$slug\""
+echo "  git commit -m \"$frontend_id <blurb>$flag\" -m \"https://leetcode.com/problems/$slug\" -- ${paths[*]}"
 if [[ $overall != complete ]]; then
   echo
   echo "NOT complete — ask the user before committing (skill step 3)."

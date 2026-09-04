@@ -204,17 +204,34 @@ https://leetcode.com/problems/longest-repeating-character-replacement-with-subst
 Run the two commands the report printed, with the blurb filled in. The `git add`
 line already lists exactly this problem's paths — the solution file(s), the
 `lib.rs` registration line when the diff adds one, and any stem-matched
-fixtures — so nothing unrelated is swept in. The `-m`/`-m` pair keeps the
-blank-line separation exact.
+fixtures. The `-m`/`-m` pair keeps the blank-line separation exact.
 
 ```sh
 git add rust/src/<stem>.rs rust/src/lib.rs cpp/src/<stem>.cpp
-git commit -m "<frontend_id> <blurb>" -m "https://leetcode.com/problems/<slug>"
+git commit -m "<frontend_id> <blurb>" -m "https://leetcode.com/problems/<slug>" \
+  -- rust/src/<stem>.rs rust/src/lib.rs cpp/src/<stem>.cpp
 ```
 
-One case needs care: if the report warns that `rust/src/lib.rs` also has changes
-unrelated to this stem, `git add rust/src/lib.rs` would stage those too. Stage
-that hunk selectively instead.
+**Keep the trailing `-- <paths>`.** Staging this problem's files is not enough
+to keep the commit clean: `git commit` commits everything in the index, and the
+user may well have staged unrelated work before asking you to commit a
+solution. The pathspec limits the commit to the files named after it, so
+whatever else was staged stays staged, with its content untouched — the
+training log keeps one problem per commit, and nobody's work-in-progress gets
+swallowed. The report names any such pre-staged files under "ALREADY STAGED" so
+you can see what the pathspec is protecting.
+
+That is also why you must not "tidy up" by unstaging their work, and must not
+fall back to a bare `git commit` if something goes wrong.
+
+Two more cases need care:
+
+- If the report warns that `rust/src/lib.rs` also has changes unrelated to this
+  stem, `git add rust/src/lib.rs` would stage those too. Stage that hunk
+  selectively instead.
+- A pathspec commit takes the *working tree* content of the named paths. If a
+  file is partly staged and has since changed again, the commit gets the newer
+  version — which is normally what is wanted, but say so in your report.
 
 Do not `git push` unless the user explicitly asks. After committing, report the
 one-line title, the classification you used, and the warnings report (each
