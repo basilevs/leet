@@ -84,7 +84,7 @@ else
   expected=1
   for n in $officials; do
     if [[ $n -ne $expected ]]; then
-      fail "official test numbers must run 1,2,3,... without gaps; found: $(echo $officials)"
+      fail "official test numbers must run 1,2,3,... without gaps; found: ${officials//$'\n'/ }"
       break
     fi
     expected=$((expected + 1))

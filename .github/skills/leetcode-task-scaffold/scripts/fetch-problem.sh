@@ -32,6 +32,10 @@ case "$lang" in
     ;;
 esac
 
+# $titleSlug here is a GraphQL variable, not a shell one — the server binds it
+# from the JSON payload below. Single quotes are required; expanding it in the
+# shell would send an empty name and the query would fail.
+# shellcheck disable=SC2016
 query='query questionData($titleSlug: String!) { question(titleSlug: $titleSlug) { questionFrontendId title titleSlug content exampleTestcases codeSnippets { lang langSlug code } } }'
 
 curl -s 'https://leetcode.com/graphql' \

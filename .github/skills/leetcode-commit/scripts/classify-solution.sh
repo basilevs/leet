@@ -29,6 +29,16 @@ set -uo pipefail
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)
 cd "$repo_root" || exit 3
 
+# Indent every line of a newline-separated list read on stdin. Several report
+# sections print such lists, and a loop keeps each item on its own line without
+# depending on word-splitting an unquoted expansion.
+indent() { # $1 = prefix
+  local prefix=$1 line
+  while IFS= read -r line; do
+    printf '%s%s\n' "$prefix" "$line"
+  done
+}
+
 # ---------------------------------------------------------------- discovery --
 # No stem given: name the problems with uncommitted changes, so the caller does
 # not need a separate `git status` to find them.
@@ -41,7 +51,7 @@ if [[ $# -eq 0 ]]; then
 
   if [[ -n $stems ]]; then
     echo "solution stems with uncommitted changes:"
-    printf '  %s\n' $stems
+    indent '  ' <<<"$stems"
   else
     echo "no changed solution files (nothing matching rust/src/*_<id>.rs or cpp/src/*_<id>.cpp)"
   fi
@@ -52,7 +62,7 @@ if [[ $# -eq 0 ]]; then
   if [[ -n $other ]]; then
     echo
     echo "out of scope — leave untouched, do not stage or commit:"
-    printf '  %s\n' $other
+    indent '  ' <<<"$other"
   fi
   exit 3
 fi
@@ -196,26 +206,28 @@ for s in $rust_state $cpp_state; do
 done
 
 # -------------------------------------------------------------------- paths --
-paths=""
+# An array, not a space-joined string: these become separate argv entries for
+# git, and a string would re-split on any path containing a space.
+paths=()
 for p in $rust_src $cpp_src; do
-  paths+=" $p"
+  paths+=("$p")
 done
-for f in rust/src/${stem}_test*; do
-  [[ -e $f ]] && paths+=" $f"
+for f in "rust/src/${stem}"_test*; do
+  [[ -e $f ]] && paths+=("$f")
 done
 
 lib_note=""
 if ! git diff --quiet HEAD -- rust/src/lib.rs 2>/dev/null; then
   lib_diff=$(git diff HEAD -- rust/src/lib.rs | grep -E '^[+-][^+-]')
   if grep -q "pub mod $stem;" <<<"$lib_diff"; then
-    paths+=" rust/src/lib.rs"
+    paths+=("rust/src/lib.rs")
     if grep -vq "pub mod $stem;" <<<"$lib_diff"; then
       lib_note="WARNING: rust/src/lib.rs also has changes unrelated to $stem — stage that hunk selectively"
     fi
   fi
 fi
 
-dirty=$(git status --porcelain -- $paths | sed 's/^...//')
+dirty=$(git status --porcelain -- "${paths[@]}" | sed 's/^...//')
 
 # --------------------------------------------------------------------- flag --
 all_warns=$(printf '%s\n%s\n' "$rust_warns" "$cpp_warns" | grep -v '^$' | sort -u)
@@ -273,20 +285,20 @@ if [[ $warn_count -eq 0 ]]; then
   echo "warnings:      none"
 else
   echo "warnings:      $warn_count"
-  [[ -n $rust_warns ]] && printf '  rust  %s\n' $rust_warns
-  [[ -n $cpp_warns ]] && printf '  cpp   %s\n' $cpp_warns
+  [[ -n $rust_warns ]] && indent '  rust  ' <<<"$rust_warns"
+  [[ -n $cpp_warns ]] && indent '  cpp   ' <<<"$cpp_warns"
 fi
 echo
 if [[ -z $dirty ]]; then
   echo "changed files: none — this problem is already committed"
 else
   echo "changed files:"
-  printf '  %s\n' $dirty
+  indent '  ' <<<"$dirty"
 fi
 [[ -n $lib_note ]] && echo "$lib_note"
 echo
 echo "commit (blurb is yours to write):"
-echo "  git add$paths"
+echo "  git add ${paths[*]}"
 echo "  git commit -m \"$frontend_id <blurb>$flag\" -m \"https://leetcode.com/problems/$slug\""
 if [[ $overall != complete ]]; then
   echo
