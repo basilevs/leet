@@ -141,6 +141,35 @@ constraints, and the full slug):
    Tests with other names can be created with synthetic inputs.
 
 
+# Reviewing a solution
+A solution file states its signature but never its constraints, so a reviewer
+without the problem statement cannot tell an overflow from a safe subtraction,
+an unreachable branch from a missing one, or an `official` test that drifted
+from its example. Review subagents have been observed unable to close that gap
+themselves — a review of `first_stable_index_3903` reported the fetch blocked
+and left the overflow question open, while the same command succeeded from the
+agent that spawned it moments later — so do not rely on a subagent fetching for
+itself.
+
+The user starts a review — by typing `/code-review` or `/simplify`, or by
+asking for one in words. The agent receiving that request is the one that must
+fetch, before it spawns any review subagent. When the review covers
+`rust/src/<name>_<number>.rs` or `cpp/src/<name>_<number>.cpp`:
+
+1. Take every `// https://leetcode.com/problems/<slug>` URL from the top of the
+   file — a file that answers two problems carries two, and both bind the code.
+2. Run the fetch for each slug, picking the template language of the file under
+   review:
+
+    ```
+    ./.github/skills/leetcode-task-scaffold/scripts/fetch-problem.sh <slug> rust
+    ```
+
+3. Put the **Constraints** list and the official examples into the prompt of
+   every review subagent spawned, next to the problem URL. Pass those, not the
+   whole `--- content ---` HTML: the constraints are what a reviewer reasons
+   from, and the rest is payload.
+
 # Polishing procedure
 Rust only — C++ has no benchmark harness yet, so polishing a C++ solution means
 building warning-clean with `make -C cpp test` and nothing more.
