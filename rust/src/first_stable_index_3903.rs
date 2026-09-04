@@ -4,14 +4,14 @@
     pub fn first_stable_index(nums: Vec<i32>, k: i32) -> i32 {
         let mut mins = vec![i32::MAX; nums.len()];
         let mut min = i32::MAX;
-        for (i, &num) in nums.iter().enumerate().rev() {
+        for (slot, &num) in mins.iter_mut().zip(&nums).rev() {
             min = min.min(num);
-            mins[i] = min;
+            *slot = min;
         }
         let mut max = i32::MIN;
-        for (i, &num) in nums.iter().enumerate() {
+        for (i, (&num, &suffix_min)) in nums.iter().zip(&mins).enumerate() {
             max = max.max(num);
-            if max - mins[i] <= k {
+            if max - suffix_min <= k {
                 return i as i32;
             }
         }

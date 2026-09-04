@@ -39,3 +39,7 @@ harness = false
 [[bench]]
 name = "find_missing_elements_3731"
 harness = false
+
+[[bench]]
+name = "first_stable_index_3903"
+harness = false
